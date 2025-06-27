@@ -1,0 +1,249 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <title>OncoWell - Q&A</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: black;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .form-container {
+            width: 514px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            padding: 0 24px;
+        }
+
+        .form-title {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 27px;
+            text-align: center;
+        }
+
+        .input-group {
+            width: 327px;
+            height: 40px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #E0E0E0;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #828282;
+        }
+
+        .submit-button {
+            width: 327px;
+            height: 40px;
+            background: black;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .submit-button:hover {
+            background: #333;
+        }
+
+        .submit-button div {
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 19.6px;
+        }
+
+        .input-field {
+            width: 327px;
+            height: 40px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #E0E0E0;
+            padding: 8px 16px;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 16px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .faq-item {
+            width: 880px;
+            text-align: left;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        .faq-question {
+            font-size: 17px;
+            font-weight: 600;
+            background: #eee;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .faq-answer {
+            display: none;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #ccc;
+            border-radius: 0 0 8px 8px;
+            font-weight: 400;
+            font-size: 15px;
+            color: #333;
+        }
+
+        .faq-wrapper {
+            margin-top: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .search-container {
+            margin-top: 80px;
+            margin-bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            width: 60%;
+            max-width: 600px;
+        }
+
+        #faq-search {
+            width: 100%;
+            padding: 10px 40px 10px 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            font-size: 18px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navegação -->
+    <div class="nav">
+        <a href="{% url 'beneficios' %}"
+            class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
+        <a href="{% url 'informacoes' %}"
+            class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
+        <a href="{% url 'journaling' %}"
+            class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Journaling</a>
+        <a href="{% url 'testemunhos' %}"
+            class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
+        <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
+    </div>
+
+
+    {% if user.is_authenticated %}
+    <a href="#" class="user-icon"><i class="fas fa-user"></i></a>
+    {% else %}
+    <a href="{% url 'login' %}" class="login-button">Login</a>
+    {% endif %}
+
+    <!-- Logo -->
+    <a href="{% url 'home' %}" class="logo">
+        <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;">
+    </a>
+
+    <div class="search-container">
+        <div class="search-input-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="faq-search" placeholder="Pesquisar pergunta..." />
+        </div>
+    </div>
+
+
+
+    <div class="faq-wrapper">
+        <div class="faq-item">
+            <div class="faq-question">Como é que funcionam os tratamentos?</div>
+            <div class="faq-answer">Os tratamentos funcionam através de uma combinação personalizada de métodos médicos
+                que visam eliminar ou controlar o cancro, como quimioterapia, radioterapia e imunoterapia.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">Quanto tempo duram os tratamentos?</div>
+            <div class="faq-answer">A duração varia de acordo com o tipo de tratamento, diagnóstico e resposta
+                individual — pode ir de semanas a vários meses.</div>
+        </div>
+    </div>
+
+
+    <script>
+        // Mostrar/ocultar respostas
+        document.querySelectorAll('.faq-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const answer = item.querySelector('.faq-answer');
+                answer.style.display = answer.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Filtro de perguntas
+        const searchInput = document.getElementById('faq-search');
+        searchInput.addEventListener('input', () => {
+            const keyword = searchInput.value.toLowerCase();
+            document.querySelectorAll('.faq-item').forEach(item => {
+                const question = item.querySelector('.faq-question').textContent.toLowerCase();
+                const answer = item.querySelector('.faq-answer').textContent.toLowerCase();
+                const match = question.includes(keyword) || answer.includes(keyword);
+                item.style.display = match ? 'block' : 'none';
+            });
+        });
+    </script>
+
+    <!-- FORMULÁRIO -->
+    <div class="form-container">
+        <div class="form-title">Quero perguntar?</div>
+
+        <form method="post" action="{% url 'enviar_pergunta' %}">
+            {% csrf_token %}
+
+            <input type="text" name="pergunta" placeholder="Escreve a tua pergunta" required class="input-field" />
+
+            <input type="email" name="email" placeholder="O teu email" required class="input-field" />
+
+            <button type="submit" class="submit-button">
+                <div>Perguntar</div>
+            </button>
+        </form>
+    </div>
+</body>
+
+</html>

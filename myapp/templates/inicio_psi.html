@@ -1,0 +1,236 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link href="{% static 'css/style.css' %}" rel="stylesheet" />
+    <title>Página Pacientes</title>
+    <style>
+        body {
+            font-family: Roboto, sans-serif;
+            background: #F5F5F5;
+            padding: 20px;
+        }
+
+        .card {
+            background: #FDF7FF;
+            border-radius: 28px;
+            width: 649px;
+            height: 103px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+        }
+
+        .search-box input {
+            padding: 10px 16px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            width: 200px;
+            outline: none;
+        }
+
+        #pacientesContainer a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .paciente-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 20px;
+            background: #FFFFFF;
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            width: 645px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .paciente-info:hover {
+            background-color: #f0e6ff;
+        }
+
+        .paciente-nome {
+            font-family: "Kdam Thmor Pro", sans-serif;
+            font-size: 28px;
+            color: black;
+            line-height: 1.4;
+            text-align: center;
+        }
+
+        .paciente-foto {
+            width: 124px;
+            height: 119px;
+            border-radius: 48px;
+            background: #B5DBFF;
+        }
+
+        .circle-group {
+            display: flex;
+            gap: 12px;
+            margin-left: auto;
+        }
+
+        .circle-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            font-family: Inter, sans-serif;
+            color: white;
+        }
+
+        .gray-box {
+            width: 645px;
+            height: 20px;
+        }
+    </style>
+</head>
+
+<body>
+        
+
+    <!-- Header com campo de busca e ícone de lupa -->
+    <div class="card">
+        <div style="width: 48px; height: 48px;"></div>
+
+        <div class="search-box" style="display: flex; align-items: center; gap: 8px;">
+            <input type="text" id="searchInput" placeholder="Procurar paciente..." />
+            <!-- Ícone de lupa -->
+            <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" fill="#49454F">
+                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 
+               6.5 6.5 0 109.5 16c1.61 0 3.09-.59 
+               4.23-1.57l.27.28v.79l5 4.99L20.49 
+               19l-4.99-5zm-6 0C8.01 14 6 11.99 
+               6 9.5S8.01 5 10.5 5 15 7.01 
+               15 9.5 12.99 14 10.5 14z" />
+            </svg>
+        </div>
+    </div>
+
+    <!-- Lista de pacientes -->
+    <div id="pacientesContainer">
+
+        <!-- Laura Sousa: 1 bolinha vermelha -->
+        <a href="paciente.html?nome=Laura+Sousa">
+            <div class="paciente-info" data-nome="Laura Sousa">
+                <img class="paciente-foto" src="https://placehold.co/124x119" alt="Foto do paciente" />
+                <div class="paciente-nome">Laura Sousa<br>enfermidades</div>
+                <div class="circle-group">
+                    <div class="circle-icon vermelho" style="background: #FF0101;">!</div>
+                </div>
+            </div>
+        </a>
+
+        <div class="gray-box"></div>
+
+        <!-- Francisco Madeira: 1 bolinha vermelha -->
+        <a href="paciente.html?nome=Francisco+Madeira">
+            <div class="paciente-info" data-nome="Francisco Madeira">
+                <img class="paciente-foto" src="https://placehold.co/124x119" alt="Foto do paciente" />
+                <div class="paciente-nome">Francisco Madeira<br>enfermidades</div>
+                <div class="circle-group">
+                    <div class="circle-icon vermelho" style="background: #FF0101;">!</div>
+                </div>
+            </div>
+        </a>
+
+        <div class="gray-box"></div>
+
+        <!-- Carlos Mendes: 1 bolinha verde -->
+        <a href="paciente.html?nome=Carlos+Mendes">
+            <div class="paciente-info" data-nome="Carlos Mendes">
+                <img class="paciente-foto" src="https://placehold.co/124x119" alt="Foto do paciente" />
+                <div class="paciente-nome">Carlos Mendes<br>enfermidades</div>
+                <div class="circle-group">
+                    <div class="circle-icon verde" style="background: #15B640;">✓</div>
+                </div>
+            </div>
+        </a>
+
+        <div class="gray-box"></div>
+
+        <!-- Fernanda Lima: 1 bolinha laranja -->
+        <a href="paciente.html?nome=Fernanda+Lima">
+            <div class="paciente-info" data-nome="Fernanda Lima">
+                <img class="paciente-foto" src="https://placehold.co/124x119" alt="Foto do paciente" />
+                <div class="paciente-nome">Fernanda Lima<br>enfermidades</div>
+                <div class="circle-group">
+                    <div class="circle-icon amarelo" style="background: #FFA100;">!</div>
+                </div>
+            </div>
+        </a>
+
+    </div>
+
+    <!-- Indicador de status dos pacientes -->
+    <div id="indicador-status"
+        style="margin-top: 30px; font-family: Inter, sans-serif; font-size: 18px; display: flex; gap: 24px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 16px; height: 16px; background: #FF0101; border-radius: 50%;"></div>
+            <span id="count-vermelho">0</span> críticos
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 16px; height: 16px; background: #FFA100; border-radius: 50%;"></div>
+            <span id="count-amarelo">0</span> moderados
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 16px; height: 16px; background: #15B640; border-radius: 50%;"></div>
+            <span id="count-verde">0</span> estáveis
+        </div>
+    </div>
+
+    <script>
+        const input = document.getElementById("searchInput");
+        const pacientes = document.querySelectorAll(".paciente-info");
+
+        input.addEventListener("input", () => {
+            const termo = input.value.toLowerCase();
+            pacientes.forEach(paciente => {
+                const nome = paciente.getAttribute("data-nome").toLowerCase();
+                if (nome.includes(termo)) {
+                    paciente.parentElement.style.display = "block"; 
+                } else {
+                    paciente.parentElement.style.display = "none";
+                }
+            });
+            atualizarIndicadores();
+        });
+
+        function atualizarIndicadores() {
+            let vermelho = 0, amarelo = 0, verde = 0;
+
+            document.querySelectorAll(".paciente-info").forEach(p => {
+                if (p.parentElement.style.display === "none") return;
+
+                const circle = p.querySelector(".circle-icon");
+                if (!circle) return;
+
+                if (circle.classList.contains("vermelho")) vermelho++;
+                else if (circle.classList.contains("amarelo")) amarelo++;
+                else if (circle.classList.contains("verde")) verde++;
+            });
+
+            document.getElementById("count-vermelho").textContent = vermelho;
+            document.getElementById("count-amarelo").textContent = amarelo;
+            document.getElementById("count-verde").textContent = verde;
+        }
+
+        atualizarIndicadores();
+    </script>
+
+</body>
+
+</html>

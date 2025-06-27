@@ -1,0 +1,342 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <link href="{% static 'css/style.css' %}" rel="stylesheet" />
+  <title>Página do Paciente</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Roboto, sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .content-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      gap: 30px;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .sidebar {
+      width: 320px;
+      background: #fff;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    .profile {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .profile img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: #B5DBFF;
+      object-fit: cover;
+      margin-bottom: 12px;
+    }
+
+    .profile-name {
+      font-family: 'Kdam Thmor Pro', serif;
+      font-size: 24px;
+      font-weight: 400;
+      margin-bottom: 6px;
+      color: #000;
+    }
+
+    .profile-desc {
+      font-size: 14px;
+      color: #555;
+    }
+
+    .filters {
+      border-top: 1px solid #ddd;
+      padding-top: 20px;
+      margin-bottom: 20px;
+    }
+
+    .filter-title {
+      font-weight: 600;
+      margin-bottom: 12px;
+      font-size: 18px;
+    }
+
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .color-circle {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+    }
+
+    .color-vermelho {
+      background: #FF0101;
+    }
+
+    .color-amarelo {
+      background: #FFA100;
+    }
+
+    .color-verde {
+      background: #15B640;
+    }
+
+    .alterar-cor-container {
+      border-top: 1px solid #ddd;
+      padding-top: 20px;
+    }
+
+    .alterar-cor-title {
+      font-weight: 600;
+      margin-bottom: 12px;
+      font-size: 18px;
+    }
+
+    select,
+    button {
+      width: 100%;
+      padding: 8px 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .main-content {
+      position: relative;
+      width: 800px;
+      height: 600px;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px 40px;
+      box-sizing: border-box;
+      background-image: url("{% static 'images/livro_journaling.png' %}");
+      background-size: 120%;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+
+    .livro-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+      z-index: 0;
+    }
+
+    /* Colunas para os textos */
+    .coluna-textos {
+      position: relative;
+      padding-top: 60px;
+      width: 45%;
+      height: 100%;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 20px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+
+    /* Texto estilizado */
+    .texto {
+      font-family: 'Georgia', serif;
+      font-style: italic;
+      font-size: 18px;
+      line-height: 1.5;
+      text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8);
+      cursor: default;
+      user-select: text;
+      white-space: normal;
+      border-left: 4px solid transparent;
+      padding-left: 8px;
+      transition: border-color 0.3s, color 0.3s;
+      max-height: 150px;
+      overflow: auto;
+    }
+
+    .texto-vermelho {
+      color: #8b0000;
+      border-left-color: #FF0101;
+    }
+
+    .texto-amarelo {
+      color: #6e5800;
+      border-left-color: #FFA100;
+    }
+
+    .texto-verde {
+      color: #1d4d1d;
+      border-left-color: #15B640;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="content-wrapper">
+    <div class="sidebar">
+      <div class="profile">
+        <img src="https://placehold.co/100x100" alt="Foto do paciente" />
+        <div class="profile-name">Laura Sousa</div>
+        <div class="profile-desc">Enfermidades</div>
+      </div>
+
+      <div class="filters">
+        <div class="filter-title">Filtros por cor</div>
+        <label class="filter-item">
+          <input type="checkbox" class="color-filter" value="vermelho" checked />
+          <div class="color-circle color-vermelho"></div> Crítico
+        </label>
+        <label class="filter-item">
+          <input type="checkbox" class="color-filter" value="amarelo" checked />
+          <div class="color-circle color-amarelo"></div> Moderado
+        </label>
+        <label class="filter-item">
+          <input type="checkbox" class="color-filter" value="verde" checked />
+          <div class="color-circle color-verde"></div> Estável
+        </label>
+      </div>
+
+      <div class="alterar-cor-container">
+        <div class="alterar-cor-title">Alterar cor do texto selecionado</div>
+        <select id="corTextoSelect">
+          <option value="vermelho">Vermelho (Crítico)</option>
+          <option value="amarelo">Amarelo (Moderado)</option>
+          <option value="verde">Verde (Estável)</option>
+        </select>
+        <button id="btnAlterarCor">Aplicar</button>
+      </div>
+    </div>
+
+    <div class="main-content" id="mainContent">
+
+      <div class="coluna-textos" id="coluna-esquerda">
+        <div class="texto texto-vermelho">
+          O tratamento teve complicações sérias inicialmente, mas com apoio constante da equipe médica e acompanhamento
+          psicológico, conseguimos superar os momentos mais críticos.
+        </div>
+
+        <div class="texto texto-amarelo">
+          Durante o processo, houve momentos de incerteza e medo, mas o journaling ajudou a lidar melhor com as emoções
+          e trazer clareza ao meu estado mental.
+        </div>
+
+        <div class="texto texto-verde">
+          Atualmente, sinto-me mais forte e confiante na minha recuperação, graças ao suporte da plataforma e aos
+          exercícios diários de journaling.
+        </div>
+      </div>
+
+      <div class="coluna-textos" id="coluna-direita">
+        <div class="texto texto-vermelho">
+          Houve momentos em que pensei em desistir, mas o apoio da equipe e dos colegas virtuais foi fundamental para
+          continuar e acreditar que a cura é possível.
+        </div>
+
+        <div class="texto texto-amarelo">
+          A plataforma facilitou a expressão dos meus sentimentos e ajudou a organizar meus pensamentos, tornando o
+          processo de cura menos solitário e mais estruturado.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const checkboxesFiltro = document.querySelectorAll('.color-filter');
+    checkboxesFiltro.forEach(chk => {
+      chk.addEventListener('change', atualizarFiltro);
+    });
+
+    function atualizarFiltro() {
+      const filtroAtivos = Array.from(checkboxesFiltro)
+        .filter(chk => chk.checked)
+        .map(chk => chk.value);
+
+      const textos = document.querySelectorAll('.texto');
+      textos.forEach(texto => {
+        const isCor = [...texto.classList].some(cls => filtroAtivos.includes(cls.replace('texto-', '')));
+        texto.classList.toggle('hidden', !isCor);
+      });
+    }
+
+    atualizarFiltro();
+
+    let textoSelecionado = null;
+    document.querySelectorAll('.texto').forEach(t => {
+      t.addEventListener('click', () => {
+        if (textoSelecionado) {
+          textoSelecionado.style.outline = '';
+        }
+        textoSelecionado = t;
+        textoSelecionado.style.outline = '2px solid #007BFF';
+      });
+    });
+
+    document.getElementById('btnAlterarCor').addEventListener('click', () => {
+      if (!textoSelecionado) {
+        alert('Clique em um texto para selecionar antes de alterar a cor.');
+        return;
+      }
+      const novaCor = document.getElementById('corTextoSelect').value;
+      textoSelecionado.classList.remove('texto-vermelho', 'texto-amarelo', 'texto-verde');
+      textoSelecionado.classList.add(`texto-${novaCor}`);
+      textoSelecionado.style.outline = '';
+      textoSelecionado = null;
+      atualizarFiltro();
+    });
+  </script>
+
+</body>
+
+</html>

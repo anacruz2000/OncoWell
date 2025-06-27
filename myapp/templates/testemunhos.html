@@ -1,0 +1,295 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>OncoWell - Testemunhos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link href="{% static 'css/style.css' %}" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Instrument Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: #fff;
+        }
+
+        .main-content {
+            margin: 0 auto;
+            padding: 30px 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .content-wrapper {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding-top: 50px;
+        }
+
+
+        .sidebar-compact {
+            background: #f3f3f3;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            min-width: 200px;
+            max-width: 240px;
+        }
+
+        .sidebar-compact form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sidebar-compact label {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-compact input[type="text"],
+        .sidebar-compact input[type="date"] {
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        .sidebar-compact button {
+            background: #630000;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .book-container {
+            background-image: url('{% static "images/livro_journaling.png" %}');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            width: 100%;
+            max-width: 900px;
+            height: 700px;
+            position: relative;
+            padding: 60px 80px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+        }
+
+        .page {
+            width: 45%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 30px;
+            border-radius: 12px;
+            overflow-y: auto;
+            font-size: 16px;
+            line-height: 1.5;
+            color: #330000;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
+            box-sizing: border-box;
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+        }
+
+        .question-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #630000;
+            text-align: left;
+        }
+
+        .question-box {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .short-text,
+        .full-text {
+            display: block;
+        }
+
+        .toggle-link {
+            color: #630000;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            display: block;
+            margin-top: 8px;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Nav bar -->
+    <div class="nav">
+        <a href="{% url 'beneficios' %}"
+            class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
+        <a href="{% url 'informacoes' %}"
+            class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
+        <a href="{% url 'journaling' %}"
+            class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Journaling</a>
+        <a href="{% url 'testemunhos' %}"
+            class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
+        <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
+    </div>
+
+    {% if user.is_authenticated %}
+    <a href="#" class="user-icon">
+        <i class="fas fa-user"></i>
+    </a>
+    {% else %}
+    <a href="{% url 'login' %}" class="login-button">Login</a>
+    {% endif %}
+
+    <a href="{% url 'home' %}" class="logo">
+        <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;">
+    </a>
+
+    <!-- Conteúdo principal -->
+    <div class="main-content">
+        <div class="content-wrapper">
+            <!-- Filtros ao lado esquerdo -->
+            <div class="sidebar-compact">
+                <form id="filterForm">
+                    <div>
+                        <label for="searchText">Pesquisar:</label>
+                        <input type="text" id="searchText" name="searchText" placeholder="palavras-chave" />
+                    </div>
+                    <div>
+                        <label for="filterDate">Data:</label>
+                        <input type="date" id="filterDate" name="filterDate" />
+                    </div>
+                    <button type="submit">Filtrar</button>
+                </form>
+            </div>
+
+            <!-- Livro -->
+            <div class="book-container">
+                <!-- Página esquerda -->
+                <div class="page">
+                    <div class="question-box" data-date="2025-06-20">
+                        <h3 class="question-title">Como foi sua experiência com o tratamento?</h3>
+                        <span class="short-text">
+                            Os tratamentos foram fundamentais para a minha recuperação. Senti-me muito apoiada...
+                        </span>
+                        <span class="full-text" style="display: none;">
+                            Os tratamentos foram fundamentais para a minha recuperação. Senti-me muito apoiada pela
+                            equipa médica e, embora tenha sido um processo difícil, o acompanhamento psicológico e o
+                            journaling ajudaram-me imenso a lidar com o dia a dia.
+                        </span>
+                        <a href="#" class="toggle-link" onclick="toggleText(this); return false;">(ver mais)</a>
+                    </div>
+
+                    <div class="question-box" data-date="2025-06-19">
+                        <h3 class="question-title">O que o journaling mudou em você?</h3>
+                        <span class="short-text">
+                            Foi importante para mim escrever todos os dias e refletir sobre os meus sentimentos...
+                        </span>
+                        <span class="full-text" style="display: none;">
+                            Foi importante para mim escrever todos os dias e refletir sobre os meus sentimentos. Com o
+                            tempo, percebi mudanças positivas no meu bem-estar emocional. A plataforma foi fácil de usar
+                            e ajudou-me a sentir-me menos sozinha.
+                        </span>
+                        <a href="#" class="toggle-link" onclick="toggleText(this); return false;">(ver mais)</a>
+                    </div>
+                </div>
+
+                <!-- Página direita -->
+                <div class="page">
+                    <div class="question-box" data-date="2025-06-18">
+                        <h3 class="question-title">Como o journaling ajudou no seu processo de cura?</h3>
+                        <span class="short-text">
+                            O journaling tem sido uma ferramenta essencial no meu processo de cura...
+                        </span>
+                        <span class="full-text" style="display: none;">
+                            O journaling tem sido uma ferramenta essencial no meu processo de cura. Ao registrar meus
+                            sentimentos, consegui compreender melhor minhas emoções e avançar com mais confiança.
+                        </span>
+                        <a href="#" class="toggle-link" onclick="toggleText(this); return false;">(ver mais)</a>
+                    </div>
+
+                    <div class="question-box" data-date="2025-06-17">
+                        <h3 class="question-title">Qual foi o impacto de sentir-se acompanhado?</h3>
+                        <span class="short-text">
+                            Sentir que não estou sozinho fez toda a diferença na minha recuperação...
+                        </span>
+                        <span class="full-text" style="display: none;">
+                            Sentir que não estou sozinho fez toda a diferença na minha recuperação. A plataforma e os
+                            testemunhos deram-me força para continuar e acreditar no processo.
+                        </span>
+                        <a href="#" class="toggle-link" onclick="toggleText(this); return false;">(ver mais)</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script ver mais/ver menos + filtros -->
+    <script>
+        function toggleText(link) {
+            const box = link.closest('.question-box');
+            const shortText = box.querySelector('.short-text');
+            const fullText = box.querySelector('.full-text');
+
+            const isExpanded = fullText.style.display === 'inline';
+
+            if (isExpanded) {
+                fullText.style.display = 'none';
+                shortText.style.display = 'inline';
+                link.textContent = '(ver mais)';
+            } else {
+                fullText.style.display = 'inline';
+                shortText.style.display = 'none';
+                link.textContent = '(ver menos)';
+            }
+        }
+
+        document.getElementById('filterForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const searchText = document.getElementById('searchText').value.toLowerCase();
+            const filterDate = document.getElementById('filterDate').value;
+
+            const boxes = document.querySelectorAll('.question-box');
+            boxes.forEach(box => {
+                const fullText = box.querySelector('.full-text').textContent.toLowerCase();
+                const shortText = box.querySelector('.short-text').textContent.toLowerCase();
+                const combinedText = fullText + ' ' + shortText;
+                const boxDate = box.getAttribute('data-date');
+
+                const textMatches = !searchText || combinedText.includes(searchText);
+                const dateMatches = !filterDate || boxDate === filterDate;
+
+                box.style.display = (textMatches && dateMatches) ? '' : 'none';
+            });
+        });
+    </script>
+</body>
+
+</html>

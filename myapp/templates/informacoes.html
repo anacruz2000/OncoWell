@@ -1,0 +1,133 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>OncoWell - Informações</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+
+<body>
+    <div class="nav">
+        <a href="{% url 'beneficios' %}"
+            class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
+        <a href="{% url 'informacoes' %}"
+            class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
+        <a href="{% url 'journaling' %}"
+            class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Journaling</a>
+        <a href="{% url 'testemunhos' %}"
+            class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
+        <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
+    </div>
+
+    {% if user.is_authenticated %}
+    <a href="#" class="user-icon" onclick="toggleUserMenu()">
+        <i class="fas fa-user"></i>
+    </a>
+    <div class="user-menu" id="userMenu">
+        <a href="{% url 'logout' %}">Terminar Sessão</a>
+    </div>
+    {% else %}
+    <a href="{% url 'login' %}" class="login-button">Login</a>
+    {% endif %}
+
+    <a href="{% url 'home' %}" class="logo">
+        <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;">
+    </a>
+
+    <div class="main-content">
+        <!-- Título e Subtítulo -->
+        <div
+            style="width: 696px; height: 29px; left: 333px; top: 208px; position: absolute; text-align: center; display: flex; justify-content: center; flex-direction: column; color: black; font-size: 28px; font-weight: 700; line-height: 42px;">
+            Informações de suporte para cada etapa do caminho.</div>
+        <div
+            style="left: 484px; top: 280px; position: absolute; text-align: center; display: flex; justify-content: center; flex-direction: column; color: rgba(0, 0, 0, 0.50); font-size: 18px; font-weight: 500; line-height: 27px;">
+            Porque entendemos o quão difícil é esta jornada.</div>
+        <div
+            style="left: 661px; top: 141px; position: absolute; text-align: center; display: flex; justify-content: center; flex-direction: column; color: rgba(0, 0, 0, 0.50); font-size: 18px; font-weight: 400; line-height: 27px;">
+            Infos</div>
+
+        <!-- Divisores -->
+        <div
+            style="width: 479px; height: 0px; left: 73px; top: 362px; position: absolute; outline: 1px rgba(0, 0, 0, 0.20) solid;">
+        </div>
+        <div
+            style="width: 506px; height: 0px; left: 675px; top: 361px; position: absolute; transform: rotate(90deg); transform-origin: top left; outline: 1px rgba(0, 0, 0, 0.20) solid;">
+        </div>
+        <div
+            style="width: 479px; height: 0px; left: 756px; top: 363px; position: absolute; outline: 1px rgba(0, 0, 0, 0.20) solid;">
+        </div>
+        <div
+            style="width: 479px; height: 0px; left: 756px; top: 565px; position: absolute; outline: 1px rgba(0, 0, 0, 0.20) solid;">
+        </div>
+        <div
+            style="width: 479px; height: 0px; left: 63px; top: 566px; position: absolute; outline: 1px rgba(0, 0, 0, 0.20) solid;">
+        </div>
+
+        <!-- Títulos das seções -->
+        <div
+            style="width: 289px; left: 73px; top: 407px; position: absolute; display: flex; flex-direction: column; color: black; font-size: 18px; font-weight: 700; line-height: 27px;">
+            Perucas: onde conseguir</div>
+        <div
+            style="width: 541px; left: 63px; top: 594px; position: absolute; display: flex; flex-direction: column; color: black; font-size: 18px; font-weight: 700; line-height: 27px;">
+            Direitos no Trabalho</div>
+        <div
+            style="width: 479px; left: 766px; top: 407px; position: absolute; display: flex; flex-direction: column; color: black; font-size: 18px; font-weight: 700; line-height: 27px;">
+            Ajuda no Transporte: Não Vá Sozinho</div>
+        <div
+            style="width: 289px; left: 758px; top: 594px; position: absolute; display: flex; flex-direction: column; color: black; font-size: 18px; font-weight: 700; line-height: 27px;">
+            Apoio Financeiro</div>
+
+        <!-- Botão -->
+        <div
+            style="width: 449px; height: 65px; padding: 0 16px; left: 93px; top: 467px; position: absolute; background: #5E1612; border-radius: 20px; display: flex; justify-content: center; align-items: center;">
+            <div
+                style="color: white; font-size: 20px; font-family: Inter, sans-serif; font-weight: 500; line-height: 28px;">
+                Mapa de Locais</div>
+        </div>
+
+        <!-- Textos das seções -->
+        <div
+            style="width: 548px; height: 222px; left: 755px; top: 643px; position: absolute; text-align: justify; display: flex; flex-direction: column; color: black; font-size: 18px; font-weight: 500; line-height: 27px;">
+            Subsídio de doença: Se está de baixa médica, pode receber apoio da Segurança Social.<br><br>
+            Isenção de taxas moderadoras: Doentes oncológicos estão isentos de pagar consultas e exames no SNS.<br><br>
+            Apoios da Segurança Social ou da Câmara Municipal: Podem existir ajudas específicas para despesas como
+            medicamentos, transportes ou alimentação. Fale com um assistente social.
+        </div>
+
+        <div
+            style="width: 548px; height: 117px; left: 764px; top: 435px; position: absolute; text-align: justify; display: flex; flex-direction: column; color: black; font-size: 18px; font-weight: 500; line-height: 27px;">
+            Precisa de ir ao hospital com frequência? Pode pedir transporte não urgente pelo SNS. Muitas câmaras
+            municipais também ajudam com transporte gratuito – informe-se no centro de saúde ou junta de freguesia.
+        </div>
+
+        <div
+            style="width: 548px; height: 108px; left: 61px; top: 635px; position: absolute; text-align: justify; display: flex; flex-direction: column; color: black; font-size: 18px; font-weight: 500; line-height: 27px;">
+            Está em tratamento e não pode trabalhar? Tem direito a baixa médica prolongada com subsídio de doença. Peça
+            ajuda ao seu médico ou veja mais no site da Segurança Social.
+        </div>
+    </div>
+
+    <script>
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenu');
+            menu.classList.toggle('active');
+        }
+
+        // Fechar o menu quando clicar fora dele
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('userMenu');
+            const userIcon = document.querySelector('.user-icon');
+            if (!menu.contains(event.target) && !userIcon.contains(event.target)) {
+                menu.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>Chat Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .chat-container {
+            width: 400px;
+            height: 600px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: #4A90E2;
+            color: white;
+            padding: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #e9ebee;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            clear: both;
+        }
+
+        .message.sent {
+            background: #4A90E2;
+            color: white;
+            float: right;
+            border-bottom-right-radius: 0;
+        }
+
+        .message.received {
+            background: #fff;
+            color: #333;
+            float: left;
+            border-bottom-left-radius: 0;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+
+        .chat-input-area {
+            padding: 10px 20px;
+            background: #f1f1f1;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-input-area input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+        }
+
+        .chat-input-area button {
+            margin-left: 10px;
+            background: #4A90E2;
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .chat-input-area button:hover {
+            background: #357ABD;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        Chat Oncowell
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+        <div class="message received">Olá! Como posso ajudar?</div>
+        <div class="message sent">Olá! Gostaria de saber mais sobre os tratamentos.</div>
+        <div class="message received">Claro! Quais são as suas dúvidas?</div>
+    </div>
+
+    <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="Escreve uma mensagem..." />
+        <button id="sendBtn">Enviar</button>
+    </div>
+</div>
+
+<script>
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    function sendMessage() {
+        const text = chatInput.value.trim();
+        if (text === '') return;
+
+        // Criar a mensagem enviada
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('message', 'sent');
+        msgDiv.textContent = text;
+
+        // Adicionar mensagem à lista
+        chatMessages.appendChild(msgDiv);
+
+        // Scroll para o fim
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // Limpar input
+        chatInput.value = '';
+
+        // Simular resposta automática depois de 1.2 segundos
+        setTimeout(() => {
+            const reply = document.createElement('div');
+            reply.classList.add('message', 'received');
+            reply.textContent = 'Obrigado pela mensagem! Em breve responderemos.';
+            chatMessages.appendChild(reply);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 1200);
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+</script>
+
+</body>
+</html>
