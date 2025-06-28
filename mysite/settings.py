@@ -74,15 +74,11 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'admin',
-        'HOST': 'localhost',
-        'PORT': '5432',
-        'default': dj_database_url.config(default='sqlite:///db.sqlite3')
-    }
+    'default': dj_database_url.config(
+        default=os.getenv("DATABASE_URL", "postgres://postgres:admin@localhost:5432/postgres"),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
 
 
