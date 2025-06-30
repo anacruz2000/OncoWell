@@ -76,10 +76,10 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'admin',
-        'HOST': 'localhost',
+        'NAME': 'oncowell_db',
+        'USER': 'oncowell_db_user',
+        'PASSWORD': 'pWgvhE9o9VjuZhwlkAXkhNIFvQE85aC6',
+        'HOST': 'dpg-d1g0agngi27c73eb3bpg-a.oregon-postgres.render.com',
         'PORT': '5432',
     }
 }
