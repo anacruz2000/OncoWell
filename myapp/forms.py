@@ -1,6 +1,6 @@
 from django import forms
 from .models import (
-    Utilizador, Paciente, Docente, Enfermidade,
+    Utilizador, Paciente, ProfissionalSaude, Enfermidade,
     Chat, Journaling, PergIndividual, MeuJournaling
 )
 
@@ -14,10 +14,10 @@ class PacienteForm(forms.ModelForm):
         model = Paciente
         fields = ['utilizador', 'data_nascimento', 'estado_pac']
 
-class DocenteForm(forms.ModelForm):
+class ProfissionalForm(forms.ModelForm):
     class Meta:
-        model = Docente
-        fields = ['utilizador', 'tipo', 'licenca']
+        model = ProfissionalSaude
+        fields = ['utilizador', 'tipo_profissional', 'certificado_profissional', 'validade_certificado']
 
 class EnfermidadeForm(forms.ModelForm):
     class Meta:
