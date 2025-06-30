@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+import dj_database_url
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +22,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-076c-+dl02se3h&_#+lsn(v2x+1g^^97qv!c#7#r!&dh85ed74'
+SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-for-dev")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+DEBUG = os.getenv("DEBUG", "False") == "True"
+ALLOWED_HOSTS = ["*"] 
 
 
 # Application definition
@@ -74,14 +75,7 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'oncowell_db',
-        'USER': 'oncowell_db_user',
-        'PASSWORD': 'pWgvhE9o9VjuZhwlkAXkhNIFvQE85aC6',
-        'HOST': 'dpg-d1g0agngi27c73eb3bpg-a.oregon-postgres.render.com',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
 }
 
 
@@ -119,7 +113,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/static/'
+
+# Whitenoise para servir estáticos
+MIDDLEWARE = ["whitenoise.middleware.WhiteNoiseMiddleware"] + MIDDLEWARE
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
