@@ -1,7 +1,7 @@
 from django import forms
 from .models import (
     Utilizador, Paciente, Docente, Enfermidade,
-    Chat, Journaling, PergIndividual
+    Chat, Journaling, PergIndividual, MeuJournaling
 )
 
 class UtilizadorForm(forms.ModelForm):
@@ -29,9 +29,9 @@ class ChatForm(forms.ModelForm):
         model = Chat
         fields = ['remetente', 'destinatario', 'conteudo']
 
-class JournalingForm(forms.ModelForm):
+class MeuJournalingForm(forms.ModelForm):
     class Meta:
-        model = Journaling
+        model = MeuJournaling
         fields = ['utilizador', 'data', 'texto_livre', 'pergunta_diaria', 'publico_npublico']
 
 class PergIndividualForm(forms.ModelForm):

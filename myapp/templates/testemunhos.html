@@ -153,16 +153,21 @@
         <a href="{% url 'informacoes' %}"
             class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
         <a href="{% url 'journaling' %}"
-            class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Journaling</a>
+            class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Meu Journaling</a>
+        <a href="{% url 'journaling_delhes' %}"
+            class="nav-item {% if current_page == 'journaling_delhes' %}active{% endif %}">Journaling Deles</a>
         <a href="{% url 'testemunhos' %}"
             class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
         <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
     </div>
 
     {% if user.is_authenticated %}
-    <a href="#" class="user-icon">
+    <a href="#" class="user-icon" onclick="toggleUserMenu()">
         <i class="fas fa-user"></i>
     </a>
+    <div class="user-menu" id="userMenu">
+        <a href="{% url 'logout' %}">Terminar Sessão</a>
+    </div>
     {% else %}
     <a href="{% url 'login' %}" class="login-button">Login</a>
     {% endif %}
@@ -288,6 +293,18 @@
 
                 box.style.display = (textMatches && dateMatches) ? '' : 'none';
             });
+        });
+
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenu');
+            menu.classList.toggle('active');
+        }
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('userMenu');
+            const userIcon = document.querySelector('.user-icon');
+            if (!menu.contains(event.target) && !userIcon.contains(event.target)) {
+                menu.classList.remove('active');
+            }
         });
     </script>
 </body>

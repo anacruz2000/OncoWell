@@ -165,15 +165,15 @@ body {
 }
 
 
-/* Estilos específicos do Journaling */
-.journaling-container {
+/* Estilos específicos do Meu Journaling */
+.meu-journaling-container {
     display: flex;
     justify-content: space-between;
     padding: 20px;
     margin-top: 50px;
 }
 
-.journaling-section {
+.meu-journaling-section {
     width: 373px;
     height: 550px;
     display: flex;
@@ -183,7 +183,7 @@ body {
     border-radius: 10px;
 }
 
-.journaling-section label {
+.meu-journaling-section label {
     margin-bottom: 20px;
     font-family: Inter;
     font-size: 20px;
@@ -191,7 +191,7 @@ body {
     color: #333;
 }
 
-.journaling-section textarea {
+.meu-journaling-section textarea {
     flex: 1;
     resize: none;
     font-size: 16px;

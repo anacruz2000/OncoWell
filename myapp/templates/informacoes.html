@@ -19,7 +19,9 @@
         <a href="{% url 'informacoes' %}"
             class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
         <a href="{% url 'journaling' %}"
-            class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Journaling</a>
+            class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Meu Journaling</a>
+        <a href="{% url 'journaling_delhes' %}"
+            class="nav-item {% if current_page == 'journaling_delhes' %}active{% endif %}">Journaling Deles</a>
         <a href="{% url 'testemunhos' %}"
             class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
         <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>

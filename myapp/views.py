@@ -34,7 +34,11 @@ def beneficios(request):
 def journaling(request):
     today = datetime.today().date()
     last_7_days = [(today - timedelta(days=i)) for i in range(7)]
-    return render(request, 'journaling.html', {'current_page': 'journaling', 'last_7_days': last_7_days})
+    return render(request, 'journaling.html', {
+        'current_page': 'journaling',
+        'last_7_days': last_7_days,
+        'user_authenticated': request.user.is_authenticated
+    })
 
 def informacoes(request):
     return render(request, 'informacoes.html', {'current_page': 'informacoes'})
@@ -53,6 +57,7 @@ def pacientes(request):
 
 def inicio_psi(request):
     return render(request, 'inicio_psi.html')
+
 def enviar_pergunta(request):
     if request.method == 'POST':
         pergunta = request.POST.get('pergunta')
@@ -70,7 +75,6 @@ def enviar_pergunta(request):
 
     return redirect('q&a')
 
-
 def register_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -84,5 +88,8 @@ def register_view(request):
         user.save()
         return redirect('login')
     return render(request, 'register.html')
+
+def journaling_delhes(request):
+    return render(request, 'journaling_delhes.html', {'current_page': 'journaling_delhes'})
 
 

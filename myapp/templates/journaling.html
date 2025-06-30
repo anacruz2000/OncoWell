@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>OncoWell - Journaling </title>
+  <title>OncoWell - Meu Journaling </title>
 
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
@@ -181,6 +181,70 @@
       text-overflow: ellipsis;
     }
 
+    .blur-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-modal {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.12);
+      padding: 36px 32px 28px 32px;
+      text-align: center;
+      max-width: 350px;
+      width: 90vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+    .login-modal h2 {
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+      color: #630000;
+    }
+    .login-modal p {
+      color: #333;
+      font-size: 1rem;
+      margin-bottom: 18px;
+    }
+    .login-modal .modal-btn {
+      width: 100%;
+      min-width: 220px;
+      padding: 20px 0;
+      margin-bottom: 22px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.18rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: #a10a0a;
+      color: #fff;
+      transition: background 0.2s;
+      letter-spacing: 0.5px;
+    }
+    .login-modal .modal-btn:last-child {
+      background: #a10a0a;
+      color: #fff;
+      border: 1.5px solid #a10a0a;
+    }
+    .login-modal .modal-btn:hover {
+      background: #630000;
+      color: #fff;
+    }
+    .login-modal .modal-btn:last-child:hover {
+      background: #630000;
+      color: #fff;
+    }
 
     @media (max-width: 900px) {
       .content-wrapper {
@@ -234,21 +298,26 @@
 
 <body>
   <div class="nav">
-        <a href="{% url 'beneficios' %}"
-            class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
-        <a href="{% url 'informacoes' %}"
-            class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
-        <a href="{% url 'journaling' %}"
-            class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Journaling</a>
-        <a href="{% url 'testemunhos' %}"
-            class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
-        <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
-    </div>
+    <a href="{% url 'beneficios' %}"
+        class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
+    <a href="{% url 'informacoes' %}"
+        class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
+    <a href="{% url 'journaling' %}"
+        class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Meu Journaling</a>
+    <a href="{% url 'journaling_delhes' %}"
+        class="nav-item {% if current_page == 'journaling_delhes' %}active{% endif %}">Journaling Deles</a>
+    <a href="{% url 'testemunhos' %}"
+        class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
+    <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
+</div>
 
   {% if user.is_authenticated %}
-  <a href="#" class="user-icon">
+  <a href="#" class="user-icon" onclick="toggleUserMenu()">
     <i class="fas fa-user"></i>
   </a>
+  <div class="user-menu" id="userMenu">
+    <a href="{% url 'logout' %}">Terminar Sessão</a>
+  </div>
   {% else %}
   <a href="{% url 'login' %}" class="login-button">Login</a>
   {% endif %}
@@ -429,6 +498,20 @@
     const hojeStr = new Date().toISOString().slice(0, 10);
     selectDate(hojeStr);
   </script>
+
+  {% if not user.is_authenticated %}
+  <div class="blur-overlay">
+    <div class="login-modal">
+      <h2>Para veres esta página tens que efetuar login</h2>
+      <p>Por favor, faz login ou regista-te para aceder ao Meu Journaling.</p>
+      <a href="{% url 'login' %}"><button class="modal-btn">Fazer Login</button></a>
+      <a href="{% url 'register' %}"><button class="modal-btn">Registar</button></a>
+      <button class="modal-btn" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;color:#a10a0a;border:1.5px solid #a10a0a;" onclick="window.history.back()">
+        <i class="fas fa-arrow-left"></i> Voltar
+      </button>
+    </div>
+  </div>
+  {% endif %}
 </body>
 
 </html>
