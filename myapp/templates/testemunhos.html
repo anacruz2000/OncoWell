@@ -42,6 +42,14 @@
             padding-top: 50px;
         }
 
+        .form-container {
+            width: 514px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            padding: 0 24px;
+        }
 
         .sidebar-compact {
             background: #f3f3f3;
@@ -192,6 +200,44 @@
                     </div>
                     <button type="submit">Filtrar</button>
                 </form>
+                
+                <!-- Seção para novo testemunho -->
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                    <h4 style="margin: 0 0 12px 0; color: #630000; font-size: 16px;">Escrever Novo Testemunho</h4>
+                    <form id="newTestimonialForm">
+                        <div style="margin-bottom: 12px;">
+                            <label for="testimonialTitle" style="font-weight: 600; margin-bottom: 4px; display: block;">Título:</label>
+                            <input type="text" id="testimonialTitle" name="testimonialTitle" placeholder="Digite o título do testemunho" style="width: 100%; padding: 6px 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; box-sizing: border-box;" />
+                        </div>
+                        <div id="titulo-error" style="color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 12px;">
+                            ⚠️ Por favor, digite um título para o testemunho.
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label for="testimonialText" style="font-weight: 600; margin-bottom: 4px; display: block;">Testemunho:</label>
+                            <textarea id="testimonialText" name="testimonialText" placeholder="Escreva aqui o seu testemunho..." style="width: 100%; height: 100px; padding: 6px 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; resize: vertical; box-sizing: border-box; font-family: inherit;"></textarea>
+                        </div>
+                        <div id="texto-error" style="color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 12px;">
+                            ⚠️ Por favor, escreva o conteúdo do testemunho.
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="font-weight: 600; margin-bottom: 4px; display: block;">Visibilidade:</label>
+                            <div style="display: flex; gap: 12px;">
+                                <label style="font-size: 14px; display: flex; align-items: center; gap: 4px;">
+                                    <input type="radio" name="testimonialVisibility" value="publico" />
+                                    Público
+                                </label>
+                                <label style="font-size: 14px; display: flex; align-items: center; gap: 4px;">
+                                    <input type="radio" name="testimonialVisibility" value="anonimo" />
+                                    Anônimo
+                                </label>
+                            </div>
+                        </div>
+                        <div id="visibilidade-error" style="color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 12px;">
+                            ⚠️ Por favor, selecione se deseja que o testemunho seja público ou anônimo.
+                        </div>
+                        <button type="submit" style="background: #a10a0a; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%;">Publicar Testemunho</button>
+                    </form>
+                </div>
             </div>
 
             <!-- Livro -->
@@ -254,9 +300,12 @@
             </div>
         </div>
     </div>
+  
 
     <!-- Script ver mais/ver menos + filtros -->
     <script>
+        // Informações do usuário (se autenticado)
+        const currentUserName = "{{ user.username|default:'' }}";
         function toggleText(link) {
             const box = link.closest('.question-box');
             const shortText = box.querySelector('.short-text');
@@ -294,6 +343,103 @@
                 box.style.display = (textMatches && dateMatches) ? '' : 'none';
             });
         });
+
+        // Listeners para esconder avisos quando o usuário interage
+        document.getElementById('testimonialTitle').addEventListener('input', () => {
+            document.getElementById('titulo-error').style.display = 'none';
+        });
+
+        document.getElementById('testimonialText').addEventListener('input', () => {
+            document.getElementById('texto-error').style.display = 'none';
+        });
+
+        document.querySelectorAll('input[name="testimonialVisibility"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                document.getElementById('visibilidade-error').style.display = 'none';
+            });
+        });
+
+        // Formulário para novo testemunho
+        document.getElementById('newTestimonialForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const title = document.getElementById('testimonialTitle').value.trim();
+            const text = document.getElementById('testimonialText').value.trim();
+            const visibility = document.querySelector('input[name="testimonialVisibility"]:checked');
+
+            // Esconder todos os avisos primeiro
+            document.getElementById('titulo-error').style.display = 'none';
+            document.getElementById('texto-error').style.display = 'none';
+            document.getElementById('visibilidade-error').style.display = 'none';
+
+            let hasError = false;
+
+            if (!title) {
+                document.getElementById('titulo-error').style.display = 'block';
+                hasError = true;
+            }
+
+            if (!text) {
+                document.getElementById('texto-error').style.display = 'block';
+                hasError = true;
+            }
+
+            if (!visibility) {
+                document.getElementById('visibilidade-error').style.display = 'block';
+                hasError = true;
+            }
+
+            if (hasError) {
+                return;
+            }
+
+            // Criar o novo testemunho
+            addNewTestimonial(title, text, visibility.value);
+            
+            // Limpar o formulário
+            document.getElementById('testimonialTitle').value = '';
+            document.getElementById('testimonialText').value = '';
+            document.querySelectorAll('input[name="testimonialVisibility"]').forEach(radio => radio.checked = false);
+        });
+
+        // Função para adicionar novo testemunho ao livro
+        function addNewTestimonial(title, text, visibility) {
+            const today = new Date().toISOString().slice(0, 10);
+            
+            // Criar versão curta do texto (primeiros 80 caracteres + "...")
+            const shortText = text.length > 80 ? text.substring(0, 80) + '...' : text;
+            
+            // Determinar o nome do autor
+            let authorName = 'Anônimo';
+            if (visibility === 'publico' && currentUserName && currentUserName.trim() !== '') {
+                authorName = currentUserName;
+            }
+            
+            // Criar o HTML do novo testemunho
+            const newTestimonialHTML = `
+                <div class="question-box" data-date="${today}">
+                    <h3 class="question-title">${title} <span style="color: #666; font-size: 0.9em;">(por ${authorName})</span></h3>
+                    <span class="short-text">
+                        ${shortText}
+                    </span>
+                    <span class="full-text" style="display: none;">
+                        ${text}
+                    </span>
+                    <a href="#" class="toggle-link" onclick="toggleText(this); return false;">(ver mais)</a>
+                </div>
+            `;
+            
+            // Adicionar à primeira página disponível (esquerda ou direita)
+            const leftPage = document.querySelector('.book-container .page:first-child');
+            const rightPage = document.querySelector('.book-container .page:last-child');
+            
+            // Verificar qual página tem menos conteúdo
+            if (leftPage.children.length <= rightPage.children.length) {
+                leftPage.insertAdjacentHTML('afterbegin', newTestimonialHTML);
+            } else {
+                rightPage.insertAdjacentHTML('afterbegin', newTestimonialHTML);
+            }
+        }
 
         function toggleUserMenu() {
             const menu = document.getElementById('userMenu');

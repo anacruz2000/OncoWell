@@ -344,17 +344,25 @@
         <p style="color: #888;">O que escrever aqui aparecerá nesta página.</p>
       </div>
 
+      <div id="texto-error" style="position: absolute; top: 18%; right: 8%; color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        ⚠️ Por favor, escreva algo antes de submeter.
+      </div>
       <textarea id="journaling-textarea" class="page-right" placeholder="Escreva aqui sua reflexão..."></textarea>
 
-      <div style="position: absolute; bottom: 5%; left: 8%; display: flex; gap: 12px; align-items: center;">
-        <label style="font-size: 15px;">
-          <input type="radio" name="privacidade" value="publico" />
-          Partilhar
-        </label>
-        <label style="font-size: 15px;">
-          <input type="radio" name="privacidade" value="anonimo" />
-          Anônimo
-        </label>
+      <div style="position: absolute; bottom: 5%; left: 8%; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <label style="font-size: 15px;">
+            <input type="radio" name="privacidade" value="publico" />
+            Público
+          </label>
+          <label style="font-size: 15px;">
+            <input type="radio" name="privacidade" value="anonimo" />
+            Privado
+          </label>
+        </div>
+        <div id="privacidade-error" style="color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          ⚠️ Por favor, selecione se deseja que o texto seja público ou privado.
+        </div>
       </div>
 
       <button id="submitBtn">Submeter</button>
@@ -388,6 +396,8 @@
     const submittedText = document.getElementById('submitted-text');
     const textarea = document.getElementById('journaling-textarea');
     const submitBtn = document.getElementById('submitBtn');
+    const privacidadeError = document.getElementById('privacidade-error');
+    const textoError = document.getElementById('texto-error');
 
     // Função para formatar datas para exibir na sidebar
     function formatDateDisplay(date) {
@@ -434,25 +444,48 @@
       if (journalingData[dateStr]) {
         journalingData[dateStr].forEach(entry => {
           const p = document.createElement('p');
-          p.innerHTML = `<strong>[${entry.time}]</strong> ${entry.text}`;
+          const privacidadeText = entry.privacidade === 'publico' ? 'Público' : 'Privado';
+          p.innerHTML = `<strong>[${entry.time}]</strong> <span style="color: #666; font-size: 0.9em;">(${privacidadeText})</span><br>${entry.text}`;
           submittedText.appendChild(p);
         });
       } else {
         const p = document.createElement('p');
         p.style.color = '#888';
+        p.textContent = 'O que escrever aqui aparecerá nesta página.';
         submittedText.appendChild(p);
       }
     }
+
+    // Listener para o textarea
+    textarea.addEventListener('input', () => {
+      if (textarea.value.trim()) {
+        textoError.style.display = 'none';
+      }
+    });
+
+    // Listeners para os radio buttons de privacidade
+    document.querySelectorAll('input[name="privacidade"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        privacidadeError.style.display = 'none';
+      });
+    });
 
     // Botão Submeter
     submitBtn.addEventListener('click', () => {
       const text = textarea.value.trim();
       if (!text) {
-        alert('Por favor, escreva algo antes de submeter.');
+        textoError.style.display = 'block';
         return;
       }
       if (!selectedDate) {
         alert('Por favor, selecione uma data.');
+        return;
+      }
+
+      // Verificar se foi selecionada uma opção de privacidade
+      const privacidadeSelecionada = document.querySelector('input[name="privacidade"]:checked');
+      if (!privacidadeSelecionada) {
+        privacidadeError.style.display = 'block';
         return;
       }
 
@@ -468,12 +501,16 @@
 
       journalingData[selectedDate].push({
         time,
-        text
+        text,
+        privacidade: privacidadeSelecionada.value
       });
 
       mostrarTexto(selectedDate);
       textarea.value = '';
       textarea.focus();
+      privacidadeError.style.display = 'none';
+      textoError.style.display = 'none';
+
     });
 
     // Ajustar max date no datepicker para hoje

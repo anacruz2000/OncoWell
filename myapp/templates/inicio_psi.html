@@ -14,25 +14,49 @@
             font-family: Roboto, sans-serif;
             background: #F5F5F5;
             padding: 20px;
+            margin-top: 120px;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .left-panel {
+            width: 350px;
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .card {
             background: #FDF7FF;
-            border-radius: 28px;
-            width: 649px;
-            height: 103px;
+            border-radius: 20px;
+            width: 600px;
+            height: 70px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 20px;
+            gap: 8px;
+            padding: 8px 16px;
         }
 
         .search-box input {
-            padding: 10px 16px;
-            font-size: 16px;
+            padding: 6px 12px;
+            font-size: 14px;
             border: 1px solid #ccc;
-            border-radius: 12px;
-            width: 200px;
+            border-radius: 8px;
+            width: 160px;
             outline: none;
         }
 
@@ -44,13 +68,13 @@
         .paciente-info {
             display: flex;
             align-items: center;
-            gap: 16px;
-            margin-top: 20px;
+            gap: 12px;
+            margin-top: 16px;
             background: #FFFFFF;
-            padding: 12px 16px;
-            border-radius: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            width: 645px;
+            width: 600px;
             cursor: pointer;
             transition: background-color 0.2s ease;
         }
@@ -61,16 +85,16 @@
 
         .paciente-nome {
             font-family: "Kdam Thmor Pro", sans-serif;
-            font-size: 28px;
+            font-size: 22px;
             color: black;
             line-height: 1.4;
             text-align: center;
         }
 
         .paciente-foto {
-            width: 124px;
-            height: 119px;
-            border-radius: 48px;
+            width: 104px;
+            height: 99px;
+            border-radius: 40px;
             background: #B5DBFF;
         }
 
@@ -81,50 +105,106 @@
         }
 
         .circle-icon {
-            width: 56px;
-            height: 56px;
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 28px;
+            font-size: 24px;
             font-family: Inter, sans-serif;
             color: white;
         }
 
         .gray-box {
-            width: 645px;
-            height: 20px;
+            width: 600px;
+            height: 16px;
         }
     </style>
 </head>
 
 <body>
+    <!-- Nav bar -->
+    <div class="nav">
+        <a href="{% url 'beneficios' %}"
+            class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
+        <a href="{% url 'informacoes' %}"
+            class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
+        <a href="{% url 'journaling' %}"
+            class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Meu Journaling</a>
+        <a href="{% url 'inicio_psi' %}"
+            class="nav-item {% if current_page == 'inicio_psi' %}active{% endif %}">Pacientes</a>
+        <a href="{% url 'testemunhos' %}"
+            class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
         
-
-    <!-- Header com campo de busca e ícone de lupa -->
-    <div class="card">
-        <div style="width: 48px; height: 48px;"></div>
-
-        <div class="search-box" style="display: flex; align-items: center; gap: 8px;">
-            <input type="text" id="searchInput" placeholder="Procurar paciente..." />
-            <!-- Ícone de lupa -->
-            <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" fill="#49454F">
-                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 
-               6.5 6.5 0 109.5 16c1.61 0 3.09-.59 
-               4.23-1.57l.27.28v.79l5 4.99L20.49 
-               19l-4.99-5zm-6 0C8.01 14 6 11.99 
-               6 9.5S8.01 5 10.5 5 15 7.01 
-               15 9.5 12.99 14 10.5 14z" />
-            </svg>
-        </div>
     </div>
+
+    {% if user.is_authenticated %}
+    <a href="#" class="user-icon" onclick="toggleUserMenu()">
+        <i class="fas fa-user"></i>
+    </a>
+    <div class="user-menu" id="userMenu">
+        <a href="{% url 'logout' %}">Terminar Sessão</a>
+    </div>
+    {% else %}
+    <a href="{% url 'login' %}" class="login-button">Login</a>
+    {% endif %}
+
+    <a href="{% url 'home' %}" class="logo">
+        <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;">
+    </a>
+
+    <!-- Container principal -->
+    <div class="main-container">
+        <!-- Painel esquerdo - Informações do profissional -->
+        <div class="left-panel">
+            <h2 style="margin: 0 0 20px 0; color: #630000; font-size: 24px;">Dr. Ana Silva</h2>
+            <div style="margin-bottom: 20px;">
+                <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">Especialidade</p>
+                <p style="margin: 0; color: #333; font-weight: 600;">Psicóloga Clínica</p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">Instituição</p>
+                <p style="margin: 0; color: #333; font-weight: 600;">Hospital Central</p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">Pacientes Ativos</p>
+                <p style="margin: 0; color: #333; font-weight: 600; font-size: 18px;">5</p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">Status</p>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 12px; height: 12px; background: #15B640; border-radius: 50%;"></div>
+                    <span style="color: #333; font-weight: 600;">Online</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Painel direito - Lista de pacientes -->
+        <div class="right-panel">
+            <!-- Header com campo de busca e ícone de lupa -->
+            <div class="card">
+                <div style="width: 48px; height: 48px;"></div>
+
+                <div class="search-box" style="display: flex; align-items: center; gap: 8px;">
+                    <input type="text" id="searchInput" placeholder="Procurar paciente..." />
+                    <!-- Ícone de lupa -->
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" fill="#49454F">
+                        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 
+                       6.5 6.5 0 109.5 16c1.61 0 3.09-.59 
+                       4.23-1.57l.27.28v.79l5 4.99L20.49 
+                       19l-4.99-5zm-6 0C8.01 14 6 11.99 
+                       6 9.5S8.01 5 10.5 5 15 7.01 
+                       15 9.5 12.99 14 10.5 14z" />
+                    </svg>
+                </div>
+            </div>
 
     <!-- Lista de pacientes -->
     <div id="pacientesContainer">
 
         <!-- Laura Sousa: 1 bolinha vermelha -->
-        <a href="paciente.html?nome=Laura+Sousa">
+        <a href="{% url 'pacientes' %}">
             <div class="paciente-info" data-nome="Laura Sousa">
                 <img class="paciente-foto" src="https://placehold.co/124x119" alt="Foto do paciente" />
                 <div class="paciente-nome">Laura Sousa<br>enfermidades</div>
@@ -173,6 +253,17 @@
             </div>
         </a>
 
+        <!-- Fernanda Monteiro: 1 bolinha verde -->
+        <a href="paciente.html?nome=Fernanda+Monteiro">
+            <div class="paciente-info" data-nome="Fernanda Monteiro">
+                <img class="paciente-foto" src="https://placehold.co/124x119" alt="Foto do paciente" />
+                <div class="paciente-nome">Fernanda Monteiro<br>enfermidades</div>
+                <div class="circle-group">
+                    <div class="circle-icon verde" style="background: #15B640;">!</div>
+                </div>
+            </div>
+        </a>
+
     </div>
 
     <!-- Indicador de status dos pacientes -->
@@ -188,8 +279,10 @@
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
             <div style="width: 16px; height: 16px; background: #15B640; border-radius: 50%;"></div>
-            <span id="count-verde">0</span> estáveis
+                    <span id="count-verde">0</span> estáveis
+    </div>
         </div>
+    </div>
     </div>
 
     <script>
@@ -229,6 +322,20 @@
         }
 
         atualizarIndicadores();
+
+        // Toggle user menu
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenu');
+            menu.classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('userMenu');
+            const userIcon = document.querySelector('.user-icon');
+            if (menu && !menu.contains(event.target) && !userIcon.contains(event.target)) {
+                menu.classList.remove('active');
+            }
+        });
     </script>
 
 </body>
