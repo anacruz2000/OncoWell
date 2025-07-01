@@ -11,7 +11,7 @@ class HospitalAdmin(admin.ModelAdmin):
 
 @admin.register(Utilizador)
 class UtilizadorAdmin(admin.ModelAdmin):
-    list_display = ['nome', 'username', 'email', 'telemovel', 'hospital']
+    list_display = ['nome', 'username', 'email', 'data_nascimento', 'password']
 
 @admin.register(Paciente)
 class PacienteAdmin(admin.ModelAdmin):

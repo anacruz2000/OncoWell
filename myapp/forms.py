@@ -7,7 +7,7 @@ from .models import (
 class UtilizadorForm(forms.ModelForm):
     class Meta:
         model = Utilizador
-        fields = ['nome', 'email', 'username', 'telemovel', 'hospital']
+        fields = ['nome', 'email', 'username', 'telemovel', 'password', 'data_nascimento']
 
 class PacienteForm(forms.ModelForm):
     class Meta:
@@ -17,7 +17,7 @@ class PacienteForm(forms.ModelForm):
 class ProfissionalForm(forms.ModelForm):
     class Meta:
         model = ProfissionalSaude
-        fields = ['utilizador', 'tipo_profissional', 'certificado_profissional', 'validade_certificado']
+        fields = ['utilizador', 'tipo_profissional', 'certificado_profissional', 'validade_certificado', 'data_nascimento']
 
 class EnfermidadeForm(forms.ModelForm):
     class Meta:

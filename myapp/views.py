@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.core.mail import send_mail
+from myapp.models import Utilizador, Paciente, ProfissionalSaude
 
 # Create your views here.
 def home(request):
@@ -14,8 +15,9 @@ def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+
         user = authenticate(request, username=username, password=password)
-        
+
         if user is not None:
             login(request, user)
             return redirect('journaling')
@@ -77,15 +79,38 @@ def enviar_pergunta(request):
 
 def register_view(request):
     if request.method == 'POST':
+        nome = request.POST.get('nome')
         username = request.POST.get('username')
         email = request.POST.get('email')
+        data_nascimento = request.POST.get('data_nascimento')
         password = request.POST.get('password')
-        if User.objects.filter(username=username).exists():
+
+        cancer_type = request.POST.get('cancer_type')
+        hospital = request.POST.get('hospital')
+
+        healthcare_type = request.POST.get('healthcare_type')
+        medical_license = request.POST.get('medical_license')
+        license_validity = request.POST.get('license_validity')
+
+        if Utilizador.objects.filter(username=username).exists():
             return render(request, 'register.html', {'error_message': 'Nome de utilizador já existe.'})
-        if User.objects.filter(email=email).exists():
+        if Utilizador.objects.filter(email=email).exists():
             return render(request, 'register.html', {'error_message': 'Email já está registado.'})
-        user = User.objects.create_user(username=username, email=email, password=password)
-        user.save()
+
+        if not nome or not username or not email or not password:
+            return render(request, 'register.html', {'error_message': 'Todos os campos obrigatórios devem ser preenchidos.'})
+
+        if(len(cancer_type) > 0):
+            print('paciente')
+            Paciente.objects.create_user(nome=nome, username=username, email=email, data_nascimento=data_nascimento, password=password, tipo_cancro=cancer_type, hospital=hospital, estado_pac='estavel')
+        elif(len(healthcare_type) > 0):
+            print('profissional')
+            ProfissionalSaude.objects.create_user(nome=nome, username=username, email=email, password=password, data_nascimento=data_nascimento, tipo_profissional=healthcare_type, certificado_profissional=medical_license, validade_certificado=license_validity)
+        else:
+            user = Utilizador.objects.create_user(username=username, email=email, password=password, nome=nome, data_nascimento=data_nascimento)
+            user.save()
+
+        
         return redirect('login')
     return render(request, 'register.html')
 

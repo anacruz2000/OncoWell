@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 class Hospital(models.Model):
     nome = models.CharField(max_length=100)
@@ -7,18 +8,18 @@ class Hospital(models.Model):
     def __str__(self):
         return self.nome
 
-class Utilizador(models.Model):
+class Utilizador(AbstractUser):
     nome = models.CharField(max_length=100)
     email = models.EmailField()
     username = models.CharField(max_length=100, unique=True)
-    telemovel = models.CharField(max_length=15)
-    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE)
+    data_nascimento = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.username
 
 class Paciente(Utilizador):
-    data_nascimento = models.DateField()
+    tipo_cancro = models.CharField(max_length=100)
+    hospital = models.CharField(max_length=100)
     estado_pac = models.CharField(max_length=100)
     profissionais = models.ManyToManyField('ProfissionalSaude', related_name='pacientes')
 
