@@ -5,7 +5,11 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.core.mail import send_mail
-from myapp.models import Utilizador, Paciente, ProfissionalSaude
+from myapp.models import Utilizador, Paciente, ProfissionalSaude, TopTestemunho
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json
+from datetime import date
 
 # Create your views here.
 def home(request):
@@ -46,7 +50,34 @@ def informacoes(request):
     return render(request, 'informacoes.html', {'current_page': 'informacoes'})
 
 def testemunhos(request):
-    return render(request, 'testemunhos.html', {'current_page': 'testemunhos'})
+    testemunhos = TopTestemunho.objects.order_by('-data')  # Ordenar por data decrescente (mais recentes primeiro)
+    
+    # Distribuir testemunhos alternadamente entre as páginas
+    # para que os mais recentes apareçam no início de cada página
+    page_left = []
+    page_right = []
+    
+    for i, testemunho in enumerate(testemunhos):
+        if i % 2 == 0:  # Índices pares (0, 2, 4, ...) vão para página esquerda
+            page_left.append(testemunho)
+        else:  # Índices ímpares (1, 3, 5, ...) vão para página direita
+            page_right.append(testemunho)
+    
+    # Verificar se o usuário é um profissional de saúde
+    is_professional = False
+    if request.user.is_authenticated:
+        try:
+            ProfissionalSaude.objects.get(id=request.user.id)
+            is_professional = True
+        except ProfissionalSaude.DoesNotExist:
+            is_professional = False
+    
+    return render(request, 'testemunhos.html', {
+        'current_page': 'testemunhos',
+        'page_left': page_left,
+        'page_right': page_right,
+        'is_professional': is_professional,
+    })
 
 def qa(request):
     return render(request, 'q&a.html', {'current_page': 'q&a'})
@@ -117,4 +148,81 @@ def register_view(request):
 def journaling_delhes(request):
     return render(request, 'journaling_delhes.html', {'current_page': 'journaling_delhes'})
 
+@csrf_exempt
+def salvar_testemunho(request):
+    print("DEBUG: View salvar_testemunho chamada")
+    if request.method == 'POST':
+        try:
+            # Verificar se o usuário é um profissional de saúde
+            if request.user.is_authenticated:
+                try:
+                    ProfissionalSaude.objects.get(id=request.user.id)
+                    return JsonResponse({'status': 'error', 'message': 'Profissionais de saúde não podem criar testemunhos'}, status=403)
+                except ProfissionalSaude.DoesNotExist:
+                    pass  # Usuário não é profissional de saúde, pode continuar
+            
+            data = json.loads(request.body)
+            print(f"DEBUG: Dados recebidos: {data}")
+            titulo = data.get('titulo')
+            texto = data.get('texto')
+            visibilidade = data.get('visibilidade')
+            autor = request.user if (visibilidade == 'publico' and request.user.is_authenticated) else None
+            print(f"DEBUG: Criando testemunho - Título: {titulo}, Visibilidade: {visibilidade}, Autor: {autor}")
+            testemunho = TopTestemunho.objects.create(
+                titulo=titulo,
+                texto=texto,
+                visibilidade=visibilidade,
+                autor=autor,
+                data=date.today()
+            )
+            print(f"DEBUG: Testemunho criado com ID: {testemunho.id}")
+            return JsonResponse({'status': 'ok', 'data': testemunho.data.strftime('%d/%m/%Y')})
+        except Exception as e:
+            print(f"DEBUG: Erro ao criar testemunho: {str(e)}")
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Método não permitido'}, status=405)
 
+def lista_testemunhos(request):
+    testemunhos = myapp_toptestemunhos.objects.all()  # Busca todos os users da base de dados
+    return render(request, 'lista_testemunhos.html', {'testemunho': testemunhos})
+
+@csrf_exempt
+def editar_testemunho(request, testemunho_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            testemunho = TopTestemunho.objects.get(id=testemunho_id)
+            
+            # Verificar se o usuário é o autor do testemunho
+            if testemunho.autor != request.user:
+                return JsonResponse({'status': 'error', 'message': 'Não autorizado'}, status=403)
+            
+            testemunho.titulo = data.get('titulo')
+            testemunho.texto = data.get('texto')
+            testemunho.visibilidade = data.get('visibilidade')
+            testemunho.save()
+            
+            return JsonResponse({'status': 'ok'})
+        except TopTestemunho.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Testemunho não encontrado'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Método não permitido'}, status=405)
+
+@csrf_exempt
+def apagar_testemunho(request, testemunho_id):
+    if request.method == 'POST':
+        try:
+            testemunho = TopTestemunho.objects.get(id=testemunho_id)
+            
+            # Verificar se o usuário é o autor do testemunho
+            if testemunho.autor != request.user:
+                return JsonResponse({'status': 'error', 'message': 'Não autorizado'}, status=403)
+            
+            testemunho.delete()
+            return JsonResponse({'status': 'ok'})
+        except TopTestemunho.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Testemunho não encontrado'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Método não permitido'}, status=405)

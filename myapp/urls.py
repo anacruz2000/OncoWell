@@ -16,4 +16,7 @@ urlpatterns = [
     path('register/', views.register_view, name='register'),
     path('enviar-pergunta/', views.enviar_pergunta, name='enviar_pergunta'),
     path('chat/', views.chat, name='chat'),
+    path('salvar_testemunho/', views.salvar_testemunho, name='salvar_testemunho'),
+    path('editar_testemunho/<int:testemunho_id>/', views.editar_testemunho, name='editar_testemunho'),
+    path('apagar_testemunho/<int:testemunho_id>/', views.apagar_testemunho, name='apagar_testemunho'),
 ]

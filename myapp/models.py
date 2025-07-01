@@ -114,3 +114,13 @@ class BancoPerg(models.Model):
 
     def __str__(self):
         return self.conteudo[:50]
+
+class TopTestemunho(models.Model):
+    titulo = models.CharField(max_length=200)
+    texto = models.TextField()
+    data = models.DateField(auto_now_add=True)
+    visibilidade = models.CharField(max_length=10, choices=[('publico', 'Público'), ('anonimo', 'Anônimo')])
+    autor = models.ForeignKey(Utilizador, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.titulo} ({self.data})"
