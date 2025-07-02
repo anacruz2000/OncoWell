@@ -14,6 +14,7 @@ import json
 from datetime import date
 from django.contrib.auth.decorators import login_required
 from django.utils.dateparse import parse_date
+from django.views.decorators.http import require_GET
 
 # Create your views here.
 def home(request):
@@ -59,17 +60,31 @@ def journaling(request):
             data_resposta = data.get('data')
             privacidade = data.get('privacidade')
             pergunta_id = data.get('pergunta_id')
-            if not (resposta_texto and data_resposta and privacidade and pergunta_id):
+            if not (resposta_texto and data_resposta and privacidade):
                 return JsonResponse({'status': 'error', 'message': 'Dados em falta.'}, status=400)
             if not request.user.is_authenticated:
                 return JsonResponse({'status': 'error', 'message': 'Precisa de login.'}, status=403)
-            pergunta = JournPerguntas.objects.get(id=pergunta_id)
+            if data_resposta != today.strftime('%Y-%m-%d'):
+                return JsonResponse({'status': 'error', 'message': 'Só pode submeter para o dia de hoje.'}, status=400)
+            if pergunta_id:
+                pergunta = JournPerguntas.objects.get(id=pergunta_id)
+            else:
+                pergunta = None
             JournRespostas.objects.create(
                 utilizador=request.user,
                 pergunta=pergunta,
-                resposta_texto=resposta_texto
+                resposta_texto=resposta_texto,
+                privacidade=privacidade
             )
-            return JsonResponse({'status': 'ok'})
+            # Buscar próxima pergunta ainda não respondida para o mesmo dia
+            perguntas_respondidas_ids = JournRespostas.objects.filter(utilizador=request.user, data_resposta__date=data_resposta, pergunta__isnull=False).values_list('pergunta_id', flat=True)
+            perguntas_disponiveis = JournPerguntas.objects.exclude(id__in=perguntas_respondidas_ids)
+            perguntas = list(perguntas_disponiveis)
+            proxima_pergunta = random.choice(perguntas) if perguntas else None
+            if proxima_pergunta:
+                return JsonResponse({'status': 'ok', 'proxima_pergunta': {'id': proxima_pergunta.id, 'texto': proxima_pergunta.texto}})
+            else:
+                return JsonResponse({'status': 'ok', 'proxima_pergunta': None})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     # GET: lógica para associar pergunta ao dia/utilizador
@@ -94,11 +109,15 @@ def journaling(request):
     else:
         perguntas = list(JournPerguntas.objects.all())
         pergunta = random.choice(perguntas) if perguntas else None
+    respostas_utilizador_lista = []
+    if request.user.is_authenticated and pergunta:
+        respostas_utilizador_lista = list(JournRespostas.objects.filter(utilizador=request.user, pergunta=pergunta).order_by('data_resposta'))
     return render(request, 'journaling.html', {
         'current_page': 'journaling',
         'last_7_days': last_7_days,
         'user_authenticated': request.user.is_authenticated,
-        'pergunta': pergunta
+        'pergunta': pergunta,
+        'respostas_utilizador_lista': respostas_utilizador_lista
     })
 
 def informacoes(request):
@@ -465,3 +484,39 @@ def pergunta_aleatoria(request):
         return redirect('pergunta_aleatoria')
 
     return render(request, 'pergunta.html', {'pergunta': pergunta})
+
+@require_GET
+@csrf_exempt
+def journaling_data(request):
+    from myapp.models import JournPerguntas, JournRespostas
+    import json
+    from django.utils.dateparse import parse_date
+    import random
+    data_str = request.GET.get('data')
+    if not data_str:
+        return JsonResponse({'status': 'error', 'message': 'Data não fornecida.'}, status=400)
+    selected_date = parse_date(data_str)
+    if not selected_date:
+        return JsonResponse({'status': 'error', 'message': 'Data inválida.'}, status=400)
+    respostas = []
+    if request.user.is_authenticated:
+        # Buscar todas as respostas do utilizador para o dia selecionado
+        respostas = list(JournRespostas.objects.filter(utilizador=request.user, data_resposta__date=selected_date).order_by('data_resposta'))
+        # Pergunta atual (a próxima a responder, se houver)
+        perguntas_respondidas_ids = [r.pergunta_id for r in respostas if r.pergunta_id]
+        perguntas_disponiveis = JournPerguntas.objects.exclude(id__in=perguntas_respondidas_ids)
+        pergunta = random.choice(list(perguntas_disponiveis)) if perguntas_disponiveis.exists() else None
+    data = {
+        'status': 'ok',
+        'pergunta': {'id': pergunta.id, 'texto': pergunta.texto} if pergunta else None,
+        'respostas': [
+            {
+                'pergunta_texto': r.pergunta.texto if r.pergunta else 'Reflexão livre',
+                'livre': r.pergunta is None,
+                'texto': r.resposta_texto,
+                'hora': r.data_resposta.strftime('%H:%M'),
+                'privacidade': getattr(r, 'privacidade', None) if hasattr(r, 'privacidade') else None
+            } for r in respostas
+        ]
+    }
+    return JsonResponse(data)

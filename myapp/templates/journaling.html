@@ -346,7 +346,16 @@
       <img src="{% static 'images/livro_journaling.png' %}" class="book-image" alt="Livro journaling" />
 
       <div id="submitted-text" class="page-left">
-        <p style="color: #888;">O que escrever aqui aparecerá nesta página.</p>
+        {% if respostas_utilizador_lista %}
+          {% for resposta in respostas_utilizador_lista %}
+            <p><strong>P:</strong> {{ pergunta.texto }}</p>
+            <p><strong>R:</strong> {{ resposta.resposta_texto }}</p>
+            <p style="color: #888; font-size: 13px;"><strong>Hora:</strong> {{ resposta.data_resposta|date:'H:i' }} | <strong>{% if resposta.privacidade == 'publico' %}Público{% else %}Privado{% endif %}</strong></p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 8px 0;" />
+          {% endfor %}
+        {% else %}
+          <p style="color: #888;">O que escrever aqui aparecerá nesta página.</p>
+        {% endif %}
       </div>
 
       <div id="texto-error" style="position: absolute; top: 18%; right: 8%; color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -371,7 +380,27 @@
         </div>
       </div>
 
+      <div id="edit-warning" style="color:#a10a0a; font-size:13px; display:none; margin-top:8px; background:#fff3f3; border:1px solid #a10a0a; border-radius:6px; padding:8px 12px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+        Só pode submeter respostas para o dia de hoje.
+      </div>
+
       <button id="submitBtn">Submeter</button>
+      <button id="btn-reflexao-livre" type="button" style="position:absolute; bottom:5%; left:50%; transform:translateX(-50%); background:#fff; color:#a10a0a; border:1.5px solid #a10a0a; border-radius:5px; padding:8px 16px; font-size:16px; cursor:pointer;">Adicionar reflexão livre</button>
+      <div id="reflexao-livre-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(255,255,255,0.8); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#fff; border-radius:12px; box-shadow:0 4px 32px rgba(0,0,0,0.12); padding:32px 28px; max-width:400px; width:90vw; display:flex; flex-direction:column; gap:16px; align-items:center;">
+          <h3>Reflexão livre</h3>
+          <textarea id="reflexao-livre-textarea" rows="5" style="width:100%; font-size:16px; border-radius:6px; border:1px solid #ccc; padding:8px;"></textarea>
+          <div style="display:flex; gap:12px; align-items:center;">
+            <label style="font-size:15px;"><input type="radio" name="privacidade-livre" value="publico" /> Público</label>
+            <label style="font-size:15px;"><input type="radio" name="privacidade-livre" value="anonimo" /> Privado</label>
+          </div>
+          <div id="reflexao-livre-error" style="color:#a10a0a; font-size:13px; display:none; background:#fff3f3; border:1px solid #a10a0a; border-radius:6px; padding:8px 12px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">Preencha o texto e escolha a privacidade.</div>
+          <div style="display:flex; gap:12px;">
+            <button id="btn-enviar-reflexao-livre" style="background:#a10a0a; color:#fff; border:none; border-radius:6px; padding:8px 18px; font-size:16px; cursor:pointer;">Submeter</button>
+            <button id="btn-cancelar-reflexao-livre" style="background:#fff; color:#a10a0a; border:1.5px solid #a10a0a; border-radius:6px; padding:8px 18px; font-size:16px; cursor:pointer;">Cancelar</button>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -437,28 +466,52 @@
       [...dayList.children].forEach(li => li.classList.toggle('active', li.dataset.date === dateStr));
       // Atualiza datepicker
       datepicker.value = dateStr;
-      // Mostra texto existente ou placeholder
-      mostrarTexto(dateStr);
+      // Buscar pergunta e respostas via AJAX
+      fetch(`/journaling_data/?data=${dateStr}`)
+        .then(response => response.json())
+        .then(data => {
+          const perguntaDiv = document.getElementById('pergunta');
+          const submittedTextDiv = document.getElementById('submitted-text');
+          if (data.status === 'ok' && data.pergunta) {
+            perguntaDiv.innerHTML = `<h2 data-pergunta-id="${data.pergunta.id}">${data.pergunta.texto}</h2>`;
+            document.getElementById('pergunta-id').value = data.pergunta.id;
+          } else {
+            perguntaDiv.innerHTML = `<p>🎉 Já respondeste a todas as perguntas disponíveis!</p>`;
+            document.getElementById('pergunta-id').value = '';
+          }
+          // NOVO: mostrar todas as respostas do dia
+          if (data.respostas.length > 0) {
+            submittedTextDiv.innerHTML = data.respostas.map(r => `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> ${r.texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`).join('');
+          } else {
+            submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aqui aparecerá nesta página.</p>";
+          }
+        });
       // Limpa textarea
       textarea.value = '';
       textarea.focus();
-    }
-
-    // Mostrar texto na página esquerda para a data dada
-    function mostrarTexto(dateStr) {
-      submittedText.innerHTML = '';
-      if (journalingData[dateStr]) {
-        journalingData[dateStr].forEach(entry => {
-          const p = document.createElement('p');
-          const privacidadeText = entry.privacidade === 'publico' ? 'Público' : 'Privado';
-          p.innerHTML = `<strong>[${entry.time}]</strong> <span style="color: #666; font-size: 0.9em;">(${privacidadeText})</span><br>${entry.text}`;
-          submittedText.appendChild(p);
+      // NOVO: Desabilitar textarea e botão se não for hoje
+      const hojeStr = new Date().toISOString().slice(0, 10);
+      const editWarning = document.getElementById('edit-warning');
+      if (dateStr !== hojeStr) {
+        textarea.disabled = true;
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = 0.5;
+        submitBtn.title = "Só pode submeter para o dia de hoje";
+        editWarning.style.display = 'block';
+        // NOVO: desativa radio buttons
+        document.querySelectorAll('input[name="privacidade"]').forEach(radio => {
+          radio.disabled = true;
         });
       } else {
-        const p = document.createElement('p');
-        p.style.color = '#888';
-        p.textContent = 'O que escrever aqui aparecerá nesta página.';
-        submittedText.appendChild(p);
+        textarea.disabled = false;
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = 1;
+        submitBtn.title = "";
+        editWarning.style.display = 'none';
+        // NOVO: ativa radio buttons
+        document.querySelectorAll('input[name="privacidade"]').forEach(radio => {
+          radio.disabled = false;
+        });
       }
     }
 
@@ -513,9 +566,41 @@
       .then(response => response.json())
       .then(data => {
         if (data.status === 'ok') {
-          alert('Resposta guardada com sucesso!');
+          // NOVO: Atualiza todas as respostas do lado esquerdo
+          const submittedTextDiv = document.getElementById('submitted-text');
+          fetch(`/journaling_data/?data=${selectedDate}`)
+            .then(response => response.json())
+            .then(data2 => {
+              if (data2.respostas.length > 0) {
+                submittedTextDiv.innerHTML = data2.respostas.map(r => `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> ${r.texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`).join('');
+              } else {
+                submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aqui aparecerá nesta página.</p>";
+              }
+            });
           textarea.value = '';
-          mostrarTexto(selectedDate);
+          // NOVO: Atualiza para próxima pergunta se houver
+          if (data.proxima_pergunta) {
+            document.getElementById('pergunta-id').value = data.proxima_pergunta.id;
+            document.getElementById('pergunta').innerHTML = `<h2 data-pergunta-id="${data.proxima_pergunta.id}">${data.proxima_pergunta.texto}</h2>`;
+            // Limpa radios
+            document.querySelectorAll('input[name="privacidade"]').forEach(radio => { radio.checked = false; });
+            textarea.disabled = false;
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = 1;
+            submitBtn.title = "";
+            document.getElementById('edit-warning').style.display = 'none';
+            document.querySelectorAll('input[name="privacidade"]').forEach(radio => { radio.disabled = false; });
+          } else {
+            document.getElementById('pergunta-id').value = '';
+            document.getElementById('pergunta').innerHTML = `<p>🎉 Já respondeste a todas as perguntas disponíveis!</p>`;
+            // Opcional: desabilita campos
+            textarea.disabled = true;
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = 0.5;
+            submitBtn.title = "Já respondeu a todas as perguntas de hoje";
+            document.getElementById('edit-warning').style.display = 'block';
+            document.querySelectorAll('input[name="privacidade"]').forEach(radio => { radio.disabled = true; radio.checked = false; });
+          }
         } else {
           alert('Erro ao guardar resposta: ' + data.message);
         }
@@ -531,12 +616,9 @@
       datepicker.max = hojeStr;
     }
 
-    // Evento datepicker
-    datepicker.addEventListener('change', () => {
-      const val = datepicker.value;
-      if (val) {
-        selectDate(val);
-      }
+    // Listener para o datepicker
+    datepicker.addEventListener('change', function() {
+      selectDate(this.value);
     });
 
     // Inicialização
@@ -546,6 +628,53 @@
     // Seleciona o último dia da lista por padrão (hoje)
     const hojeStr = new Date().toISOString().slice(0, 10);
     selectDate(hojeStr);
+
+    // --- Reflexão livre ---
+    document.getElementById('btn-reflexao-livre').addEventListener('click', function() {
+      document.getElementById('reflexao-livre-modal').style.display = 'flex';
+      document.getElementById('reflexao-livre-textarea').value = '';
+      document.querySelectorAll('input[name="privacidade-livre"]').forEach(r => r.checked = false);
+      document.getElementById('reflexao-livre-error').style.display = 'none';
+    });
+    document.getElementById('btn-cancelar-reflexao-livre').addEventListener('click', function() {
+      document.getElementById('reflexao-livre-modal').style.display = 'none';
+    });
+    document.getElementById('btn-enviar-reflexao-livre').addEventListener('click', function() {
+      const texto = document.getElementById('reflexao-livre-textarea').value.trim();
+      const priv = document.querySelector('input[name="privacidade-livre"]:checked');
+      if (!texto || !priv) {
+        document.getElementById('reflexao-livre-error').style.display = 'block';
+        return;
+      }
+      fetch('/journaling/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+          resposta: texto,
+          data: selectedDate,
+          privacidade: priv.value,
+          pergunta_id: null
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('reflexao-livre-modal').style.display = 'none';
+        // Atualiza todas as respostas do lado esquerdo
+        fetch(`/journaling_data/?data=${selectedDate}`)
+          .then(response => response.json())
+          .then(data2 => {
+            const submittedTextDiv = document.getElementById('submitted-text');
+            if (data2.respostas.length > 0) {
+              submittedTextDiv.innerHTML = data2.respostas.map(r => `<p><strong>P:</strong> ${r.livre ? 'Reflexão livre' : r.pergunta_texto}</p><p><strong>R:</strong> ${r.texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`).join('');
+            } else {
+              submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aqui aparecerá nesta página.</p>";
+            }
+          });
+      });
+    });
   </script>
 
   {% if not user.is_authenticated %}

@@ -181,9 +181,10 @@ class JournPerguntas(models.Model):
 
 class JournRespostas(models.Model):
     utilizador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    pergunta = models.ForeignKey(JournPerguntas, on_delete=models.CASCADE)
+    pergunta = models.ForeignKey(JournPerguntas, on_delete=models.CASCADE, null=True, blank=True)
     resposta_texto = models.TextField()
     data_resposta = models.DateTimeField(auto_now_add=True)
+    privacidade = models.CharField(max_length=10, choices=[('publico', 'Público'), ('anonimo', 'Privado')], default='anonimo')
 
     class Meta:
         unique_together = ('utilizador', 'pergunta')  # Evita duplicações
