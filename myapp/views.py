@@ -272,7 +272,7 @@ def criar_hospitais_se_necessario():
         print("Hospitais criados automaticamente!")
 
 def journaling_delhes(request):
-    return render(request, 'journaling_delhes.html', {'current_page': 'journaling_delhes'})
+    return render(request, 'journaling_deles.html', {'current_page': 'journaling_delhes'})
 
 @csrf_exempt
 def salvar_testemunho(request):

@@ -174,19 +174,7 @@
 <body>
 
     <!-- Nav bar -->
-    <div class="nav">
-        <a href="{% url 'beneficios' %}"
-            class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
-        <a href="{% url 'informacoes' %}"
-            class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
-        <a href="{% url 'journaling' %}"
-            class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Meu Journaling</a>
-        <a href="{% url 'journaling_delhes' %}"
-            class="nav-item {% if current_page == 'journaling_delhes' %}active{% endif %}">Journaling Deles</a>
-        <a href="{% url 'testemunhos' %}"
-            class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
-        <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
-    </div>
+    {% include '_navbar_profissional.html' %}
 
     {% if user.is_authenticated %}
     <a href="#" class="user-icon" onclick="toggleUserMenu()">
@@ -230,86 +218,12 @@
             <div class="book-container">
                 <!-- Página esquerda -->
                 <div class="page">
-                    <div class="question-box favorite" data-date="2025-06-20">
-                        <h3 class="question-title">
-                            <span class="title-text">Como foi sua experiência com o tratamento?</span>
-                            <i class="fas fa-star favorite-star active" onclick="toggleFavorite(this)"></i>
-                        </h3>
-                        <span class="short-text">
-                            Os tratamentos foram fundamentais para a minha recuperação. Senti-me muito apoiada...
-                        </span>
-                        <span class="full-text" style="display: none;">
-                            Os tratamentos foram fundamentais para a minha recuperação. Senti-me muito apoiada pela
-                            equipa médica e, embora tenha sido um processo difícil, o acompanhamento psicológico e o
-                            journaling ajudaram-me imenso a lidar com o dia a dia.
-                        </span>
-                        <a href="#" class="toggle-link" onclick="toggleText(this); return false;">(ver mais)</a>
-                    </div>
-
-                    <div class="question-box" data-date="2025-06-19">
-                        <h3 class="question-title">
-                            <span class="title-text">O que o journaling mudou em você?</span>
-                            <i class="fas fa-star favorite-star" onclick="toggleFavorite(this)"></i>
-                        </h3>
-                        <span class="short-text">
-                            Foi importante para mim escrever todos os dias e refletir sobre os meus sentimentos...
-                        </span>
-                        <span class="full-text" style="display: none;">
-                            Foi importante para mim escrever todos os dias e refletir sobre os meus sentimentos. Com o
-                            tempo, percebi mudanças positivas no meu bem-estar emocional. A plataforma foi fácil de usar
-                            e ajudou-me a sentir-me menos sozinha.
-                        </span>
-                        <a href="#" class="toggle-link" onclick="toggleText(this); return false;">(ver mais)</a>
-                    </div>
+                    
                 </div>
 
                 <!-- Página direita -->
                 <div class="page">
-                    <div class="question-box" data-date="2025-06-18">
-                        <h3 class="question-title">
-                            <span class="title-text">Como o journaling ajudou no seu processo de cura?</span>
-                            <i class="fas fa-star favorite-star" onclick="toggleFavorite(this)"></i>
-                        </h3>
-                        <span class="short-text">
-                            O journaling tem sido uma ferramenta essencial no meu processo de cura...
-                        </span>
-                        <span class="full-text" style="display: none;">
-                            O journaling tem sido uma ferramenta essencial no meu processo de cura. Ao registrar meus
-                            sentimentos, consegui compreender melhor minhas emoções e avançar com mais confiança.
-                        </span>
-                        <a href="#" class="toggle-link" onclick="toggleText(this); return false;">(ver mais)</a>
-                    </div>
-
-                    <div class="question-box favorite" data-date="2025-06-17">
-                        <h3 class="question-title">
-                            <span class="title-text">Qual foi o impacto de sentir-se acompanhado?</span>
-                            <i class="fas fa-star favorite-star active" onclick="toggleFavorite(this)"></i>
-                        </h3>
-                        <span class="short-text">
-                            Sentir que não estou sozinho fez toda a diferença na minha recuperação...
-                        </span>
-                        <span class="full-text" style="display: none;">
-                            Sentir que não estou sozinho fez toda a diferença na minha recuperação. A plataforma e os
-                            testemunhos deram-me força para continuar e acreditar no processo.
-                        </span>
-                        <a href="#" class="toggle-link" onclick="toggleText(this); return false;">(ver mais)</a>
-                    </div>
-
-                    <div class="question-box" data-date="2025-01-15">
-                        <h3 class="question-title">
-                            <span class="title-text">Como lidou com os momentos mais difíceis?</span>
-                            <i class="fas fa-star favorite-star" onclick="toggleFavorite(this)"></i>
-                        </h3>
-                        <span class="short-text">
-                            Os momentos mais difíceis foram quando senti que não tinha forças para continuar...
-                        </span>
-                        <span class="full-text" style="display: none;">
-                            Os momentos mais difíceis foram quando senti que não tinha forças para continuar. Mas
-                            através do journaling, consegui encontrar uma forma de expressar meus medos e ansiedades,
-                            o que me ajudou a superar esses momentos.
-                        </span>
-                        <a href="#" class="toggle-link" onclick="toggleText(this); return false;">(ver mais)</a>
-                    </div>
+                    
                 </div>
             </div>
         </div>
