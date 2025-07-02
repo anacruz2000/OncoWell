@@ -158,5 +158,17 @@
     });
 </script>
 
+{% if user.is_authenticated %}
+<a href="#" class="user-icon" onclick="toggleUserMenu()">
+    <i class="fas fa-user"></i>
+</a>
+<div class="user-menu" id="userMenu">
+    <a href="{% url 'meu_perfil' %}">Perfil</a>
+    <a href="{% url 'logout' %}">Terminar Sessão</a>
+</div>
+{% else %}
+<a href="{% url 'login' %}" class="login-button">Login</a>
+{% endif %}
+
 </body>
 </html>

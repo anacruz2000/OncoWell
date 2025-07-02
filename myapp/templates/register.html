@@ -61,9 +61,19 @@
             </div>
             <div id="patient-fields" class="form-group" style="display: none;">
                 <label for="cancer_type">Tipo de Cancro</label>
-                <input type="text" id="cancer_type" name="cancer_type">
+                <select id="cancer_type" name="cancer_type">
+                    <option value="">Selecione um tipo de cancro</option>
+                    {% for codigo, nome in tipos_cancro %}
+                        <option value="{{ codigo }}">{{ nome }}</option>
+                    {% endfor %}
+                </select>
                 <label for="hospital">Hospital de tratamento</label>
-                <input type="text" id="hospital" name="hospital">
+                <select id="hospital" name="hospital">
+                    <option value="">Selecione um hospital</option>
+                    {% for hospital in hospitais %}
+                        <option value="{{ hospital.id }}">{{ hospital.get_nome_display }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div id="healthcare-field" class="form-group radio-group" style="display: none;">
                 <label>É profissional de saúde?</label>

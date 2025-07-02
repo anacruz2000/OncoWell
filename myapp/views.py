@@ -5,11 +5,12 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.core.mail import send_mail
-from myapp.models import Utilizador, Paciente, ProfissionalSaude, TopTestemunho
+from myapp.models import Utilizador, Paciente, ProfissionalSaude, TopTestemunho, Hospital
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import json
 from datetime import date
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 def home(request):
@@ -24,7 +25,12 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
-            return redirect('journaling')
+            # Redirecionar profissionais de saúde para a página de pacientes
+            try:
+                ProfissionalSaude.objects.get(id=user.id)
+                return redirect('inicio_psi')
+            except ProfissionalSaude.DoesNotExist:
+                return redirect('journaling')
         else:
             return render(request, 'login.html', {'error_message': 'Nome de utilizador ou palavra-passe inválidos'})
     
@@ -89,7 +95,7 @@ def pacientes(request):
     return render(request, 'pacientes.html')
 
 def inicio_psi(request):
-    return render(request, 'inicio_psi.html')
+    return render(request, 'inicio_psi.html', {'current_page': 'inicio_psi'})
 
 def enviar_pergunta(request):
     if request.method == 'POST':
@@ -115,10 +121,8 @@ def register_view(request):
         email = request.POST.get('email')
         data_nascimento = request.POST.get('data_nascimento')
         password = request.POST.get('password')
-
         cancer_type = request.POST.get('cancer_type')
-        hospital = request.POST.get('hospital')
-
+        hospital_id = request.POST.get('hospital')
         healthcare_type = request.POST.get('healthcare_type')
         medical_license = request.POST.get('medical_license')
         license_validity = request.POST.get('license_validity')
@@ -133,6 +137,14 @@ def register_view(request):
 
         if(len(cancer_type) > 0):
             print('paciente')
+            # Buscar o hospital selecionado
+            hospital = None
+            if hospital_id and hospital_id != '':
+                try:
+                    hospital = Hospital.objects.get(id=hospital_id)
+                except Hospital.DoesNotExist:
+                    pass
+            
             Paciente.objects.create_user(nome=nome, username=username, email=email, data_nascimento=data_nascimento, password=password, tipo_cancro=cancer_type, hospital=hospital, estado_pac='estavel')
         elif(len(healthcare_type) > 0):
             print('profissional')
@@ -143,7 +155,53 @@ def register_view(request):
 
         
         return redirect('login')
-    return render(request, 'register.html')
+    
+    # Criar hospitais se não existirem
+    criar_hospitais_se_necessario()
+    
+    # Buscar lista de hospitais para o formulário
+    hospitais = Hospital.objects.all().order_by('nome')
+    
+    # Buscar choices dos tipos de cancro
+    tipos_cancro = Paciente.TIPOS_CANCRO_CHOICES
+    
+    return render(request, 'register.html', {
+        'current_page': 'register',
+        'hospitais': hospitais,
+        'tipos_cancro': tipos_cancro,
+    })
+
+def criar_hospitais_se_necessario():
+    """Cria os hospitais na base de dados se não existirem"""
+    if Hospital.objects.count() == 0:
+        hospitais = [
+            ('CHULN', 'Centro Hospitalar Universitário Lisboa Norte'),
+            ('CHULC', 'Centro Hospitalar Universitário Lisboa Central'),
+            ('CHULSJ', 'Centro Hospitalar Universitário Lisboa Sul'),
+            ('IPO_LISBOA', 'Instituto Português de Oncologia de Lisboa Francisco Gentil'),
+            ('IPO_PORTO', 'Instituto Português de Oncologia do Porto Francisco Gentil'),
+            ('IPO_COIMBRA', 'Instituto Português de Oncologia de Coimbra Francisco Gentil'),
+            ('CHUC', 'Centro Hospitalar e Universitário de Coimbra'),
+            ('CHP', 'Centro Hospitalar do Porto'),
+            ('CHVNG', 'Centro Hospitalar Vila Nova de Gaia/Espinho'),
+            ('CHTMAD', 'Centro Hospitalar Tâmega e Sousa'),
+            ('CHTS', 'Centro Hospitalar Trás-os-Montes e Alto Douro'),
+            ('CHBA', 'Centro Hospitalar do Baixo Alentejo'),
+            ('CHAL', 'Centro Hospitalar do Algarve'),
+            ('CHLC', 'Centro Hospitalar Leiria-Pombal'),
+            ('CHBV', 'Centro Hospitalar Barreiro Montijo'),
+            ('CHLO', 'Centro Hospitalar de Loures'),
+            ('CHOEIRAS', 'Centro Hospitalar Oeste'),
+            ('CHTM', 'Centro Hospitalar Tondela Viseu'),
+            ('CHUCG', 'Centro Hospitalar Universitário Cova da Beira'),
+            ('CHUCB', 'Centro Hospitalar Universitário do Algarve'),
+            ('HOSPITAL_PRIVADO', 'Hospital Privado'),
+            ('OUTRO', 'Outro'),
+        ]
+        
+        for codigo, nome in hospitais:
+            Hospital.objects.get_or_create(nome=codigo, defaults={'morada': ''})
+        print("Hospitais criados automaticamente!")
 
 def journaling_delhes(request):
     return render(request, 'journaling_delhes.html', {'current_page': 'journaling_delhes'})
@@ -226,3 +284,111 @@ def apagar_testemunho(request, testemunho_id):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     return JsonResponse({'status': 'error', 'message': 'Método não permitido'}, status=405)
+
+@login_required
+def meu_perfil(request):
+    user = request.user
+    
+    # Verificar se é paciente ou profissional de saúde
+    try:
+        paciente = Paciente.objects.get(id=user.id)
+        user_type = 'paciente'
+        user_data = {
+            'nome': paciente.nome,
+            'email': paciente.email,
+            'username': paciente.username,
+            'data_nascimento': paciente.data_nascimento,
+            'tipo_cancro': paciente.tipo_cancro,
+            'tipo_cancro_choices': Paciente.TIPOS_CANCRO_CHOICES,
+            'hospital': paciente.hospital,
+            'estado_pac': paciente.estado_pac,
+        }
+    except Paciente.DoesNotExist:
+        try:
+            profissional = ProfissionalSaude.objects.get(id=user.id)
+            user_type = 'profissional'
+            user_data = {
+                'nome': profissional.nome,
+                'email': profissional.email,
+                'username': profissional.username,
+                'data_nascimento': profissional.data_nascimento,
+                'tipo_profissional': profissional.tipo_profissional,
+                'tipo_profissional_display': profissional.get_tipo_profissional_display(),
+                'certificado_profissional': profissional.certificado_profissional,
+                'validade_certificado': profissional.validade_certificado,
+            }
+        except ProfissionalSaude.DoesNotExist:
+            user_type = 'utilizador'
+            user_data = {
+                'nome': user.nome,
+                'email': user.email,
+                'username': user.username,
+                'data_nascimento': user.data_nascimento,
+            }
+    
+    if request.method == 'POST':
+        # Processar edição do perfil
+        nome = request.POST.get('nome')
+        email = request.POST.get('email')
+        data_nascimento = request.POST.get('data_nascimento')
+        
+        if nome and email:
+            user.nome = nome
+            user.email = email
+            if data_nascimento:
+                user.data_nascimento = data_nascimento
+            user.save()
+            
+            # Atualizar campos específicos do tipo de usuário
+            if user_type == 'paciente':
+                paciente.tipo_cancro = request.POST.get('tipo_cancro', '')
+                hospital_id = request.POST.get('hospital')
+                if hospital_id and hospital_id != '':
+                    try:
+                        hospital = Hospital.objects.get(id=hospital_id)
+                        paciente.hospital = hospital
+                    except Hospital.DoesNotExist:
+                        paciente.hospital = None
+                else:
+                    paciente.hospital = None
+                paciente.save()
+            elif user_type == 'profissional':
+                profissional.tipo_profissional = request.POST.get('tipo_profissional', '')
+                profissional.certificado_profissional = request.POST.get('certificado_profissional', '')
+                if request.POST.get('validade_certificado'):
+                    profissional.validade_certificado = request.POST.get('validade_certificado')
+                profissional.save()
+            
+            return redirect('meu_perfil')
+    
+    # Criar hospitais se não existirem
+    criar_hospitais_se_necessario()
+    
+    # Buscar lista de hospitais para o formulário
+    hospitais = Hospital.objects.all().order_by('nome')
+    
+    return render(request, 'meu_perfil.html', {
+        'current_page': 'meu_perfil',
+        'user_type': user_type,
+        'user_data': user_data,
+        'hospitais': hospitais,
+    })
+
+@login_required
+def apagar_conta(request):
+    if request.method == 'POST':
+        user = request.user
+        
+        # Verificar se o usuário confirmou a ação
+        confirmacao = request.POST.get('confirmacao')
+        if confirmacao == 'APAGAR':
+            # Apagar o usuário (isso também apaga Paciente ou ProfissionalSaude automaticamente)
+            user.delete()
+            logout(request)
+            messages.success(request, 'A sua conta foi apagada com sucesso.')
+            return redirect('home')
+        else:
+            messages.error(request, 'Confirmação incorreta. A conta não foi apagada.')
+            return redirect('meu_perfil')
+    
+    return redirect('meu_perfil')

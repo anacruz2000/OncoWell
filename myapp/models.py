@@ -2,11 +2,39 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 class Hospital(models.Model):
-    nome = models.CharField(max_length=100)
-    morada = models.CharField(max_length=255)
+    HOSPITAIS_CHOICES = [
+        ('CHULN', 'Centro Hospitalar Universitário Lisboa Norte'),
+        ('CHULC', 'Centro Hospitalar Universitário Lisboa Central'),
+        ('CHULSJ', 'Centro Hospitalar Universitário Lisboa Sul'),
+        ('IPO_LISBOA', 'Instituto Português de Oncologia de Lisboa Francisco Gentil'),
+        ('IPO_PORTO', 'Instituto Português de Oncologia do Porto Francisco Gentil'),
+        ('IPO_COIMBRA', 'Instituto Português de Oncologia de Coimbra Francisco Gentil'),
+        ('CHUC', 'Centro Hospitalar e Universitário de Coimbra'),
+        ('CHP', 'Centro Hospitalar do Porto'),
+        ('CHVNG', 'Centro Hospitalar Vila Nova de Gaia/Espinho'),
+        ('CHTMAD', 'Centro Hospitalar Tâmega e Sousa'),
+        ('CHTS', 'Centro Hospitalar Trás-os-Montes e Alto Douro'),
+        ('CHBA', 'Centro Hospitalar do Baixo Alentejo'),
+        ('CHAL', 'Centro Hospitalar do Algarve'),
+        ('CHLC', 'Centro Hospitalar Leiria-Pombal'),
+        ('CHBV', 'Centro Hospitalar Barreiro Montijo'),
+        ('CHLO', 'Centro Hospitalar de Loures'),
+        ('CHOEIRAS', 'Centro Hospitalar Oeste'),
+        ('CHTM', 'Centro Hospitalar Tondela Viseu'),
+        ('CHUCG', 'Centro Hospitalar Universitário Cova da Beira'),
+        ('CHUCB', 'Centro Hospitalar Universitário do Algarve'),
+        ('HOSPITAL_PRIVADO', 'Hospital Privado'),
+        ('OUTRO', 'Outro'),
+    ]
+    
+    nome = models.CharField(max_length=100, choices=HOSPITAIS_CHOICES, unique=True)
+    morada = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
-        return self.nome
+        return self.get_nome_display()
+
+    class Meta:
+        verbose_name_plural = "Hospitais"
 
 class Utilizador(AbstractUser):
     nome = models.CharField(max_length=100)
@@ -18,8 +46,27 @@ class Utilizador(AbstractUser):
         return self.username
 
 class Paciente(Utilizador):
-    tipo_cancro = models.CharField(max_length=100)
-    hospital = models.CharField(max_length=100)
+    TIPOS_CANCRO_CHOICES = [
+        ('MAMA', 'Cancro da Mama'),
+        ('PULMAO', 'Cancro do Pulmão'),
+        ('COLON', 'Cancro do Cólon/Recto'),
+        ('PROSTATA', 'Cancro da Próstata'),
+        ('PELE', 'Cancro da Pele (Melanoma)'),
+        ('CERVICAL', 'Cancro do Colo do Útero'),
+        ('OVARIO', 'Cancro do Ovário'),
+        ('PANCREAS', 'Cancro do Pâncreas'),
+        ('ESTOMAGO', 'Cancro do Estômago'),
+        ('FIGADO', 'Cancro do Fígado'),
+        ('CEREBRO', 'Cancro do Cérebro'),
+        ('LEUCEMIA', 'Leucemia'),
+        ('LINFOMA', 'Linfoma'),
+        ('MULTIPLO_MIELOMA', 'Múltiplo Mieloma'),
+        ('SARCOMA', 'Sarcoma'),
+        ('OUTRO', 'Outro'),
+    ]
+    
+    tipo_cancro = models.CharField(max_length=20, choices=TIPOS_CANCRO_CHOICES)
+    hospital = models.ForeignKey(Hospital, on_delete=models.SET_NULL, null=True, blank=True)
     estado_pac = models.CharField(max_length=100)
     profissionais = models.ManyToManyField('ProfissionalSaude', related_name='pacientes')
 

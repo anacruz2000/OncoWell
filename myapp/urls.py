@@ -19,4 +19,6 @@ urlpatterns = [
     path('salvar_testemunho/', views.salvar_testemunho, name='salvar_testemunho'),
     path('editar_testemunho/<int:testemunho_id>/', views.editar_testemunho, name='editar_testemunho'),
     path('apagar_testemunho/<int:testemunho_id>/', views.apagar_testemunho, name='apagar_testemunho'),
+    path('meu_perfil/', views.meu_perfil, name='meu_perfil'),
+    path('apagar_conta/', views.apagar_conta, name='apagar_conta'),
 ]
