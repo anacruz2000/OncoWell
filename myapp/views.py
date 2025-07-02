@@ -276,10 +276,16 @@ def journaling_delhes(request):
     profissionais_ids = ProfissionalSaude.objects.values_list('id', flat=True)
     if hasattr(request.user, 'profissionalsaude') and request.user.profissionalsaude:
         # Profissionais de saúde veem todas as respostas públicas, exceto as suas
-        respostas = JournRespostas.objects.filter(privacidade='publico').exclude(utilizador=request.user).order_by('-data_resposta')
+        if request.user.is_authenticated:
+            respostas = JournRespostas.objects.filter(privacidade='publico').exclude(utilizador=request.user).order_by('-data_resposta')
+        else:
+            respostas = JournRespostas.objects.filter(privacidade='publico').order_by('-data_resposta')
     else:
         # Pacientes e utilizadores comuns veem apenas respostas públicas de não profissionais, exceto as suas
-        respostas = JournRespostas.objects.filter(privacidade='publico').exclude(utilizador__id__in=profissionais_ids).exclude(utilizador=request.user).order_by('-data_resposta')
+        if request.user.is_authenticated:
+            respostas = JournRespostas.objects.filter(privacidade='publico').exclude(utilizador__id__in=profissionais_ids).exclude(utilizador=request.user).order_by('-data_resposta')
+        else:
+            respostas = JournRespostas.objects.filter(privacidade='publico').exclude(utilizador__id__in=profissionais_ids).order_by('-data_resposta')
     page_left = []
     page_right = []
     for i, resposta in enumerate(respostas):

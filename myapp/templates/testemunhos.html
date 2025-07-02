@@ -295,8 +295,11 @@
                 <!-- Seção para novo testemunho -->
                 <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
                     <h4 style="margin: 0 0 12px 0; color: #630000; font-size: 16px;">Escrever Novo Testemunho</h4>
-                    
-                    {% if is_professional %}
+                    {% if not user.is_authenticated %}
+                        <div style="color: #a10a0a; font-size: 15px; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 12px;">
+                            Para escrever um testemunho, faça login na sua conta.
+                        </div>
+                    {% elif is_professional %}
                         <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 12px; color: #856404; font-size: 14px;">
                             <strong>Nota:</strong> Profissionais de saúde não podem criar testemunhos. Esta funcionalidade está disponível apenas para pacientes.
                         </div>

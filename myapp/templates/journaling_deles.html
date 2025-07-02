@@ -206,8 +206,10 @@
                             </span>
                         </h3>
                         <div style="font-size:14px; color:#555; margin-bottom:4px;">
-                            <strong>Por:</strong> {{ resposta.utilizador.nome }}
-                            <span class="favorite-user-star{% if resposta.utilizador.id in user_favoritos_ids %} active{% endif %}" data-user-id="{{ resposta.utilizador.id }}">★</span>
+                            <strong>Por:</strong> {% if user.is_authenticated %}{{ resposta.utilizador.nome }}{% else %}Anônimo{% endif %}
+                            {% if user.is_authenticated %}
+                                <span class="favorite-user-star{% if resposta.utilizador.id in user_favoritos_ids %} active{% endif %}" data-user-id="{{ resposta.utilizador.id }}">★</span>
+                            {% endif %}
                         </div>
                         {% if resposta.resposta_texto|length > 50 %}
                             <span class="short-text">{{ resposta.resposta_texto|slice:':25' }}... </span><span class="full-text" style="display:none;">{{ resposta.resposta_texto }}</span>
@@ -239,8 +241,10 @@
                             </span>
                         </h3>
                         <div style="font-size:14px; color:#555; margin-bottom:4px;">
-                            <strong>Por:</strong> {{ resposta.utilizador.nome }}
-                            <span class="favorite-user-star{% if resposta.utilizador.id in user_favoritos_ids %} active{% endif %}" data-user-id="{{ resposta.utilizador.id }}">★</span>
+                            <strong>Por:</strong> {% if user.is_authenticated %}{{ resposta.utilizador.nome }}{% else %}Anônimo{% endif %}
+                            {% if user.is_authenticated %}
+                                <span class="favorite-user-star{% if resposta.utilizador.id in user_favoritos_ids %} active{% endif %}" data-user-id="{{ resposta.utilizador.id }}">★</span>
+                            {% endif %}
                         </div>
                         {% if resposta.resposta_texto|length > 50 %}
                             <span class="short-text">{{ resposta.resposta_texto|slice:':25' }}... </span><span class="full-text" style="display:none;">{{ resposta.resposta_texto }}</span>
