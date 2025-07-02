@@ -188,3 +188,10 @@ class JournRespostas(models.Model):
 
     class Meta:
         unique_together = ('utilizador', 'pergunta')  # Evita duplicações
+
+class Favorito(models.Model):
+    utilizador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favoritos')
+    favorito = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favoritado_por')
+
+    class Meta:
+        unique_together = ('utilizador', 'favorito')

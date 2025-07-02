@@ -23,4 +23,5 @@ urlpatterns = [
     path('meu_perfil/', views.meu_perfil, name='meu_perfil'),
     path('apagar_conta/', views.apagar_conta, name='apagar_conta'),
     path('pergunta/', views.pergunta_aleatoria, name='pergunta_aleatoria'),
+    path('toggle_favorito/', views.toggle_favorito, name='toggle_favorito'),
 ]

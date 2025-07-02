@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.core.mail import send_mail
-from myapp.models import Utilizador, Paciente, ProfissionalSaude, TopTestemunho, Hospital, JournPerguntas, JournRespostas
+from myapp.models import Utilizador, Paciente, ProfissionalSaude, TopTestemunho, Hospital, JournPerguntas, JournRespostas, Favorito
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db.models import Subquery
@@ -14,7 +14,7 @@ import json
 from datetime import date
 from django.contrib.auth.decorators import login_required
 from django.utils.dateparse import parse_date
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
 
 # Create your views here.
 def home(request):
@@ -272,7 +272,30 @@ def criar_hospitais_se_necessario():
         print("Hospitais criados automaticamente!")
 
 def journaling_delhes(request):
-    return render(request, 'journaling_deles.html', {'current_page': 'journaling_delhes'})
+    from myapp.models import JournRespostas, ProfissionalSaude
+    profissionais_ids = ProfissionalSaude.objects.values_list('id', flat=True)
+    if hasattr(request.user, 'profissionalsaude') and request.user.profissionalsaude:
+        # Profissionais de saúde veem todas as respostas públicas, exceto as suas
+        respostas = JournRespostas.objects.filter(privacidade='publico').exclude(utilizador=request.user).order_by('-data_resposta')
+    else:
+        # Pacientes e utilizadores comuns veem apenas respostas públicas de não profissionais, exceto as suas
+        respostas = JournRespostas.objects.filter(privacidade='publico').exclude(utilizador__id__in=profissionais_ids).exclude(utilizador=request.user).order_by('-data_resposta')
+    page_left = []
+    page_right = []
+    for i, resposta in enumerate(respostas):
+        if i % 2 == 0:
+            page_left.append(resposta)
+        else:
+            page_right.append(resposta)
+    user_favoritos_ids = []
+    if request.user.is_authenticated:
+        user_favoritos_ids = list(Favorito.objects.filter(utilizador=request.user).values_list('favorito_id', flat=True))
+    return render(request, 'journaling_deles.html', {
+        'current_page': 'journaling_delhes',
+        'page_left': page_left,
+        'page_right': page_right,
+        'user_favoritos_ids': user_favoritos_ids,
+    })
 
 @csrf_exempt
 def salvar_testemunho(request):
@@ -520,3 +543,21 @@ def journaling_data(request):
         ]
     }
     return JsonResponse(data)
+
+@require_POST
+@login_required
+def toggle_favorito(request):
+    import json
+    data = json.loads(request.body)
+    favorito_id = data.get('favorito_id')
+    if not favorito_id or int(favorito_id) == request.user.id:
+        return JsonResponse({'status': 'error', 'message': 'ID inválido.'}, status=400)
+    try:
+        favorito_user = Utilizador.objects.get(id=favorito_id)
+    except Utilizador.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Utilizador não encontrado.'}, status=404)
+    fav, created = Favorito.objects.get_or_create(utilizador=request.user, favorito=favorito_user)
+    if not created:
+        fav.delete()
+        return JsonResponse({'status': 'ok', 'favorited': False})
+    return JsonResponse({'status': 'ok', 'favorited': True})
