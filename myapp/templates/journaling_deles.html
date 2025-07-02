@@ -209,17 +209,16 @@
                             <strong>Por:</strong> {{ resposta.utilizador.nome }}
                             <span class="favorite-user-star{% if resposta.utilizador.id in user_favoritos_ids %} active{% endif %}" data-user-id="{{ resposta.utilizador.id }}">★</span>
                         </div>
-                        <span class="short-text">
-                            {{ resposta.resposta_texto|truncatechars:120 }}
-                        </span>
-                        <span class="full-text" style="display: none;">
-                            {{ resposta.resposta_texto }}
-                        </span>
+                        {% if resposta.resposta_texto|length > 50 %}
+                            <span class="short-text">{{ resposta.resposta_texto|slice:':25' }}... </span><span class="full-text" style="display:none;">{{ resposta.resposta_texto }}</span>
+                            <a href="#" class="toggle-link" onclick="toggleTextJournaling(this); return false;">(ver mais)</a>
+                        {% else %}
+                            <span>{{ resposta.resposta_texto }}</span>
+                        {% endif %}
                         <p style="color: #888; font-size: 13px;">
                             <strong>Data:</strong> {{ resposta.data_resposta|date:'d/m/Y H:i' }} |
                             <strong>Público</strong>
                         </p>
-                        <a href="#" class="toggle-link" onclick="toggleText(this); return false;">(ver mais)</a>
                     </div>
                     {% empty %}
                     <p style="color: #888;">Ainda não há respostas públicas de outros utilizadores.</p>
@@ -243,17 +242,16 @@
                             <strong>Por:</strong> {{ resposta.utilizador.nome }}
                             <span class="favorite-user-star{% if resposta.utilizador.id in user_favoritos_ids %} active{% endif %}" data-user-id="{{ resposta.utilizador.id }}">★</span>
                         </div>
-                        <span class="short-text">
-                            {{ resposta.resposta_texto|truncatechars:120 }}
-                        </span>
-                        <span class="full-text" style="display: none;">
-                            {{ resposta.resposta_texto }}
-                        </span>
+                        {% if resposta.resposta_texto|length > 50 %}
+                            <span class="short-text">{{ resposta.resposta_texto|slice:':25' }}... </span><span class="full-text" style="display:none;">{{ resposta.resposta_texto }}</span>
+                            <a href="#" class="toggle-link" onclick="toggleTextJournaling(this); return false;">(ver mais)</a>
+                        {% else %}
+                            <span>{{ resposta.resposta_texto }}</span>
+                        {% endif %}
                         <p style="color: #888; font-size: 13px;">
                             <strong>Data:</strong> {{ resposta.data_resposta|date:'d/m/Y H:i' }} |
                             <strong>Público</strong>
                         </p>
-                        <a href="#" class="toggle-link" onclick="toggleText(this); return false;">(ver mais)</a>
                     </div>
                     {% endfor %}
                 </div>
@@ -276,6 +274,21 @@
                 link.textContent = '(ver mais)';
             } else {
                 fullText.style.display = 'block';
+                shortText.style.display = 'none';
+                link.textContent = '(ver menos)';
+            }
+        }
+
+        function toggleTextJournaling(link) {
+            const shortText = link.parentElement.querySelector('.short-text');
+            const fullText = link.parentElement.querySelector('.full-text');
+            const isExpanded = fullText.style.display === 'inline' || fullText.style.display === 'block';
+            if (isExpanded) {
+                fullText.style.display = 'none';
+                shortText.style.display = 'inline';
+                link.textContent = '(ver mais)';
+            } else {
+                fullText.style.display = 'inline';
                 shortText.style.display = 'none';
                 link.textContent = '(ver menos)';
             }

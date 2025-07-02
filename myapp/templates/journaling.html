@@ -481,7 +481,16 @@
           }
           // NOVO: mostrar todas as respostas do dia
           if (data.respostas.length > 0) {
-            submittedTextDiv.innerHTML = data.respostas.map(r => `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> ${r.texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`).join('');
+            submittedTextDiv.innerHTML = data.respostas.map(r => {
+              const texto = r.texto;
+              if (texto.length > 50) {
+                const half = Math.ceil(texto.length / 2);
+                const short = texto.slice(0, half) + '...';
+                return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> <span class='short-text'>${short}</span><span class='full-text' style='display:none;'>${texto}</span> <a href='#' class='toggle-link' onclick='toggleTextJournaling(this);return false;'>(ver mais)</a></p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
+              } else {
+                return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> ${texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
+              }
+            }).join('');
           } else {
             submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aqui aparecerá nesta página.</p>";
           }
@@ -572,7 +581,16 @@
             .then(response => response.json())
             .then(data2 => {
               if (data2.respostas.length > 0) {
-                submittedTextDiv.innerHTML = data2.respostas.map(r => `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> ${r.texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`).join('');
+                submittedTextDiv.innerHTML = data2.respostas.map(r => {
+                  const texto = r.texto;
+                  if (texto.length > 50) {
+                    const half = Math.ceil(texto.length / 2);
+                    const short = texto.slice(0, half) + '...';
+                    return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> <span class='short-text'>${short}</span><span class='full-text' style='display:none;'>${texto}</span> <a href='#' class='toggle-link' onclick='toggleTextJournaling(this);return false;'>(ver mais)</a></p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
+                  } else {
+                    return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> ${texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
+                  }
+                }).join('');
               } else {
                 submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aqui aparecerá nesta página.</p>";
               }
@@ -668,13 +686,37 @@
           .then(data2 => {
             const submittedTextDiv = document.getElementById('submitted-text');
             if (data2.respostas.length > 0) {
-              submittedTextDiv.innerHTML = data2.respostas.map(r => `<p><strong>P:</strong> ${r.livre ? 'Reflexão livre' : r.pergunta_texto}</p><p><strong>R:</strong> ${r.texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`).join('');
+              submittedTextDiv.innerHTML = data2.respostas.map(r => {
+                const texto = r.texto;
+                if (texto.length > 50) {
+                  const half = Math.ceil(texto.length / 2);
+                  const short = texto.slice(0, half) + '...';
+                  return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> <span class='short-text'>${short}</span><span class='full-text' style='display:none;'>${texto}</span> <a href='#' class='toggle-link' onclick='toggleTextJournaling(this);return false;'>(ver mais)</a></p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
+                } else {
+                  return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> ${texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
+                }
+              }).join('');
             } else {
               submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aqui aparecerá nesta página.</p>";
             }
           });
       });
     });
+
+    function toggleTextJournaling(link) {
+      const shortText = link.parentElement.querySelector('.short-text');
+      const fullText = link.parentElement.querySelector('.full-text');
+      const isExpanded = fullText.style.display === 'inline' || fullText.style.display === 'block';
+      if (isExpanded) {
+        fullText.style.display = 'none';
+        shortText.style.display = 'inline';
+        link.textContent = '(ver mais)';
+      } else {
+        fullText.style.display = 'inline';
+        shortText.style.display = 'none';
+        link.textContent = '(ver menos)';
+      }
+    }
   </script>
 
   {% if not user.is_authenticated %}
