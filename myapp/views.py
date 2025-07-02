@@ -5,12 +5,15 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.core.mail import send_mail
-from myapp.models import Utilizador, Paciente, ProfissionalSaude, TopTestemunho, Hospital
+from myapp.models import Utilizador, Paciente, ProfissionalSaude, TopTestemunho, Hospital, JournPerguntas, JournRespostas
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from django.db.models import Subquery
+import random
 import json
 from datetime import date
 from django.contrib.auth.decorators import login_required
+from django.utils.dateparse import parse_date
 
 # Create your views here.
 def home(request):
@@ -43,13 +46,59 @@ def logout_view(request):
 def beneficios(request):
     return render(request, 'beneficios.html', {'current_page': 'beneficios'})
 
+@csrf_exempt
 def journaling(request):
+    from myapp.models import JournPerguntas, JournRespostas, Utilizador
+    import json
     today = datetime.today().date()
     last_7_days = [(today - timedelta(days=i)) for i in range(7)]
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            resposta_texto = data.get('resposta')
+            data_resposta = data.get('data')
+            privacidade = data.get('privacidade')
+            pergunta_id = data.get('pergunta_id')
+            if not (resposta_texto and data_resposta and privacidade and pergunta_id):
+                return JsonResponse({'status': 'error', 'message': 'Dados em falta.'}, status=400)
+            if not request.user.is_authenticated:
+                return JsonResponse({'status': 'error', 'message': 'Precisa de login.'}, status=403)
+            pergunta = JournPerguntas.objects.get(id=pergunta_id)
+            JournRespostas.objects.create(
+                utilizador=request.user,
+                pergunta=pergunta,
+                resposta_texto=resposta_texto
+            )
+            return JsonResponse({'status': 'ok'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    # GET: lógica para associar pergunta ao dia/utilizador
+    selected_date = request.GET.get('data')
+    if not selected_date:
+        selected_date = today.strftime('%Y-%m-%d')
+    else:
+        selected_date = parse_date(selected_date)
+        if not selected_date:
+            selected_date = today
+    pergunta = None
+    if request.user.is_authenticated:
+        resposta_existente = JournRespostas.objects.filter(utilizador=request.user, data_resposta__date=selected_date).first()
+        if resposta_existente:
+            pergunta = resposta_existente.pergunta
+        else:
+            # Buscar perguntas ainda não respondidas neste dia
+            perguntas_respondidas_ids = JournRespostas.objects.filter(utilizador=request.user, data_resposta__date=selected_date).values_list('pergunta_id', flat=True)
+            perguntas_disponiveis = JournPerguntas.objects.exclude(id__in=perguntas_respondidas_ids)
+            perguntas = list(perguntas_disponiveis)
+            pergunta = random.choice(perguntas) if perguntas else None
+    else:
+        perguntas = list(JournPerguntas.objects.all())
+        pergunta = random.choice(perguntas) if perguntas else None
     return render(request, 'journaling.html', {
         'current_page': 'journaling',
         'last_7_days': last_7_days,
-        'user_authenticated': request.user.is_authenticated
+        'user_authenticated': request.user.is_authenticated,
+        'pergunta': pergunta
     })
 
 def informacoes(request):
@@ -392,3 +441,27 @@ def apagar_conta(request):
             return redirect('meu_perfil')
     
     return redirect('meu_perfil')
+
+def pergunta_aleatoria(request):
+    user = request.user
+
+    # Perguntas já respondidas por este user
+    respondidas_ids = Resposta.objects.filter(user=user).values_list('pergunta_id', flat=True)
+
+    # Perguntas ainda não respondidas
+    perguntas_disponiveis = Pergunta.objects.exclude(id__in=Subquery(respondidas_ids))
+
+    pergunta = None
+    if perguntas_disponiveis.exists():
+        pergunta = random.choice(list(perguntas_disponiveis))
+
+    if request.method == 'POST' and pergunta:
+        resposta_texto = request.POST.get('resposta')
+        Resposta.objects.create(
+            user=user,
+            pergunta=pergunta,
+            resposta_texto=resposta_texto
+        )
+        return redirect('pergunta_aleatoria')
+
+    return render(request, 'pergunta.html', {'pergunta': pergunta})

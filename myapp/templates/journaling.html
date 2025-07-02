@@ -166,7 +166,7 @@
       left: 50%;
       transform: translateX(-50%);
       font-family: 'Instrument Sans', sans-serif;
-      font-size: 20px;
+      font-size: 16px;
       color: #333;
       background: rgba(255, 255, 255, 0.8);
       padding: 6px 30px;
@@ -297,6 +297,7 @@
 </head>
 
 <body>
+  {% csrf_token %}
   {% if user.is_authenticated and user.profissionalsaude %}
     {% include '_navbar_profissional.html' %}
   {% else %}
@@ -334,7 +335,13 @@
     </aside>
 
     <main class="book-container">
-      <div id="pergunta">Qual foi o ponto mais importante do seu dia hoje?</div>
+      <div id="pergunta">
+        {% if pergunta %}
+        <h2 data-pergunta-id="{{ pergunta.id }}">{{ pergunta.texto }}</h2>
+        {% else %}
+        <p>🎉 Já respondeste a todas as perguntas disponíveis!</p>
+        {% endif %}
+      </div>
 
       <img src="{% static 'images/livro_journaling.png' %}" class="book-image" alt="Livro journaling" />
 
@@ -346,6 +353,7 @@
         ⚠️ Por favor, escreva algo antes de submeter.
       </div>
       <textarea id="journaling-textarea" class="page-right" placeholder="Escreva aqui sua reflexão..."></textarea>
+      <input type="hidden" id="pergunta-id" value="{% if pergunta %}{{ pergunta.id }}{% endif %}">
 
       <div style="position: absolute; bottom: 5%; left: 8%; display: flex; flex-direction: column; gap: 8px;">
         <div style="display: flex; gap: 12px; align-items: center;">
@@ -479,36 +487,42 @@
         alert('Por favor, selecione uma data.');
         return;
       }
-
-      // Verificar se foi selecionada uma opção de privacidade
       const privacidadeSelecionada = document.querySelector('input[name="privacidade"]:checked');
       if (!privacidadeSelecionada) {
         privacidadeError.style.display = 'block';
         return;
       }
-
-      const now = new Date();
-      const time = now.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-
-      if (!journalingData[selectedDate]) {
-        journalingData[selectedDate] = [];
+      const perguntaId = document.getElementById('pergunta-id').value;
+      if (!perguntaId) {
+        alert('Pergunta não encontrada!');
+        return;
       }
-
-      journalingData[selectedDate].push({
-        time,
-        text,
-        privacidade: privacidadeSelecionada.value
+      fetch('/journaling/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+          resposta: text,
+          data: selectedDate,
+          privacidade: privacidadeSelecionada.value,
+          pergunta_id: perguntaId
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'ok') {
+          alert('Resposta guardada com sucesso!');
+          textarea.value = '';
+          mostrarTexto(selectedDate);
+        } else {
+          alert('Erro ao guardar resposta: ' + data.message);
+        }
+      })
+      .catch(error => {
+        alert('Erro ao enviar resposta!');
       });
-
-      mostrarTexto(selectedDate);
-      textarea.value = '';
-      textarea.focus();
-      privacidadeError.style.display = 'none';
-      textoError.style.display = 'none';
-
     });
 
     // Ajustar max date no datepicker para hoje

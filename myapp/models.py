@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 
 class Hospital(models.Model):
     HOSPITAIS_CHOICES = [
@@ -171,3 +172,18 @@ class TopTestemunho(models.Model):
 
     def __str__(self):
         return f"{self.titulo} ({self.data})"
+
+class JournPerguntas(models.Model):
+    texto = models.TextField()
+
+    def __str__(self):
+        return self.texto
+
+class JournRespostas(models.Model):
+    utilizador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    pergunta = models.ForeignKey(JournPerguntas, on_delete=models.CASCADE)
+    resposta_texto = models.TextField()
+    data_resposta = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('utilizador', 'pergunta')  # Evita duplicações

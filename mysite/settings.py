@@ -84,7 +84,7 @@ DATABASES = {
     }
 }
 
-AUTH_USER_MODEL = 'myapp.utilizador'
+AUTH_USER_MODEL = 'myapp.Utilizador'
 
 
 # Password validation
