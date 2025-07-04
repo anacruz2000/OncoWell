@@ -5,7 +5,8 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.core.mail import send_mail
-from myapp.models import Utilizador, Paciente, ProfissionalSaude, TopTestemunho, Hospital, JournPerguntas, JournRespostas, Favorito
+from myapp.models import Utilizador, Paciente, ProfissionalSaude, TopTestemunho
+from myapp.models import Hospital, JournPerguntas, JournRespostas, Favorito
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db.models import Subquery
@@ -15,6 +16,8 @@ from datetime import date
 from django.contrib.auth.decorators import login_required
 from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_GET, require_POST
+from .models import PerguntaResposta, FAQ, TopicFAQ
+from server import chatbot_response
 
 # Create your views here.
 def home(request):
@@ -154,7 +157,11 @@ def testemunhos(request):
     })
 
 def qa(request):
-    return render(request, 'q&a.html', {'current_page': 'q&a'})
+    faqs = FAQ.objects.order_by('-vezes_feita')[:5]
+    return render(request, 'q&a.html', {
+        'faqs': faqs,
+        'current_page': 'q&a',
+    })
 
 def chat(request):
     return render(request, 'chat.html')
@@ -168,18 +175,47 @@ def inicio_psi(request):
 def enviar_pergunta(request):
     if request.method == 'POST':
         pergunta = request.POST.get('pergunta')
-        email = request.POST.get('email')
-        
-        # Exemplo: enviar para email
-        send_mail(
-            subject='Nova pergunta recebida',
-            message=f'Pergunta: {pergunta}\nEmail: {email}',
-            from_email='site@oncowell.pt',
-            recipient_list=['equipa@oncowell.pt'],
-        )
-
-        return redirect('q&a')  # ou mostrar mensagem de sucesso
-
+        pergunta_formatada = pergunta.strip().capitalize()
+        if not pergunta_formatada.endswith('?'):
+            pergunta_formatada += '?'
+        # Verificar se a pergunta já existe
+        existente = PerguntaResposta.objects.filter(pergunta=pergunta_formatada).first()
+        faq_promovida = False
+        if existente:
+            resposta = existente.resposta
+            topico = existente.topico
+            existente.vezes_feita += 1
+            existente.save()
+            count = existente.vezes_feita
+            if count >= 5:
+                topic_obj, _ = TopicFAQ.objects.get_or_create(nome=topico)
+                faq_obj = FAQ.objects.filter(pergunta=pergunta_formatada, topic=topic_obj).first()
+                if not faq_obj:
+                    FAQ.objects.create(pergunta=pergunta_formatada, resposta=resposta, topic=topic_obj, vezes_feita=count)
+                else:
+                    faq_obj.vezes_feita = count
+                    faq_obj.save()
+                faq_promovida = True
+        else:
+            resposta_llm = chatbot_response(pergunta)
+            try:
+                resposta_json = json.loads(resposta_llm)
+                resposta = resposta_json.get('resposta', resposta_llm)
+                topico = resposta_json.get('topico', 'Outro')
+            except Exception:
+                resposta = resposta_llm
+                topico = 'Outro'
+            PerguntaResposta.objects.create(pergunta=pergunta_formatada, resposta=resposta, topico=topico, vezes_feita=1)
+            count = 1
+        faqs = FAQ.objects.order_by('-vezes_feita')[:5]
+        return render(request, 'q&a.html', {
+            'pergunta_feita': pergunta,
+            'resposta_gerada': resposta,
+            'topico_gerado': topico,
+            'faq_promovida': faq_promovida,
+            'faqs': faqs,
+            'current_page': 'q&a'
+        })
     return redirect('q&a')
 
 def register_view(request):

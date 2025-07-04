@@ -198,20 +198,30 @@
     </div>
 
 
-
+    <!-- FAQS PROMOVIDAS -->
+    {% if faqs %}
     <div class="faq-wrapper">
+        <h2>Perguntas Frequentes</h2>
+        {% for faq in faqs %}
         <div class="faq-item">
-            <div class="faq-question">Como é que funcionam os tratamentos?</div>
-            <div class="faq-answer">Os tratamentos funcionam através de uma combinação personalizada de métodos médicos
-                que visam eliminar ou controlar o cancro, como quimioterapia, radioterapia e imunoterapia.</div>
+            <div class="faq-question">{{ faq.pergunta }}</div>
+            <div class="faq-answer">{{ faq.resposta }}</div>
         </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    </style>
 
-        <div class="faq-item">
-            <div class="faq-question">Quanto tempo duram os tratamentos?</div>
-            <div class="faq-answer">A duração varia de acordo com o tipo de tratamento, diagnóstico e resposta
-                individual — pode ir de semanas a vários meses.</div>
+    <!-- RESPOSTA DA LLM -->
+    {% if pergunta_feita and resposta_gerada %}
+    <div class="faq-wrapper">
+        <div class="faq-item" style="background: #e6f7ff; border-radius: 8px;">
+            <div class="faq-question"><b>Pergunta:</b> {{ pergunta_feita }}</div>
+            {% if topico_gerado %}<div style="margin: 8px 0 0 0;"><b>Tópico:</b> {{ topico_gerado }}</div>{% endif %}
+            <div class="faq-answer" style="display:block;"><b>Resposta:</b> {{ resposta_gerada }}</div>
         </div>
     </div>
+    {% endif %}
 
 
     <script>
@@ -246,19 +256,22 @@
                 menu.classList.remove('active');
             }
         });
+
+        // Mostrar spinner ao submeter o formulário
+        const form = document.querySelector('.form-container form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                document.getElementById('loading-spinner').style.display = 'flex';
+            });
+        }
     </script>
 
     <!-- FORMULÁRIO -->
-    <div class="form-container">
+    <div class="form-container" style="margin: 0 auto; min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
         <div class="form-title">Quero perguntar?</div>
-
-        <form method="post" action="{% url 'enviar_pergunta' %}">
+        <form method="post" action="{% url 'enviar_pergunta' %}" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:16px;">
             {% csrf_token %}
-
-            <input type="text" name="pergunta" placeholder="Escreve a tua pergunta" required class="input-field" />
-
-            <input type="email" name="email" placeholder="O teu email" required class="input-field" />
-
+            <input type="text" name="pergunta" placeholder="Escreve a tua pergunta" required class="input-field" style="margin-bottom:0;" />
             <button type="submit" class="submit-button">
                 <div>Perguntar</div>
             </button>

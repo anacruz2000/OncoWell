@@ -132,6 +132,7 @@ class FAQ(models.Model):
     topic = models.ForeignKey(TopicFAQ, on_delete=models.CASCADE)
     pergunta = models.TextField()
     resposta = models.TextField()
+    vezes_feita = models.IntegerField(default=5)
 
     def __str__(self):
         return self.pergunta
@@ -195,3 +196,11 @@ class Favorito(models.Model):
 
     class Meta:
         unique_together = ('utilizador', 'favorito')
+
+class PerguntaResposta(models.Model):
+    pergunta = models.TextField()
+    resposta = models.TextField()
+    topico = models.CharField(max_length=100, default="Outro")
+    vezes_feita = models.IntegerField(default=1)
+    data = models.DateTimeField(auto_now_add=True)
+
