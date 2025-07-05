@@ -5,6 +5,7 @@
 
 <head>
     <meta charset="UTF-8" />
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
     <link href="{% static 'css/style.css' %}" rel="stylesheet" />
@@ -127,34 +128,42 @@
     <!-- Nav bar -->
     {% include '_navbar_profissional.html' %}
 
-    {% if user.is_authenticated %}
-    <a href="#" class="user-icon" onclick="toggleUserMenu()">
-        <i class="fas fa-user"></i>
-    </a>
-    <div class="user-menu" id="userMenu">
-        <a href="{% url 'meu_perfil' %}">Perfil</a>
-        <a href="{% url 'logout' %}">Terminar Sessão</a>
-    </div>
-    {% else %}
-    <a href="{% url 'login' %}" class="login-button">Login</a>
-    {% endif %}
-
-    <a href="{% url 'home' %}" class="logo">
-        <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;">
-    </a>
-
     <!-- Container principal -->
     <div class="main-container">
         <!-- Painel esquerdo - Informações do profissional -->
         <div class="left-panel">
-            <h2 style="margin: 0 0 20px 0; color: #630000; font-size: 24px;">Dr. Ana Silva</h2>
+            <h2 style="margin: 0 0 20px 0; color: #630000; font-size: 24px;">
+                {% if profissional %}{{ profissional.nome }}{% else %}Profissional{% endif %}
+            </h2>
             <div style="margin-bottom: 20px;">
                 <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">Especialidade</p>
-                <p style="margin: 0; color: #333; font-weight: 600;">Psicóloga Clínica</p>
+                <p style="margin: 0; color: #333; font-weight: 600;">
+                    {% if profissional %}{{ profissional.get_tipo_profissional_display }}{% else %}Especialidade{% endif %}
+                </p>
             </div>
             <div style="margin-bottom: 20px;">
-                <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">Instituição</p>
-                <p style="margin: 0; color: #333; font-weight: 600;">Hospital Central</p>
+                <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">Cédula Profissional</p>
+                <p style="margin: 0; color: #333; font-weight: 600;">
+                    {% if profissional %}{{ profissional.certificado_profissional }}{% else %}-{% endif %}
+                </p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">Zona de Trabalho</p>
+                <p style="margin: 0; color: #333; font-weight: 600;">
+                    {% if profissional and profissional.zona_trabalho %}{{ profissional.zona_trabalho }}{% else %}-{% endif %}
+                </p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">Especialidades</p>
+                <p style="margin: 0; color: #333; font-weight: 600; font-size: 14px;">
+                    {% if profissional and profissional.especialidades %}
+                        {% for especialidade in profissional.especialidades %}
+                            • {{ especialidade }}<br>
+                        {% endfor %}
+                    {% else %}
+                        -
+                    {% endif %}
+                </p>
             </div>
             <div style="margin-bottom: 20px;">
                 <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">Pacientes Ativos</p>
@@ -163,8 +172,12 @@
             <div style="margin-bottom: 20px;">
                 <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">Status</p>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 12px; height: 12px; background: #15B640; border-radius: 50%;"></div>
-                    <span style="color: #333; font-weight: 600;">Online</span>
+                    <div id="status-indicator" style="width: 12px; height: 12px; border-radius: 50%; background: #15B640;"></div>
+                    <select id="status-select" style="border: none; background: transparent; color: #333; font-weight: 600; cursor: pointer; outline: none;">
+                        <option value="ONLINE" {% if profissional and profissional.status == 'ONLINE' %}selected{% endif %}>Online</option>
+                        <option value="OFFLINE" {% if profissional and profissional.status == 'OFFLINE' %}selected{% endif %}>Offline</option>
+                        <option value="AUSENTE" {% if profissional and profissional.status == 'AUSENTE' %}selected{% endif %}>Ausente</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -324,6 +337,48 @@
             if (menu && !menu.contains(event.target) && !userIcon.contains(event.target)) {
                 menu.classList.remove('active');
             }
+        });
+
+        // Atualizar status do profissional
+        const statusSelect = document.getElementById('status-select');
+        const statusIndicator = document.getElementById('status-indicator');
+        
+        // Definir cor inicial baseada no status atual
+        function atualizarCorStatus(status) {
+            const cores = {
+                'ONLINE': '#15B640',
+                'OFFLINE': '#FF0101', 
+                'AUSENTE': '#FFA100'
+            };
+            statusIndicator.style.background = cores[status] || '#15B640';
+        }
+        
+        // Definir cor inicial
+        atualizarCorStatus(statusSelect.value);
+        
+        // Atualizar status quando selecionado
+        statusSelect.addEventListener('change', function() {
+            const novoStatus = this.value;
+            
+            fetch('/atualizar_status/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ status: novoStatus })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    atualizarCorStatus(novoStatus);
+                } else {
+                    console.error('Erro ao atualizar status:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro na requisição:', error);
+            });
         });
     </script>
 

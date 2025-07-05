@@ -7,6 +7,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet">
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        .especialidade-input {
+            margin-bottom: 8px;
+        }
+        #especialidades-container {
+            margin-bottom: 15px;
+        }
+        .especialidade-input:focus {
+            border-color: #630000;
+            box-shadow: 0 0 0 2px rgba(99, 0, 0, 0.1);
+        }
+        #hospital {
+            width: 100%;
+            min-width: 300px;
+        }
+    </style>
 </head>
 <body>
     <div class="nav">
@@ -61,19 +77,40 @@
             </div>
             <div id="patient-fields" class="form-group" style="display: none;">
                 <label for="cancer_type">Tipo de Cancro</label>
-                <select id="cancer_type" name="cancer_type">
-                    <option value="">Selecione um tipo de cancro</option>
-                    {% for codigo, nome in tipos_cancro %}
-                        <option value="{{ codigo }}">{{ nome }}</option>
-                    {% endfor %}
-                </select>
+                <input type="text" id="cancer_type" name="cancer_type" list="cancer-types-list" placeholder="Selecione ou escreva o tipo de cancro" required>
+                <datalist id="cancer-types-list">
+                    <option value="MAMA">
+                    <option value="PULMAO">
+                    <option value="COLON">
+                    <option value="PROSTATA">
+                    <option value="PELE">
+                    <option value="CERVICAL">
+                    <option value="OVARIO">
+                    <option value="PANCREAS">
+                    <option value="ESTOMAGO">
+                    <option value="FIGADO">
+                    <option value="CEREBRO">
+                    <option value="LEUCEMIA">
+                    <option value="LINFOMA">
+                    <option value="MULTIPLO_MIELOMA">
+                    <option value="SARCOMA">
+                    <option value="OUTRO">
+                </datalist>
+                <div id="outro-cancer-field" style="display: none; margin-top: 10px;">
+                    <label for="outro_cancer_type">Especifique o tipo de cancro:</label>
+                    <input type="text" id="outro_cancer_type" name="outro_cancer_type" placeholder="Digite o tipo de cancro específico">
+                </div>
                 <label for="hospital">Hospital de tratamento</label>
-                <select id="hospital" name="hospital">
-                    <option value="">Selecione um hospital</option>
+                <input type="text" id="hospital" name="hospital" list="hospitais-list" placeholder="Selecione ou escreva o hospital" required>
+                <datalist id="hospitais-list">
                     {% for hospital in hospitais %}
-                        <option value="{{ hospital.id }}">{{ hospital.get_nome_display }}</option>
+                        <option value="{{ hospital.get_nome_display }}">
                     {% endfor %}
-                </select>
+                </datalist>
+                <div id="outro-hospital-field" style="display: none; margin-top: 10px;">
+                    <label for="outro_hospital">Especifique o hospital:</label>
+                    <input type="text" id="outro_hospital" name="outro_hospital" placeholder="Digite o nome do hospital específico">
+                </div>
             </div>
             <div id="healthcare-field" class="form-group radio-group" style="display: none;">
                 <label>É profissional de saúde?</label>
@@ -92,10 +129,42 @@
                 <label for="healthcare_type">Tipo de Profissional</label>
                 <select id="healthcare_type" name="healthcare_type" required>
                     <option value="">Selecione uma opção</option>
-                    <option value="medico">Médico</option>
-                    <option value="psicologo">Psicólogo</option>
-                    <option value="enfermeiro">Enfermeiro</option>
+                    <option value="PSICOLOGO">Psicólogo</option>
+                    <option value="MEDICO">Médico</option>
+                    <option value="ENFERMEIRO">Enfermeiro</option>
                 </select>
+                <label for="zona_trabalho">Zona de Trabalho</label>
+                <input type="text" id="zona_trabalho" name="zona_trabalho" list="distritos-list" placeholder="Selecione ou escreva o distrito" required>
+                <datalist id="distritos-list">
+                    <option value="Aveiro">
+                    <option value="Beja">
+                    <option value="Braga">
+                    <option value="Bragança">
+                    <option value="Castelo Branco">
+                    <option value="Coimbra">
+                    <option value="Évora">
+                    <option value="Faro">
+                    <option value="Guarda">
+                    <option value="Leiria">
+                    <option value="Lisboa">
+                    <option value="Portalegre">
+                    <option value="Porto">
+                    <option value="Santarém">
+                    <option value="Setúbal">
+                    <option value="Viana do Castelo">
+                    <option value="Vila Real">
+                    <option value="Viseu">
+                    <option value="Região Autónoma dos Açores">
+                    <option value="Região Autónoma da Madeira">
+                </datalist>
+                <label for="especialidades">Especialidades (mínimo 1)</label>
+                <div id="especialidades-container">
+                    <input type="text" id="especialidade1" name="especialidade1" placeholder="Especialidade 1" class="especialidade-input">
+                    <input type="text" id="especialidade2" name="especialidade2" placeholder="Especialidade 2" class="especialidade-input">
+                    <input type="text" id="especialidade3" name="especialidade3" placeholder="Especialidade 3" class="especialidade-input">
+                    <input type="text" id="especialidade4" name="especialidade4" placeholder="Especialidade 4" class="especialidade-input">
+                    <input type="text" id="especialidade5" name="especialidade5" placeholder="Especialidade 5" class="especialidade-input">
+                </div>
                 <label for="medical_license">Licença Médica</label>
                 <input type="text" id="medical_license" name="medical_license">
                 <label for="license_validity">Validade da Licença</label>
@@ -147,13 +216,73 @@
                 document.getElementById('healthcare_type').required = true;
                 document.getElementById('medical_license').required = true;
                 document.getElementById('license_validity').required = true;
+                document.getElementById('zona_trabalho').required = true;
+                // Tornar pelo menos a primeira especialidade obrigatória
+                document.getElementById('especialidade1').required = true;
             } else {
                 licenseFields.style.display = 'none';
                 document.getElementById('healthcare_type').required = false;
                 document.getElementById('medical_license').required = false;
                 document.getElementById('license_validity').required = false;
+                document.getElementById('zona_trabalho').required = false;
+                // Remover obrigatoriedade das especialidades
+                for (let i = 1; i <= 5; i++) {
+                    document.getElementById(`especialidade${i}`).required = false;
+                }
             }
         }
+
+        // Validar especialidades antes do envio do formulário
+        document.querySelector('.register-form').addEventListener('submit', function(e) {
+            const isHealthcareYes = document.getElementById('is_healthcare_yes');
+            if (isHealthcareYes.checked) {
+                const especialidades = [];
+                for (let i = 1; i <= 5; i++) {
+                    const especialidade = document.getElementById(`especialidade${i}`).value.trim();
+                    if (especialidade) {
+                        especialidades.push(especialidade);
+                    }
+                }
+                
+                if (especialidades.length === 0) {
+                    e.preventDefault();
+                    alert('Por favor, adicione pelo menos uma especialidade.');
+                    return;
+                }
+            }
+        });
+
+        // Mostrar/ocultar campo de especificação para "OUTRO" tipo de cancro
+        const cancerTypeInput = document.getElementById('cancer_type');
+        const outroCancerField = document.getElementById('outro-cancer-field');
+        const outroCancerInput = document.getElementById('outro_cancer_type');
+
+        cancerTypeInput.addEventListener('input', function() {
+            if (this.value.toUpperCase() === 'OUTRO') {
+                outroCancerField.style.display = 'block';
+                outroCancerInput.required = true;
+            } else {
+                outroCancerField.style.display = 'none';
+                outroCancerInput.required = false;
+                outroCancerInput.value = '';
+            }
+        });
+
+        // Mostrar/ocultar campo de especificação para "Outro" hospital
+        const hospitalInput = document.getElementById('hospital');
+        const outroHospitalField = document.getElementById('outro-hospital-field');
+        const outroHospitalInput = document.getElementById('outro_hospital');
+
+        hospitalInput.addEventListener('input', function() {
+            if (this.value === 'Outro') {
+                outroHospitalField.style.display = 'block';
+                outroHospitalInput.required = true;
+            } else {
+                outroHospitalField.style.display = 'none';
+                outroHospitalInput.required = false;
+                outroHospitalInput.value = '';
+            }
+        });
     </script>
 </body>
 </html> 

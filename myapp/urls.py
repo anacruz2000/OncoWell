@@ -24,4 +24,5 @@ urlpatterns = [
     path('apagar_conta/', views.apagar_conta, name='apagar_conta'),
     path('pergunta/', views.pergunta_aleatoria, name='pergunta_aleatoria'),
     path('toggle_favorito/', views.toggle_favorito, name='toggle_favorito'),
+    path('atualizar_status/', views.atualizar_status, name='atualizar_status'),
 ]

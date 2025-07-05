@@ -186,40 +186,26 @@
             max-width: 500px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+
+        .especialidade-input {
+            margin-bottom: 8px;
+        }
+        #especialidades-container {
+            margin-bottom: 15px;
+        }
+        .especialidade-input:focus {
+            border-color: #630000;
+            box-shadow: 0 0 0 2px rgba(99, 0, 0, 0.1);
+        }
+        #hospital {
+            width: 100%;
+            min-width: 300px;
+        }
     </style>
 </head>
 
 <body>
-    <!-- Nav bar -->
-    <div class="nav">
-        <a href="{% url 'beneficios' %}"
-            class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
-        <a href="{% url 'informacoes' %}"
-            class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
-        <a href="{% url 'journaling' %}"
-            class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Meu Journaling</a>
-        <a href="{% url 'journaling_delhes' %}"
-            class="nav-item {% if current_page == 'journaling_delhes' %}active{% endif %}">Journaling Deles</a>
-        <a href="{% url 'testemunhos' %}"
-            class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
-        <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
-    </div>
-
-    {% if user.is_authenticated %}
-    <a href="#" class="user-icon" onclick="toggleUserMenu()">
-        <i class="fas fa-user"></i>
-    </a>
-    <div class="user-menu" id="userMenu">
-        <a href="{% url 'meu_perfil' %}">Meu Perfil</a>
-        <a href="{% url 'logout' %}">Terminar Sessão</a>
-    </div>
-    {% else %}
-    <a href="{% url 'login' %}" class="login-button">Login</a>
-    {% endif %}
-
-    <a href="{% url 'home' %}" class="logo">
-        <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;">
-    </a>
+    {% include '_navbar_profissional.html' %}
 
     <!-- Conteúdo principal -->
     <div class="main-content">
@@ -270,25 +256,42 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="tipo_cancro">Tipo de Cancro</label>
-                        <select id="tipo_cancro" name="tipo_cancro">
-                            <option value="">Selecione um tipo de cancro</option>
-                            {% for codigo, nome in user_data.tipo_cancro_choices %}
-                                <option value="{{ codigo }}" {% if user_data.tipo_cancro == codigo %}selected{% endif %}>
-                                    {{ nome }}
-                                </option>
-                            {% endfor %}
-                        </select>
+                        <input type="text" id="tipo_cancro" name="tipo_cancro" value="{{ user_data.tipo_cancro }}" list="cancer-types-list" placeholder="Selecione ou escreva o tipo de cancro" required>
+                        <datalist id="cancer-types-list">
+                            <option value="MAMA">
+                            <option value="PULMAO">
+                            <option value="COLON">
+                            <option value="PROSTATA">
+                            <option value="PELE">
+                            <option value="CERVICAL">
+                            <option value="OVARIO">
+                            <option value="PANCREAS">
+                            <option value="ESTOMAGO">
+                            <option value="FIGADO">
+                            <option value="CEREBRO">
+                            <option value="LEUCEMIA">
+                            <option value="LINFOMA">
+                            <option value="MULTIPLO_MIELOMA">
+                            <option value="SARCOMA">
+                            <option value="OUTRO">
+                        </datalist>
+                        <div id="outro-cancer-field" style="display: none; margin-top: 10px;">
+                            <label for="outro_cancer_type">Especifique o tipo de cancro:</label>
+                            <input type="text" id="outro_cancer_type" name="outro_cancer_type" value="{{ user_data.outro_cancer_type|default:'' }}" placeholder="Digite o tipo de cancro específico">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="hospital">Hospital</label>
-                        <select id="hospital" name="hospital">
-                            <option value="">Selecione um hospital</option>
+                        <input type="text" id="hospital" name="hospital" value="{% if user_data.hospital %}{{ user_data.hospital.get_nome_display }}{% endif %}" list="hospitais-list" placeholder="Selecione ou escreva o hospital">
+                        <datalist id="hospitais-list">
                             {% for hospital in hospitais %}
-                                <option value="{{ hospital.id }}" {% if user_data.hospital and user_data.hospital.id == hospital.id %}selected{% endif %}>
-                                    {{ hospital.get_nome_display }}
-                                </option>
+                                <option value="{{ hospital.get_nome_display }}">
                             {% endfor %}
-                        </select>
+                        </datalist>
+                        <div id="outro-hospital-field" style="display: none; margin-top: 10px;">
+                            <label for="outro_hospital">Especifique o hospital:</label>
+                            <input type="text" id="outro_hospital" name="outro_hospital" value="{{ user_data.outro_hospital|default:'' }}" placeholder="Digite o nome do hospital específico">
+                        </div>
                     </div>
                 </div>
                 {% endif %}
@@ -311,6 +314,44 @@
                 <div class="form-group">
                     <label for="certificado_profissional">Número do Certificado Profissional</label>
                     <input type="text" id="certificado_profissional" name="certificado_profissional" value="{{ user_data.certificado_profissional }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="zona_trabalho">Zona de Trabalho</label>
+                    <input type="text" id="zona_trabalho" name="zona_trabalho" value="{{ user_data.zona_trabalho }}" list="distritos-list" placeholder="Selecione ou escreva o distrito" required>
+                    <datalist id="distritos-list">
+                        <option value="Aveiro">
+                        <option value="Beja">
+                        <option value="Braga">
+                        <option value="Bragança">
+                        <option value="Castelo Branco">
+                        <option value="Coimbra">
+                        <option value="Évora">
+                        <option value="Faro">
+                        <option value="Guarda">
+                        <option value="Leiria">
+                        <option value="Lisboa">
+                        <option value="Portalegre">
+                        <option value="Porto">
+                        <option value="Santarém">
+                        <option value="Setúbal">
+                        <option value="Viana do Castelo">
+                        <option value="Vila Real">
+                        <option value="Viseu">
+                        <option value="Região Autónoma dos Açores">
+                        <option value="Região Autónoma da Madeira">
+                    </datalist>
+                </div>
+
+                <div class="form-group">
+                    <label for="especialidades">Especialidades (mínimo 1)</label>
+                    <div id="especialidades-container">
+                        <input type="text" id="especialidade1" name="especialidade1" value="{% if user_data.especialidades.0 %}{{ user_data.especialidades.0 }}{% endif %}" placeholder="Especialidade 1" class="especialidade-input">
+                        <input type="text" id="especialidade2" name="especialidade2" value="{% if user_data.especialidades.1 %}{{ user_data.especialidades.1 }}{% endif %}" placeholder="Especialidade 2" class="especialidade-input">
+                        <input type="text" id="especialidade3" name="especialidade3" value="{% if user_data.especialidades.2 %}{{ user_data.especialidades.2 }}{% endif %}" placeholder="Especialidade 3" class="especialidade-input">
+                        <input type="text" id="especialidade4" name="especialidade4" value="{% if user_data.especialidades.3 %}{{ user_data.especialidades.3 }}{% endif %}" placeholder="Especialidade 4" class="especialidade-input">
+                        <input type="text" id="especialidade5" name="especialidade5" value="{% if user_data.especialidades.4 %}{{ user_data.especialidades.4 }}{% endif %}" placeholder="Especialidade 5" class="especialidade-input">
+                    </div>
                 </div>
                 {% endif %}
 
@@ -393,6 +434,56 @@
             if (event.target === modal) {
                 fecharModalApagarConta();
             }
+        }
+
+        // Mostrar/ocultar campo de especificação para "OUTRO" tipo de cancro no perfil
+        const cancerTypeInput = document.getElementById('tipo_cancro');
+        const outroCancerField = document.getElementById('outro-cancer-field');
+        const outroCancerInput = document.getElementById('outro_cancer_type');
+
+        // Definir estado inicial
+        if (cancerTypeInput && cancerTypeInput.value.toUpperCase() === 'OUTRO') {
+            outroCancerField.style.display = 'block';
+            outroCancerInput.required = true;
+        }
+
+        // Adicionar listener para mudanças
+        if (cancerTypeInput) {
+            cancerTypeInput.addEventListener('input', function() {
+                if (this.value.toUpperCase() === 'OUTRO') {
+                    outroCancerField.style.display = 'block';
+                    outroCancerInput.required = true;
+                } else {
+                    outroCancerField.style.display = 'none';
+                    outroCancerInput.required = false;
+                    outroCancerInput.value = '';
+                }
+            });
+        }
+
+        // Mostrar/ocultar campo de especificação para "Outro" hospital no perfil
+        const hospitalInput = document.getElementById('hospital');
+        const outroHospitalField = document.getElementById('outro-hospital-field');
+        const outroHospitalInput = document.getElementById('outro_hospital');
+
+        // Definir estado inicial para hospital
+        if (hospitalInput && hospitalInput.value === 'Outro') {
+            outroHospitalField.style.display = 'block';
+            outroHospitalInput.required = true;
+        }
+
+        // Adicionar listener para mudanças no hospital
+        if (hospitalInput) {
+            hospitalInput.addEventListener('input', function() {
+                if (this.value === 'Outro') {
+                    outroHospitalField.style.display = 'block';
+                    outroHospitalInput.required = true;
+                } else {
+                    outroHospitalField.style.display = 'none';
+                    outroHospitalInput.required = false;
+                    outroHospitalInput.value = '';
+                }
+            });
         }
     </script>
 </body>

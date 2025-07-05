@@ -67,7 +67,9 @@ class Paciente(Utilizador):
     ]
     
     tipo_cancro = models.CharField(max_length=20, choices=TIPOS_CANCRO_CHOICES)
+    outro_cancer_type = models.CharField(max_length=100, blank=True, null=True)  # Campo para especificar quando "OUTRO" é selecionado
     hospital = models.ForeignKey(Hospital, on_delete=models.SET_NULL, null=True, blank=True)
+    outro_hospital = models.CharField(max_length=200, blank=True, null=True)  # Campo para especificar quando "Outro" é selecionado
     estado_pac = models.CharField(max_length=100)
     profissionais = models.ManyToManyField('ProfissionalSaude', related_name='pacientes')
 
@@ -82,6 +84,13 @@ class ProfissionalSaude(Utilizador):
         ('MEDICO', 'Médico'),
         ('ENFERMEIRO', 'Enfermeiro'),
     ])
+    status = models.CharField(max_length=20, choices=[
+        ('ONLINE', 'Online'),
+        ('OFFLINE', 'Offline'),
+        ('AUSENTE', 'Ausente'),
+    ], default='ONLINE')
+    zona_trabalho = models.CharField(max_length=100, blank=True, null=True)
+    especialidades = models.JSONField(default=list, blank=True)  # Lista de até 5 especialidades
 
     def __str__(self):
         return f"{self.get_tipo_profissional_display()}: {self.nome}"

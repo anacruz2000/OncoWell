@@ -306,9 +306,16 @@
 
             const boxes = document.querySelectorAll('.question-box');
             boxes.forEach(box => {
-                const fullText = box.querySelector('.full-text').textContent.toLowerCase();
-                const shortText = box.querySelector('.short-text').textContent.toLowerCase();
-                const combinedText = fullText + ' ' + shortText;
+                let combinedText = '';
+                const fullTextElem = box.querySelector('.full-text');
+                const shortTextElem = box.querySelector('.short-text');
+                if (fullTextElem && shortTextElem) {
+                    combinedText = fullTextElem.textContent.toLowerCase() + ' ' + shortTextElem.textContent.toLowerCase();
+                } else {
+                    // Caso de resposta curta
+                    const span = box.querySelector('span');
+                    if (span) combinedText = span.textContent.toLowerCase();
+                }
                 const boxDate = box.getAttribute('data-date');
                 const isFavorite = box.classList.contains('favorite');
                 const isRecent = isRecentEntry(boxDate);

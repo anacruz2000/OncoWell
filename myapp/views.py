@@ -170,7 +170,13 @@ def pacientes(request):
     return render(request, 'pacientes.html')
 
 def inicio_psi(request):
-    return render(request, 'inicio_psi.html', {'current_page': 'inicio_psi'})
+    profissional = None
+    if request.user.is_authenticated and hasattr(request.user, 'profissionalsaude'):
+        profissional = request.user.profissionalsaude
+    return render(request, 'inicio_psi.html', {
+        'current_page': 'inicio_psi',
+        'profissional': profissional,
+    })
 
 def enviar_pergunta(request):
     if request.method == 'POST':
@@ -243,16 +249,63 @@ def register_view(request):
             print('paciente')
             # Buscar o hospital selecionado
             hospital = None
+            outro_hospital = None
             if hospital_id and hospital_id != '':
-                try:
-                    hospital = Hospital.objects.get(id=hospital_id)
-                except Hospital.DoesNotExist:
-                    pass
+                if hospital_id == 'Outro':
+                    outro_hospital = request.POST.get('outro_hospital', '').strip()
+                else:
+                    try:
+                        hospital = Hospital.objects.get(nome=hospital_id)
+                    except Hospital.DoesNotExist:
+                        pass
             
-            Paciente.objects.create_user(nome=nome, username=username, email=email, data_nascimento=data_nascimento, password=password, tipo_cancro=cancer_type, hospital=hospital, estado_pac='estavel')
+            # Processar campo de especificação se "OUTRO" foi selecionado
+            outro_cancer_type = None
+            if cancer_type == 'OUTRO':
+                outro_cancer_type = request.POST.get('outro_cancer_type', '').strip()
+            
+            Paciente.objects.create_user(
+                nome=nome, 
+                username=username, 
+                email=email, 
+                data_nascimento=data_nascimento, 
+                password=password, 
+                tipo_cancro=cancer_type, 
+                outro_cancer_type=outro_cancer_type,
+                hospital=hospital,
+                outro_hospital=outro_hospital,
+                estado_pac='estavel'
+            )
         elif(len(healthcare_type) > 0):
             print('profissional')
-            ProfissionalSaude.objects.create_user(nome=nome, username=username, email=email, password=password, data_nascimento=data_nascimento, tipo_profissional=healthcare_type, certificado_profissional=medical_license, validade_certificado=license_validity)
+            # Coletar especialidades
+            especialidades = []
+            for i in range(1, 6):
+                especialidade = request.POST.get(f'especialidade{i}', '').strip()
+                if especialidade:
+                    especialidades.append(especialidade)
+            
+            # Validar que pelo menos 1 especialidade foi fornecida
+            if not especialidades:
+                return render(request, 'register.html', {
+                    'current_page': 'register',
+                    'hospitais': hospitais,
+                    'tipos_cancro': tipos_cancro,
+                    'error_message': 'Pelo menos uma especialidade é obrigatória para profissionais de saúde.'
+                })
+            
+            ProfissionalSaude.objects.create_user(
+                nome=nome, 
+                username=username, 
+                email=email, 
+                password=password, 
+                data_nascimento=data_nascimento, 
+                tipo_profissional=healthcare_type, 
+                certificado_profissional=medical_license, 
+                validade_certificado=license_validity,
+                zona_trabalho=request.POST.get('zona_trabalho', ''),
+                especialidades=especialidades
+            )
         else:
             user = Utilizador.objects.create_user(username=username, email=email, password=password, nome=nome, data_nascimento=data_nascimento)
             user.save()
@@ -433,7 +486,9 @@ def meu_perfil(request):
             'data_nascimento': paciente.data_nascimento,
             'tipo_cancro': paciente.tipo_cancro,
             'tipo_cancro_choices': Paciente.TIPOS_CANCRO_CHOICES,
+            'outro_cancer_type': paciente.outro_cancer_type,
             'hospital': paciente.hospital,
+            'outro_hospital': paciente.outro_hospital,
             'estado_pac': paciente.estado_pac,
         }
     except Paciente.DoesNotExist:
@@ -449,6 +504,8 @@ def meu_perfil(request):
                 'tipo_profissional_display': profissional.get_tipo_profissional_display(),
                 'certificado_profissional': profissional.certificado_profissional,
                 'validade_certificado': profissional.validade_certificado,
+                'zona_trabalho': profissional.zona_trabalho,
+                'especialidades': profissional.especialidades,
             }
         except ProfissionalSaude.DoesNotExist:
             user_type = 'utilizador'
@@ -466,31 +523,72 @@ def meu_perfil(request):
         data_nascimento = request.POST.get('data_nascimento')
         
         if nome and email:
-            user.nome = nome
-            user.email = email
-            if data_nascimento:
-                user.data_nascimento = data_nascimento
-            user.save()
-            
             # Atualizar campos específicos do tipo de usuário
             if user_type == 'paciente':
+                paciente.nome = nome
+                paciente.email = email
+                if data_nascimento:
+                    paciente.data_nascimento = data_nascimento
                 paciente.tipo_cancro = request.POST.get('tipo_cancro', '')
+                outro_cancer_type = request.POST.get('outro_cancer_type', '')
+                if outro_cancer_type:
+                    paciente.outro_cancer_type = outro_cancer_type
+                else:
+                    paciente.outro_cancer_type = None
                 hospital_id = request.POST.get('hospital')
                 if hospital_id and hospital_id != '':
-                    try:
-                        hospital = Hospital.objects.get(id=hospital_id)
-                        paciente.hospital = hospital
-                    except Hospital.DoesNotExist:
+                    if hospital_id == 'Outro':
                         paciente.hospital = None
+                        paciente.outro_hospital = request.POST.get('outro_hospital', '').strip()
+                    else:
+                        try:
+                            hospital = Hospital.objects.get(nome=hospital_id)
+                            paciente.hospital = hospital
+                            paciente.outro_hospital = None
+                        except Hospital.DoesNotExist:
+                            paciente.hospital = None
+                            paciente.outro_hospital = None
                 else:
                     paciente.hospital = None
+                    paciente.outro_hospital = None
                 paciente.save()
             elif user_type == 'profissional':
-                profissional.tipo_profissional = request.POST.get('tipo_profissional', '')
+                profissional.nome = nome
+                profissional.email = email
+                if data_nascimento:
+                    profissional.data_nascimento = data_nascimento
                 profissional.certificado_profissional = request.POST.get('certificado_profissional', '')
                 if request.POST.get('validade_certificado'):
                     profissional.validade_certificado = request.POST.get('validade_certificado')
+                profissional.zona_trabalho = request.POST.get('zona_trabalho', '')
+                
+                # Atualizar especialidades
+                especialidades = []
+                for i in range(1, 6):
+                    especialidade = request.POST.get(f'especialidade{i}', '').strip()
+                    if especialidade:
+                        especialidades.append(especialidade)
+                
+                # Validar que pelo menos 1 especialidade foi fornecida
+                if not especialidades:
+                    return render(request, 'meu_perfil.html', {
+                        'current_page': 'meu_perfil',
+                        'user_type': user_type,
+                        'user_data': user_data,
+                        'hospitais': hospitais,
+                        'error_message': 'Pelo menos uma especialidade é obrigatória.'
+                    })
+                
+                profissional.especialidades = especialidades
+                
                 profissional.save()
+            else:
+                # Utilizador comum
+                user.nome = nome
+                user.email = email
+                if data_nascimento:
+                    user.data_nascimento = data_nascimento
+                user.save()
             
             return redirect('meu_perfil')
     
@@ -603,3 +701,21 @@ def toggle_favorito(request):
         fav.delete()
         return JsonResponse({'status': 'ok', 'favorited': False})
     return JsonResponse({'status': 'ok', 'favorited': True})
+
+@require_POST
+@login_required
+def atualizar_status(request):
+    import json
+    data = json.loads(request.body)
+    novo_status = data.get('status')
+    
+    if not novo_status or novo_status not in ['ONLINE', 'OFFLINE', 'AUSENTE']:
+        return JsonResponse({'status': 'error', 'message': 'Status inválido.'}, status=400)
+    
+    try:
+        profissional = ProfissionalSaude.objects.get(id=request.user.id)
+        profissional.status = novo_status
+        profissional.save()
+        return JsonResponse({'status': 'ok', 'novo_status': novo_status})
+    except ProfissionalSaude.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Utilizador não é profissional de saúde.'}, status=403)
