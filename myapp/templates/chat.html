@@ -1,174 +1,304 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-    <meta charset="UTF-8" />
-    <title>Chat Interface</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat - OncoWell</title>
 
-        .chat-container {
-            width: 400px;
-            height: 600px;
-            background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            border-radius: 10px;
-            overflow: hidden;
-        }
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <link href="{% static 'css/style.css' %}" rel="stylesheet" />
 
-        .chat-header {
-            background: #4A90E2;
-            color: white;
-            padding: 20px;
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background: #e9ebee;
-        }
-
-        .message {
-            margin-bottom: 15px;
-            max-width: 70%;
-            padding: 10px 15px;
-            border-radius: 20px;
-            clear: both;
-        }
-
-        .message.sent {
-            background: #4A90E2;
-            color: white;
-            float: right;
-            border-bottom-right-radius: 0;
-        }
-
-        .message.received {
-            background: #fff;
-            color: #333;
-            float: left;
-            border-bottom-left-radius: 0;
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
-        }
-
-        .chat-input-area {
-            padding: 10px 20px;
-            background: #f1f1f1;
-            display: flex;
-            align-items: center;
-        }
-
-        .chat-input-area input[type="text"] {
-            flex: 1;
-            padding: 12px 15px;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            outline: none;
-            box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
-        }
-
-        .chat-input-area button {
-            margin-left: 10px;
-            background: #4A90E2;
-            border: none;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .chat-input-area button:hover {
-            background: #357ABD;
-        }
-    </style>
-</head>
-<body>
-
-<div class="chat-container">
-    <div class="chat-header">
-        Chat Oncowell
-    </div>
-
-    <div class="chat-messages" id="chatMessages">
-        <div class="message received">Olá! Como posso ajudar?</div>
-        <div class="message sent">Olá! Gostaria de saber mais sobre os tratamentos.</div>
-        <div class="message received">Claro! Quais são as suas dúvidas?</div>
-    </div>
-
-    <div class="chat-input-area">
-        <input type="text" id="chatInput" placeholder="Escreve uma mensagem..." />
-        <button id="sendBtn">Enviar</button>
-    </div>
-</div>
-
-<script>
-    const chatMessages = document.getElementById('chatMessages');
-    const chatInput = document.getElementById('chatInput');
-    const sendBtn = document.getElementById('sendBtn');
-
-    function sendMessage() {
-        const text = chatInput.value.trim();
-        if (text === '') return;
-
-        // Criar a mensagem enviada
-        const msgDiv = document.createElement('div');
-        msgDiv.classList.add('message', 'sent');
-        msgDiv.textContent = text;
-
-        // Adicionar mensagem à lista
-        chatMessages.appendChild(msgDiv);
-
-        // Scroll para o fim
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-
-        // Limpar input
-        chatInput.value = '';
-
-        // Simular resposta automática depois de 1.2 segundos
-        setTimeout(() => {
-            const reply = document.createElement('div');
-            reply.classList.add('message', 'received');
-            reply.textContent = 'Obrigado pela mensagem! Em breve responderemos.';
-            chatMessages.appendChild(reply);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }, 1200);
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Instrument Sans', sans-serif;
+      background-color: #f2f2f2;
+      min-height: 100vh;
     }
 
-    sendBtn.addEventListener('click', sendMessage);
+    .nav {
+      position: absolute;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 30px;
+      font-size: 16px;
+      font-weight: 500;
+    }
 
-    chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
-</script>
+    .nav-item {
+      text-decoration: none;
+      color: #333;
+      padding: 6px 12px;
+      border-radius: 6px;
+    }
 
-{% if user.is_authenticated %}
-<a href="#" class="user-icon" onclick="toggleUserMenu()">
+    .nav-item.active {
+      background-color: #000;
+      color: #fff;
+    }
+
+    .logo {
+      position: absolute;
+      top: 25px;
+      left: 30px;
+      width: 160px;
+      height: 40px;
+    }
+
+    .user-icon,
+    .login-button {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+      font-size: 18px;
+      color: #000;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .main-container {
+      display: flex;
+      max-width: 1000px;
+      margin: 160px auto 60px;
+      gap: 24px;
+      padding: 0 20px;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .sidebar h3 {
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .contact-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .contact-list li {
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .contact-list li:hover,
+    .contact-list li.active {
+      background-color: #000;
+      color: #fff;
+    }
+
+    .chat-container {
+      flex: 1;
+      height: 80vh;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      padding: 20px;
+      background-color: #000;
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .chat-messages {
+      flex-grow: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      background-color: #fafafa;
+    }
+
+    .message {
+      max-width: 60%;
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 15px;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+
+    .sent {
+      background-color: #d2f2ff;
+      align-self: flex-end;
+    }
+
+    .received {
+      background-color: #e4e4e4;
+      align-self: flex-start;
+    }
+
+    .chat-form {
+      display: flex;
+      padding: 16px;
+      border-top: 1px solid #ccc;
+      gap: 10px;
+      background-color: #fff;
+    }
+
+    .chat-form input[type="text"] {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    .chat-form button {
+      background-color: #000;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .chat-form button:hover {
+      background-color: #333;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Navegação -->
+  <div class="nav">
+    <a href="{% url 'beneficios' %}" class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
+    <a href="{% url 'informacoes' %}" class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
+    <a href="{% url 'journaling' %}" class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Journaling</a>
+    <a href="{% url 'testemunhos' %}" class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
+    <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
+  </div>
+
+  <!-- Logo -->
+  <a href="{% url 'home' %}" class="logo">
+    <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;" />
+  </a>
+
+  <!-- Login/User -->
+  {% if user.is_authenticated %}
+  <a href="#" class="user-icon">
     <i class="fas fa-user"></i>
-</a>
-<div class="user-menu" id="userMenu">
-    <a href="{% url 'meu_perfil' %}">Perfil</a>
-    <a href="{% url 'logout' %}">Terminar Sessão</a>
-</div>
-{% else %}
-<a href="{% url 'login' %}" class="login-button">Login</a>
-{% endif %}
+  </a>
+  {% else %}
+  <a href="{% url 'login' %}" class="login-button">Login</a>
+  {% endif %}
+
+  <!-- Área principal -->
+  <div class="main-container">
+
+    <!-- Lista de profissionais -->
+    <div class="sidebar">
+      <h3>Falar com</h3>
+      <ul class="contact-list">
+        <li class="active" onclick="trocarChat('Médico')">Médico</li>
+        <li onclick="trocarChat('Enfermeiro')">Enfermeiro</li>
+        <li onclick="trocarChat('Psicólogo')">Psicólogo</li>
+      </ul>
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-container">
+      <div class="chat-header" id="chat-title">Chat com Médico</div>
+
+      <div class="chat-messages" id="chat-messages">
+        <div class="message received">Olá, em que posso ajudar?</div>
+        <div class="message sent">Tenho dúvidas sobre os efeitos secundários do tratamento.</div>
+        <div class="message received">Claro, posso explicar. Que tratamento estás a fazer?</div>
+      </div>
+
+      <form class="chat-form" onsubmit="sendMessage(event)">
+        <input type="text" id="mensagem" placeholder="Escreve a tua mensagem..." required />
+        <button type="submit"><i class="fas fa-paper-plane"></i></button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const mensagensSimuladas = {
+      'Médico': [
+        { tipo: 'received', texto: 'Olá, em que posso ajudar?' },
+        { tipo: 'sent', texto: 'Tenho dúvidas sobre os efeitos secundários do tratamento.' },
+        { tipo: 'received', texto: 'Claro, posso explicar. Que tratamento estás a fazer?' }
+      ],
+      'Enfermeiro': [
+        { tipo: 'received', texto: 'Bom dia! Precisa de ajuda com os cuidados diários?' },
+        { tipo: 'sent', texto: 'Sim, sobre como fazer o curativo.' }
+      ],
+      'Psicólogo': [
+        { tipo: 'received', texto: 'Olá, como está a sentir-se hoje?' },
+        { tipo: 'sent', texto: 'Estou um pouco ansioso com o tratamento.' }
+      ]
+    };
+
+    let chatAtual = 'Médico';
+
+    function trocarChat(profissional) {
+      chatAtual = profissional;
+      document.getElementById('chat-title').textContent = `Chat com ${profissional}`;
+
+      // Atualiza classe active
+      document.querySelectorAll('.contact-list li').forEach(li => {
+        li.classList.toggle('active', li.textContent === profissional);
+      });
+
+      // Atualiza mensagens
+      const container = document.getElementById('chat-messages');
+      container.innerHTML = '';
+      mensagensSimuladas[profissional].forEach(m => {
+        const div = document.createElement('div');
+        div.className = `message ${m.tipo}`;
+        div.textContent = m.texto;
+        container.appendChild(div);
+      });
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sendMessage(event) {
+      event.preventDefault();
+      const input = document.getElementById('mensagem');
+      const text = input.value.trim();
+      if (text === '') return;
+
+      const container = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      div.className = 'message sent';
+      div.textContent = text;
+      container.appendChild(div);
+
+      input.value = '';
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // Inicializa com o chat do médico
+    trocarChat(chatAtual);
+  </script>
 
 </body>
+
 </html>
