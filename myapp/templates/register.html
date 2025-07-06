@@ -127,12 +127,12 @@
             </div>
             <div id="license-fields" class="form-group" style="display: none;">
                 <label for="healthcare_type">Tipo de Profissional</label>
-                <select id="healthcare_type" name="healthcare_type" required>
-                    <option value="">Selecione uma opção</option>
-                    <option value="PSICOLOGO">Psicólogo</option>
-                    <option value="MEDICO">Médico</option>
-                    <option value="ENFERMEIRO">Enfermeiro</option>
-                </select>
+                <input type="text" id="healthcare_type" name="healthcare_type" list="tipo-profissional-list" placeholder="Selecione ou escreva o tipo de profissional" required>
+                <datalist id="tipo-profissional-list">
+                    <option value="PSICOLOGO"></option>
+                    <option value="MEDICO"></option>
+                    <option value="ENFERMEIRO"></option>
+                </datalist>
                 <label for="zona_trabalho">Zona de Trabalho</label>
                 <input type="text" id="zona_trabalho" name="zona_trabalho" list="distritos-list" placeholder="Selecione ou escreva o distrito" required>
                 <datalist id="distritos-list">
@@ -158,12 +158,30 @@
                     <option value="Região Autónoma da Madeira">
                 </datalist>
                 <label for="especialidades">Especialidades (mínimo 1)</label>
+                <datalist id="especialidades-list">
+                    <option value="MAMA">
+                    <option value="PULMAO">
+                    <option value="COLON">
+                    <option value="PROSTATA">
+                    <option value="PELE">
+                    <option value="CERVICAL">
+                    <option value="OVARIO">
+                    <option value="PANCREAS">
+                    <option value="ESTOMAGO">
+                    <option value="FIGADO">
+                    <option value="CEREBRO">
+                    <option value="LEUCEMIA">
+                    <option value="LINFOMA">
+                    <option value="MULTIPLO_MIELOMA">
+                    <option value="SARCOMA">
+                    <option value="OUTRO">
+                </datalist>
                 <div id="especialidades-container">
-                    <input type="text" id="especialidade1" name="especialidade1" placeholder="Especialidade 1" class="especialidade-input">
-                    <input type="text" id="especialidade2" name="especialidade2" placeholder="Especialidade 2" class="especialidade-input">
-                    <input type="text" id="especialidade3" name="especialidade3" placeholder="Especialidade 3" class="especialidade-input">
-                    <input type="text" id="especialidade4" name="especialidade4" placeholder="Especialidade 4" class="especialidade-input">
-                    <input type="text" id="especialidade5" name="especialidade5" placeholder="Especialidade 5" class="especialidade-input">
+                    <input type="text" id="especialidade1" name="especialidade1" placeholder="Especialidade 1" class="especialidade-input" list="especialidades-list">
+                    <input type="text" id="especialidade2" name="especialidade2" placeholder="Especialidade 2" class="especialidade-input" list="especialidades-list">
+                    <input type="text" id="especialidade3" name="especialidade3" placeholder="Especialidade 3" class="especialidade-input" list="especialidades-list">
+                    <input type="text" id="especialidade4" name="especialidade4" placeholder="Especialidade 4" class="especialidade-input" list="especialidades-list">
+                    <input type="text" id="especialidade5" name="especialidade5" placeholder="Especialidade 5" class="especialidade-input" list="especialidades-list">
                 </div>
                 <label for="medical_license">Licença Médica</label>
                 <input type="text" id="medical_license" name="medical_license">

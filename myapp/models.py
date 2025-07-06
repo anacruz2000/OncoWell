@@ -91,6 +91,7 @@ class ProfissionalSaude(Utilizador):
     ], default='ONLINE')
     zona_trabalho = models.CharField(max_length=100, blank=True, null=True)
     especialidades = models.JSONField(default=list, blank=True)  # Lista de até 5 especialidades
+    n_pacientes = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.get_tipo_profissional_display()}: {self.nome}"
