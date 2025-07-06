@@ -345,12 +345,30 @@
 
                 <div class="form-group">
                     <label for="especialidades">Especialidades (mínimo 1)</label>
+                    <datalist id="especialidades-list">
+                        <option value="MAMA">
+                        <option value="PULMAO">
+                        <option value="COLON">
+                        <option value="PROSTATA">
+                        <option value="PELE">
+                        <option value="CERVICAL">
+                        <option value="OVARIO">
+                        <option value="PANCREAS">
+                        <option value="ESTOMAGO">
+                        <option value="FIGADO">
+                        <option value="CEREBRO">
+                        <option value="LEUCEMIA">
+                        <option value="LINFOMA">
+                        <option value="MULTIPLO_MIELOMA">
+                        <option value="SARCOMA">
+                        <option value="OUTRO">
+                    </datalist>
                     <div id="especialidades-container">
-                        <input type="text" id="especialidade1" name="especialidade1" value="{% if user_data.especialidades.0 %}{{ user_data.especialidades.0 }}{% endif %}" placeholder="Especialidade 1" class="especialidade-input">
-                        <input type="text" id="especialidade2" name="especialidade2" value="{% if user_data.especialidades.1 %}{{ user_data.especialidades.1 }}{% endif %}" placeholder="Especialidade 2" class="especialidade-input">
-                        <input type="text" id="especialidade3" name="especialidade3" value="{% if user_data.especialidades.2 %}{{ user_data.especialidades.2 }}{% endif %}" placeholder="Especialidade 3" class="especialidade-input">
-                        <input type="text" id="especialidade4" name="especialidade4" value="{% if user_data.especialidades.3 %}{{ user_data.especialidades.3 }}{% endif %}" placeholder="Especialidade 4" class="especialidade-input">
-                        <input type="text" id="especialidade5" name="especialidade5" value="{% if user_data.especialidades.4 %}{{ user_data.especialidades.4 }}{% endif %}" placeholder="Especialidade 5" class="especialidade-input">
+                        <input type="text" id="especialidade1" name="especialidade1" value="{% if user_data.especialidades.0 %}{{ user_data.especialidades.0 }}{% endif %}" placeholder="Especialidade 1" class="especialidade-input" list="especialidades-list">
+                        <input type="text" id="especialidade2" name="especialidade2" value="{% if user_data.especialidades.1 %}{{ user_data.especialidades.1 }}{% endif %}" placeholder="Especialidade 2" class="especialidade-input" list="especialidades-list">
+                        <input type="text" id="especialidade3" name="especialidade3" value="{% if user_data.especialidades.2 %}{{ user_data.especialidades.2 }}{% endif %}" placeholder="Especialidade 3" class="especialidade-input" list="especialidades-list">
+                        <input type="text" id="especialidade4" name="especialidade4" value="{% if user_data.especialidades.3 %}{{ user_data.especialidades.3 }}{% endif %}" placeholder="Especialidade 4" class="especialidade-input" list="especialidades-list">
+                        <input type="text" id="especialidade5" name="especialidade5" value="{% if user_data.especialidades.4 %}{{ user_data.especialidades.4 }}{% endif %}" placeholder="Especialidade 5" class="especialidade-input" list="especialidades-list">
                     </div>
                 </div>
                 {% endif %}
