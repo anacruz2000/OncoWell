@@ -104,7 +104,7 @@
                 <input type="text" id="hospital" name="hospital" list="hospitais-list" placeholder="Selecione ou escreva o hospital" required>
                 <datalist id="hospitais-list">
                     {% for hospital in hospitais %}
-                        <option value="{{ hospital.get_nome_display }}">
+                        <option value="{{ hospital.nome }}">{{ hospital.get_nome_display }}</option>
                     {% endfor %}
                 </datalist>
                 <div id="outro-hospital-field" style="display: none; margin-top: 10px;">
@@ -201,27 +201,32 @@
             const healthcareField = document.getElementById('healthcare-field');
             const licenseFields = document.getElementById('license-fields');
             const isPatientYes = document.getElementById('is_patient_yes');
-            
+            const isHealthcareYes = document.getElementById('is_healthcare_yes');
+            const isHealthcareNo = document.getElementById('is_healthcare_no');
+
             if (isPatientYes.checked) {
                 patientFields.style.display = 'block';
                 healthcareField.style.display = 'none';
                 licenseFields.style.display = 'none';
                 document.getElementById('cancer_type').required = true;
                 document.getElementById('hospital').required = true;
+                // Remover obrigatoriedade dos radios de profissional de saúde
+                isHealthcareYes.required = false;
+                isHealthcareNo.required = false;
                 // Reset healthcare radio buttons and license fields
-                document.getElementById('is_healthcare_yes').checked = false;
-                document.getElementById('is_healthcare_no').checked = false;
+                isHealthcareYes.checked = false;
+                isHealthcareNo.checked = false;
                 document.getElementById('healthcare_type').required = false;
                 document.getElementById('medical_license').required = false;
                 document.getElementById('license_validity').required = false;
             } else {
                 patientFields.style.display = 'none';
                 healthcareField.style.display = 'block';
+                // Só tornar obrigatórios se o campo estiver visível
+                isHealthcareYes.required = true;
+                isHealthcareNo.required = true;
                 document.getElementById('cancer_type').required = false;
                 document.getElementById('hospital').required = false;
-                // Make healthcare question required
-                document.getElementById('is_healthcare_yes').required = true;
-                document.getElementById('is_healthcare_no').required = true;
             }
         }
 
@@ -300,6 +305,12 @@
                 outroHospitalInput.required = false;
                 outroHospitalInput.value = '';
             }
+        });
+
+        // Garantir que os campos obrigatórios estão corretos ao carregar a página
+        window.addEventListener('DOMContentLoaded', function() {
+            toggleFields();
+            toggleLicenseFields();
         });
     </script>
 </body>

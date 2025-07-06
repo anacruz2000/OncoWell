@@ -171,11 +171,19 @@ def pacientes(request):
 
 def inicio_psi(request):
     profissional = None
+    n_pacientes_ativos = 0
     if request.user.is_authenticated and hasattr(request.user, 'profissionalsaude'):
         profissional = request.user.profissionalsaude
+        if profissional.zona_trabalho and profissional.especialidades:
+            # Pacientes cujo hospital tem a mesma zona e tipo de cancro está nas especialidades
+            n_pacientes_ativos = Paciente.objects.filter(
+                hospital__zona=profissional.zona_trabalho,
+                tipo_cancro__in=profissional.especialidades
+            ).count()
     return render(request, 'inicio_psi.html', {
         'current_page': 'inicio_psi',
         'profissional': profissional,
+        'profissional_n_pacientes': n_pacientes_ativos,
     })
 
 def enviar_pergunta(request):
@@ -258,13 +266,11 @@ def register_view(request):
                         hospital = Hospital.objects.get(nome=hospital_id)
                     except Hospital.DoesNotExist:
                         pass
-            
             # Processar campo de especificação se "OUTRO" foi selecionado
             outro_cancer_type = None
             if cancer_type == 'OUTRO':
                 outro_cancer_type = request.POST.get('outro_cancer_type', '').strip()
-            
-            Paciente.objects.create_user(
+            paciente = Paciente.objects.create_user(
                 nome=nome, 
                 username=username, 
                 email=email, 
@@ -276,6 +282,17 @@ def register_view(request):
                 outro_hospital=outro_hospital,
                 estado_pac='estavel'
             )
+            # Associação automática a profissionais
+            if hospital and hospital.zona:
+                profissionais = ProfissionalSaude.objects.filter(
+                    zona_trabalho=hospital.zona,
+                    especialidades__contains=[cancer_type]
+                )
+                paciente.profissionais.set(profissionais)
+                # Atualizar manualmente o n_pacientes de cada profissional
+                for profissional in profissionais:
+                    profissional.n_pacientes = profissional.pacientes.count()
+                    profissional.save()
         elif(len(healthcare_type) > 0):
             print('profissional')
             # Coletar especialidades
@@ -491,6 +508,14 @@ def meu_perfil(request):
             'outro_hospital': paciente.outro_hospital,
             'estado_pac': paciente.estado_pac,
         }
+        if user_type == 'paciente':
+            profissionais = paciente.profissionais.all()
+            profissionais_por_tipo = {
+                'psicologos': profissionais.filter(tipo_profissional='PSICOLOGO'),
+                'medicos': profissionais.filter(tipo_profissional='MEDICO'),
+                'enfermeiros': profissionais.filter(tipo_profissional='ENFERMEIRO'),
+            }
+            user_data['profissionais_por_tipo'] = profissionais_por_tipo
     except Paciente.DoesNotExist:
         try:
             profissional = ProfissionalSaude.objects.get(id=user.id)

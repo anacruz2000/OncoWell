@@ -282,10 +282,10 @@
                     </div>
                     <div class="form-group">
                         <label for="hospital">Hospital</label>
-                        <input type="text" id="hospital" name="hospital" value="{% if user_data.hospital %}{{ user_data.hospital.get_nome_display }}{% endif %}" list="hospitais-list" placeholder="Selecione ou escreva o hospital">
+                        <input type="text" id="hospital" name="hospital" value="{% if user_data.hospital %}{{ user_data.hospital.nome }}{% endif %}" list="hospitais-list" placeholder="Selecione ou escreva o hospital">
                         <datalist id="hospitais-list">
                             {% for hospital in hospitais %}
-                                <option value="{{ hospital.get_nome_display }}">
+                                <option value="{{ hospital.nome }}">{{ hospital.get_nome_display }}</option>
                             {% endfor %}
                         </datalist>
                         <div id="outro-hospital-field" style="display: none; margin-top: 10px;">
@@ -375,6 +375,44 @@
 
                 <button type="submit" class="save-button">Salvar Alterações</button>
             </form>
+
+            {% if user_type == 'paciente' and user_data.profissionais_por_tipo %}
+                <div class="profile-container" style="margin-top: 30px;">
+                    <h3 class="section-title">Profissionais de Saúde Associados</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <strong>Psicólogo(s):</strong>
+                            <ul>
+                            {% for prof in user_data.profissionais_por_tipo.psicologos %}
+                                <li>{{ prof.nome }} ({{ prof.email }})</li>
+                            {% empty %}
+                                <li>Nenhum psicólogo associado.</li>
+                            {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="form-group">
+                            <strong>Médico(s):</strong>
+                            <ul>
+                            {% for prof in user_data.profissionais_por_tipo.medicos %}
+                                <li>{{ prof.nome }} ({{ prof.email }})</li>
+                            {% empty %}
+                                <li>Nenhum médico associado.</li>
+                            {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="form-group">
+                            <strong>Enfermeiro(s):</strong>
+                            <ul>
+                            {% for prof in user_data.profissionais_por_tipo.enfermeiros %}
+                                <li>{{ prof.nome }} ({{ prof.email }})</li>
+                            {% empty %}
+                                <li>Nenhum enfermeiro associado.</li>
+                            {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
 
             <!-- Seção para apagar conta -->
             <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">

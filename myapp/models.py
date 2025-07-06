@@ -30,6 +30,7 @@ class Hospital(models.Model):
     
     nome = models.CharField(max_length=100, choices=HOSPITAIS_CHOICES, unique=True)
     morada = models.CharField(max_length=255, blank=True, null=True)
+    zona = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.get_nome_display()
