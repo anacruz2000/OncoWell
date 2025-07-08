@@ -29,6 +29,7 @@
       <a href="{% url 'testemunhos' %}"
           class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
       <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
+      <a href="{% url 'chat' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
     </div>
 
     {% if user.is_authenticated %}
@@ -48,51 +49,53 @@
     </a>
   {% endif %}
 
-  <div class="main-content">
-    <div class="benefits-section-title">Benefícios</div>
-    <div class="benefits-title">Estamos aqui para te acompanhar nesta jornada.</div>
-    <div class="benefits-subtitle">A OncoWell mostra cuidado e conforto a cada etapa da jornada contra o cancro.</div>
+  <div style="max-width: 1200px; margin: 120px auto; padding: 0 20px; text-align: center;">
 
-    <!-- Linhas decorativas -->
-    <div class="benefits-decorative-line benefits-decorative-line-1"></div>
-    <div class="benefits-decorative-line benefits-decorative-line-2"></div>
-    <div class="benefits-decorative-line benefits-decorative-line-3"></div>
-    <div class="benefits-decorative-line benefits-decorative-line-4"></div>
+  <h1 style="font-size: 28px; font-weight: 700; margin-bottom: 40px;">Estamos aqui para te acompanhar nesta jornada.</h1>
+  <p style="font-size: 18px; font-weight: 500; color: rgba(0, 0, 0, 0.5); margin-bottom: 60px;">
+    A OncoWell mostra cuidado e conforto a cada etapa da jornada contra o cancro.
+  </p>
 
-    <!-- Blocos de conteúdo -->
-    <div class="benefits-content benefits-content-1">
-      Explore o impacto transformador da prática de journaling para o bem-estar mental e emocional. Perceba a
-      importância de registrar pensamentos e sentimentos.
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 40px;">
+
+    <div style="text-align: center;">
+      <img src="{% static 'images/journaling_valor.png' %}" alt="Journaling" style="width: 60px; margin-bottom: 16px;">
+      <h3 style="font-size: 18px; font-weight: 700;">Valor do Journaling</h3>
+      <p style="font-size: 16px; font-weight: 500; color: rgba(0, 0, 0, 0.7); text-align: justify;">
+        Explore o impacto transformador da prática de journaling para o bem-estar mental e emocional.
+        Perceba a importância de registrar pensamentos e sentimentos.
+      </p>
     </div>
-    <div class="benefits-content-title benefits-content-title-1">Valor do Journaling</div>
 
-    <div class="benefits-content benefits-content-2">
-      Todas as informações e registros escritos são mantidos em segurança e com total anonimato, garantindo um espaço
-      seguro para expressão pessoal.
+    <div style="text-align: center;">
+      <img src="{% static 'images/escrita.png' %}" alt="Escrita" style="width: 41px; margin-bottom: 16px;">
+      <h3 style="font-size: 18px; font-weight: 700;">Benefícios Terapêuticos da Escrita</h3>
+      <p style="font-size: 16px; font-weight: 500; color: rgba(0, 0, 0, 0.7); text-align: justify;">
+        A escrita pode ser uma ferramenta de autocuidado e terapia, promovendo clareza mental,
+        redução do stress e autoconhecimento.
+      </p>
     </div>
-    <div class="benefits-content-title benefits-content-title-2">Privacidade e Anonimato</div>
 
-    <div class="benefits-content benefits-content-3">
-      Compartilhe histórias reais de pacientes que experimentaram e obteram melhorias significativas na sua saúde
-      emocional e mental através do journaling online.
+    <div style="text-align: center;">
+      <img src="{% static 'images/relatos.png' %}" alt="Relatos" style="width: 50px; margin-bottom: 16px;">
+      <h3 style="font-size: 18px; font-weight: 700;">Relatos e Depoimentos</h3>
+      <p style="font-size: 16px; font-weight: 500; color: rgba(0, 0, 0, 0.7); text-align: justify;">
+        Compartilhe histórias reais de pacientes que experimentaram e obtiveram melhorias significativas
+        na sua saúde emocional e mental através do journaling online.
+      </p>
     </div>
-    <div class="benefits-content-title benefits-content-title-3">Relatos e Depoimentos</div>
 
-    <div class="benefits-content benefits-content-4">
-      A escrita pode ser uma ferramenta de autocuidado e terapia, promovendo clareza mental, redução do stress e
-      autoconhecimento.
+    <div style="text-align: center;">
+      <img src="{% static 'images/privacidade.png' %}" alt="Privacidade" style="width: 40px; margin-bottom: 16px;">
+      <h3 style="font-size: 18px; font-weight: 700;">Privacidade e Anonimato</h3>
+      <p style="font-size: 16px; font-weight: 500; color: rgba(0, 0, 0, 0.7); text-align: justify;">
+        Todas as informações e registros escritos são mantidos em segurança e com total anonimato,
+        garantindo um espaço seguro para expressão pessoal.
+      </p>
     </div>
-    <div class="benefits-content-title benefits-content-title-4">Benefícios Terapêuticos da Escrita</div>
 
-    <!-- Ícones -->
-    <img src="{% static 'images/privacidade.png' %}" class="benefits-icon benefits-icon-1" alt="Privacidade" />
-    <img src="{% static 'images/escrita.png' %}" class="benefits-icon benefits-icon-2" alt="Escrita" />
-    <img src="{% static 'images/journaling_valor.png' %}" class="benefits-icon benefits-icon-3" alt="Journaling" />
-    <img src="{% static 'images/relatos.png' %}" class="benefits-icon benefits-icon-4" alt="Relatos" />
-
-    <!-- Rodapé -->
-    <div class="benefits-footer"></div>
   </div>
+</div>
 
   <script>
     function toggleUserMenu() {

@@ -164,7 +164,7 @@ def qa(request):
     })
 
 def chat(request):
-    return render(request, 'chat.html')
+    return render(request, 'chat.html', {'current_page': 'chat'})
 
 def pacientes(request):
     return render(request, 'pacientes.html')

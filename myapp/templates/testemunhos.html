@@ -258,6 +258,7 @@
             <a href="{% url 'journaling_delhes' %}" class="nav-item {% if current_page == 'journaling_delhes' %}active{% endif %}">Journaling Deles</a>
             <a href="{% url 'testemunhos' %}" class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
             <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
+            <a href="{% url 'chat' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
         </div>
         {% if user.is_authenticated %}
         <a href="#" class="user-icon" onclick="toggleUserMenu()">
