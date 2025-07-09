@@ -206,68 +206,26 @@
 
     <!-- Lista de pacientes -->
     <div id="pacientesContainer">
-
-        <!-- Laura Sousa: 1 bolinha vermelha -->
-        <a href="{% url 'pacientes' %}">
-            <div class="paciente-info" data-nome="Laura Sousa">
-                <img class="paciente-foto" src="https://placehold.co/124x119" alt="Foto do paciente" />
-                <div class="paciente-nome">Laura Sousa<br>enfermidades</div>
-                <div class="circle-group">
-                    <div class="circle-icon vermelho" style="background: #FF0101;">!</div>
+        {% for paciente in pacientes %}
+            <a href="{% url 'paciente_detail' paciente.id %}">
+                <div class="paciente-info" data-nome="{{ paciente.nome }}">
+                    <img class="paciente-foto" src="https://placehold.co/124x119" alt="Foto do paciente" />
+                    <div class="paciente-nome">{{ paciente.nome }}<br>{% if paciente.tipo_cancro %}{{ paciente.get_tipo_cancro_display }}{% endif %}</div>
+                    <div class="circle-group">
+                        {% if paciente.estado_pac|lower == 'critico' %}
+                            <div class="circle-icon vermelho" style="background: #FF0101;">!</div>
+                        {% elif paciente.estado_pac|lower == 'moderado' %}
+                            <div class="circle-icon amarelo" style="background: #FFA100;">!</div>
+                        {% else %}
+                            <div class="circle-icon verde" style="background: #15B640;">✓</div>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
-        </a>
-
-        <div class="gray-box"></div>
-
-        <!-- Francisco Madeira: 1 bolinha vermelha -->
-        <a href="paciente.html?nome=Francisco+Madeira">
-            <div class="paciente-info" data-nome="Francisco Madeira">
-                <img class="paciente-foto" src="https://placehold.co/124x119" alt="Foto do paciente" />
-                <div class="paciente-nome">Francisco Madeira<br>enfermidades</div>
-                <div class="circle-group">
-                    <div class="circle-icon vermelho" style="background: #FF0101;">!</div>
-                </div>
-            </div>
-        </a>
-
-        <div class="gray-box"></div>
-
-        <!-- Carlos Mendes: 1 bolinha verde -->
-        <a href="paciente.html?nome=Carlos+Mendes">
-            <div class="paciente-info" data-nome="Carlos Mendes">
-                <img class="paciente-foto" src="https://placehold.co/124x119" alt="Foto do paciente" />
-                <div class="paciente-nome">Carlos Mendes<br>enfermidades</div>
-                <div class="circle-group">
-                    <div class="circle-icon verde" style="background: #15B640;">✓</div>
-                </div>
-            </div>
-        </a>
-
-        <div class="gray-box"></div>
-
-        <!-- Fernanda Lima: 1 bolinha laranja -->
-        <a href="paciente.html?nome=Fernanda+Lima">
-            <div class="paciente-info" data-nome="Fernanda Lima">
-                <img class="paciente-foto" src="https://placehold.co/124x119" alt="Foto do paciente" />
-                <div class="paciente-nome">Fernanda Lima<br>enfermidades</div>
-                <div class="circle-group">
-                    <div class="circle-icon amarelo" style="background: #FFA100;">!</div>
-                </div>
-            </div>
-        </a>
-
-        <!-- Fernanda Monteiro: 1 bolinha verde -->
-        <a href="paciente.html?nome=Fernanda+Monteiro">
-            <div class="paciente-info" data-nome="Fernanda Monteiro">
-                <img class="paciente-foto" src="https://placehold.co/124x119" alt="Foto do paciente" />
-                <div class="paciente-nome">Fernanda Monteiro<br>enfermidades</div>
-                <div class="circle-group">
-                    <div class="circle-icon verde" style="background: #15B640;">!</div>
-                </div>
-            </div>
-        </a>
-
+            </a>
+            <div class="gray-box"></div>
+        {% empty %}
+            <p>Nenhum paciente atribuído.</p>
+        {% endfor %}
     </div>
 
     <!-- Indicador de status dos pacientes -->

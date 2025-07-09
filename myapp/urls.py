@@ -14,6 +14,7 @@ urlpatterns = [
     path('q&a/', views.qa, name='q&a'),
     path('inicio_psi/', views.inicio_psi, name='inicio_psi'),
     path('pacientes/', views.pacientes, name='pacientes'),
+    path('pacientes/<int:paciente_id>/', views.paciente_detail, name='paciente_detail'),
     path('register/', views.register_view, name='register'),
     path('enviar-pergunta/', views.enviar_pergunta, name='enviar_pergunta'),
     path('chat/', views.chat, name='chat'),

@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from django.shortcuts import render, HttpResponse, redirect
+from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -172,6 +172,7 @@ def pacientes(request):
 def inicio_psi(request):
     profissional = None
     n_pacientes_ativos = 0
+    pacientes_atribuidos = []
     if request.user.is_authenticated and hasattr(request.user, 'profissionalsaude'):
         profissional = request.user.profissionalsaude
         if profissional.zona_trabalho and profissional.especialidades:
@@ -180,10 +181,13 @@ def inicio_psi(request):
                 hospital__zona=profissional.zona_trabalho,
                 tipo_cancro__in=profissional.especialidades
             ).count()
+        # Buscar pacientes atribuídos a este profissional
+        pacientes_atribuidos = profissional.pacientes.all()
     return render(request, 'inicio_psi.html', {
         'current_page': 'inicio_psi',
         'profissional': profissional,
         'profissional_n_pacientes': n_pacientes_ativos,
+        'pacientes': pacientes_atribuidos,
     })
 
 def enviar_pergunta(request):
@@ -744,3 +748,7 @@ def atualizar_status(request):
         return JsonResponse({'status': 'ok', 'novo_status': novo_status})
     except ProfissionalSaude.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Utilizador não é profissional de saúde.'}, status=403)
+
+def paciente_detail(request, paciente_id):
+    paciente = get_object_or_404(Paciente, id=paciente_id)
+    return render(request, 'pacientes.html', {'paciente': paciente})

@@ -228,13 +228,18 @@
 </head>
 
 <body>
+  <!-- Nav bar -->
+  {% include '_navbar_profissional.html' %}
 
   <div class="content-wrapper">
     <div class="sidebar">
       <div class="profile">
         <img src="https://placehold.co/100x100" alt="Foto do paciente" />
-        <div class="profile-name">Laura Sousa</div>
-        <div class="profile-desc">Enfermidades</div>
+        <div class="profile-name">{{ paciente.nome }}</div>
+        <div class="profile-desc">
+          {{ paciente.get_tipo_cancro_display }}<br>
+          {% if paciente.hospital %}{{ paciente.hospital }}{% endif %}
+        </div>
       </div>
 
       <div class="filters">
