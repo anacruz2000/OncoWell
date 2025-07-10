@@ -13,11 +13,8 @@
     body {
       margin: 0;
       font-family: Roboto, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      overflow: hidden;
+      padding: 20px;
+      margin-top: 120px;
     }
 
 
@@ -27,7 +24,7 @@
       justify-content: center;
       max-width: 1300px;
       width: 100%;
-      height: 90%;
+      min-height: 500px;
       gap: 30px;
       padding: 20px;
       box-sizing: border-box;
@@ -146,7 +143,7 @@
 
     .main-content {
   width: 1000px; /* Reduzido de 800px para caber bem */
-  height: 500px;
+  min-height: 500px;
   background: transparent;
   display: flex;
   align-items: center;
@@ -157,7 +154,7 @@
   background-image: url("{% static 'images/livro_journaling.png' %}");
   background-size: contain;
   background-repeat: no-repeat;
-  background-position: center;
+  background-position: center top;
 }
 
 
@@ -224,6 +221,139 @@
     .hidden {
       display: none !important;
     }
+
+    .profissionais-container {
+      border-top: 1px solid #ddd;
+      padding-top: 20px;
+      margin-top: 20px;
+    }
+
+    .profissionais-title {
+      font-weight: 600;
+      margin-bottom: 15px;
+      font-size: 18px;
+      color: #333;
+    }
+
+    .profissional-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background: #fafafa;
+      transition: all 0.3s ease;
+    }
+
+    .profissional-item:hover {
+      background: #f0f0f0;
+      border-color: #ddd;
+    }
+
+    .profissional-info {
+      flex: 1;
+    }
+
+    .profissional-nome {
+      font-weight: 600;
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 2px;
+    }
+
+    .profissional-tipo {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .profissional-status {
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .status-online {
+      color: #15B640;
+    }
+
+    .status-ausente {
+      color: #FFA100;
+    }
+
+    .status-offline {
+      color: #666;
+    }
+
+    .btn-chat-profissional {
+      background: #007BFF;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-chat-profissional:hover {
+      background: #0056b3;
+      transform: translateY(-1px);
+    }
+
+    .no-profissionais {
+      text-align: center;
+      color: #666;
+      font-style: italic;
+      padding: 20px 0;
+    }
+
+    .btn-chat-indisponivel {
+      background-color: #ccc;
+      color: #666;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    .btn-chat-proprio {
+      background-color: #28a745;
+      color: white;
+      cursor: default;
+      opacity: 0.8;
+    }
+
+    .btn-chat-proprio:hover {
+      background-color: #28a745;
+      opacity: 0.8;
+    }
+
+    .profissional-tipo-secao {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .tipo-titulo {
+      font-weight: 600;
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .profissional-nao-atribuido {
+      text-align: center;
+      color: #999;
+      font-style: italic;
+      padding: 10px 0;
+    }
+
+    .nao-atribuido-texto {
+      font-size: 14px;
+    }
   </style>
 </head>
 
@@ -232,6 +362,12 @@
   {% include '_navbar_profissional.html' %}
 
   <div class="content-wrapper">
+    <div style="position: fixed; top: 140px; right: 30px; z-index: 1000;">
+      <a href="{% url 'chat_paciente' paciente.id %}" style="display: inline-block; background: #007BFF; color: white; padding: 15px 20px; border-radius: 50px; text-decoration: none; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3); transition: all 0.3s ease;">
+        <i class="fas fa-comments" style="margin-right: 8px;"></i>
+        Chat com {{ paciente.nome }}
+      </a>
+    </div>
     <div class="sidebar">
       <div class="profile">
         <img src="https://placehold.co/100x100" alt="Foto do paciente" />
@@ -266,6 +402,118 @@
           <option value="verde">Verde (Estável)</option>
         </select>
         <button id="btnAlterarCor">Aplicar</button>
+      </div>
+
+      <div class="profissionais-container">
+        <div class="profissionais-title">Profissionais de Saúde</div>
+        
+        <!-- Médico -->
+        <div class="profissional-tipo-secao">
+          <div class="tipo-titulo">Médico</div>
+          {% if medico %}
+            <div class="profissional-item">
+              <div class="profissional-info">
+                <div class="profissional-nome">{{ medico.nome }}</div>
+                <div class="profissional-status {% if medico.status == 'ONLINE' %}status-online{% elif medico.status == 'AUSENTE' %}status-ausente{% else %}status-offline{% endif %}">
+                  {{ medico.get_status_display }}
+                </div>
+              </div>
+              {% if medico.id == profissional_logado.id %}
+                <!-- É o próprio profissional - não mostrar botão de chat -->
+                <span class="btn-chat-profissional btn-chat-proprio" title="Você">
+                  <i class="fas fa-user"></i>
+                  Você
+                </span>
+              {% elif medico.status == 'ONLINE' %}
+                <a href="{% url 'chat_paciente' paciente.id %}" class="btn-chat-profissional" title="Chat com {{ medico.nome }}">
+                  <i class="fas fa-comments"></i>
+                  Chat
+                </a>
+              {% else %}
+                <span class="btn-chat-profissional btn-chat-indisponivel" title="Chat indisponível">
+                  <i class="fas fa-comments"></i>
+                  Indisponível
+                </span>
+              {% endif %}
+            </div>
+          {% else %}
+            <div class="profissional-nao-atribuido">
+              <span class="nao-atribuido-texto">Não atribuído</span>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Enfermeiro -->
+        <div class="profissional-tipo-secao">
+          <div class="tipo-titulo">Enfermeiro</div>
+          {% if enfermeiro %}
+            <div class="profissional-item">
+              <div class="profissional-info">
+                <div class="profissional-nome">{{ enfermeiro.nome }}</div>
+                <div class="profissional-status {% if enfermeiro.status == 'ONLINE' %}status-online{% elif enfermeiro.status == 'AUSENTE' %}status-ausente{% else %}status-offline{% endif %}">
+                  {{ enfermeiro.get_status_display }}
+                </div>
+              </div>
+              {% if enfermeiro.id == profissional_logado.id %}
+                <!-- É o próprio profissional - não mostrar botão de chat -->
+                <span class="btn-chat-profissional btn-chat-proprio" title="Você">
+                  <i class="fas fa-user"></i>
+                  Você
+                </span>
+              {% elif enfermeiro.status == 'ONLINE' %}
+                <a href="{% url 'chat_paciente' paciente.id %}" class="btn-chat-profissional" title="Chat com {{ enfermeiro.nome }}">
+                  <i class="fas fa-comments"></i>
+                  Chat
+                </a>
+              {% else %}
+                <span class="btn-chat-profissional btn-chat-indisponivel" title="Chat indisponível">
+                  <i class="fas fa-comments"></i>
+                  Indisponível
+                </span>
+              {% endif %}
+            </div>
+          {% else %}
+            <div class="profissional-nao-atribuido">
+              <span class="nao-atribuido-texto">Não atribuído</span>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Psicólogo -->
+        <div class="profissional-tipo-secao">
+          <div class="tipo-titulo">Psicólogo</div>
+          {% if psicologo %}
+            <div class="profissional-item">
+              <div class="profissional-info">
+                <div class="profissional-nome">{{ psicologo.nome }}</div>
+                <div class="profissional-status {% if psicologo.status == 'ONLINE' %}status-online{% elif psicologo.status == 'AUSENTE' %}status-ausente{% else %}status-offline{% endif %}">
+                  {{ psicologo.get_status_display }}
+                </div>
+              </div>
+              {% if psicologo.id == profissional_logado.id %}
+                <!-- É o próprio profissional - não mostrar botão de chat -->
+                <span class="btn-chat-profissional btn-chat-proprio" title="Você">
+                  <i class="fas fa-user"></i>
+                  Você
+                </span>
+              {% elif psicologo.status == 'ONLINE' %}
+                <a href="{% url 'chat_paciente' paciente.id %}" class="btn-chat-profissional" title="Chat com {{ psicologo.nome }}">
+                  <i class="fas fa-comments"></i>
+                  Chat
+                </a>
+              {% else %}
+                <span class="btn-chat-profissional btn-chat-indisponivel" title="Chat indisponível">
+                  <i class="fas fa-comments"></i>
+                  Indisponível
+                </span>
+              {% endif %}
+            </div>
+          {% else %}
+            <div class="profissional-nao-atribuido">
+              <span class="nao-atribuido-texto">Não atribuído</span>
+            </div>
+          {% endif %}
+        </div>
       </div>
     </div>
 

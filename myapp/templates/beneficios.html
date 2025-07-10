@@ -25,12 +25,16 @@
       <a href="{% url 'journaling' %}"
           class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Meu Journaling</a>
       <a href="{% url 'journaling_delhes' %}"
-          class="nav-item {% if current_page == 'journaling_delhes' %}active{% endif %}">Journaling Deles</a>
+          class="nav-item {% if current_page == 'journaling_delhes' %}active{% endif %}">Journaling Público</a>
       <a href="{% url 'testemunhos' %}"
           class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
       <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
       {% if user.is_authenticated %}
-      <a href="{% url 'chat' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
+          {% if user.paciente %}
+              <a href="{% url 'chat_paciente_view' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
+          {% else %}
+              <a href="{% url 'chat' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
+          {% endif %}
       {% endif %}
     </div>
 

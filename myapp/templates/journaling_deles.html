@@ -5,7 +5,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>OncoWell - Journaling Deles</title>
+    <title>OncoWell - Journaling Público</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
@@ -206,7 +206,7 @@
                             </span>
                         </h3>
                         <div style="font-size:14px; color:#555; margin-bottom:4px;">
-                            <strong>Por:</strong> {% if user.is_authenticated %}{{ resposta.utilizador.nome }}{% else %}Anônimo{% endif %}
+                            <strong>Por:</strong> {% if user.is_authenticated %}{{ resposta.utilizador.nome }}{% else %}Anónimo{% endif %}
                             {% if user.is_authenticated %}
                                 <span class="favorite-user-star{% if resposta.utilizador.id in user_favoritos_ids %} active{% endif %}" data-user-id="{{ resposta.utilizador.id }}">★</span>
                             {% endif %}
@@ -241,7 +241,7 @@
                             </span>
                         </h3>
                         <div style="font-size:14px; color:#555; margin-bottom:4px;">
-                            <strong>Por:</strong> {% if user.is_authenticated %}{{ resposta.utilizador.nome }}{% else %}Anônimo{% endif %}
+                            <strong>Por:</strong> {% if user.is_authenticated %}{{ resposta.utilizador.nome }}{% else %}Anónimo{% endif %}
                             {% if user.is_authenticated %}
                                 <span class="favorite-user-star{% if resposta.utilizador.id in user_favoritos_ids %} active{% endif %}" data-user-id="{{ resposta.utilizador.id }}">★</span>
                             {% endif %}

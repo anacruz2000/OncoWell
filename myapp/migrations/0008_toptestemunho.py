@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 ('titulo', models.CharField(max_length=200)),
                 ('texto', models.TextField()),
                 ('data', models.DateField(auto_now_add=True)),
-                ('visibilidade', models.CharField(choices=[('publico', 'Público'), ('anonimo', 'Anônimo')], max_length=10)),
+                ('visibilidade', models.CharField(choices=[('publico', 'Público'), ('anonimo', 'Anónimo')], max_length=10)),
                 ('autor', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
             ],
         ),

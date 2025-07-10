@@ -104,11 +104,26 @@ class Enfermidade(models.Model):
     def __str__(self):
         return self.nome
 
+class Conversa(models.Model):
+    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE, related_name='conversas')
+    profissional = models.ForeignKey(ProfissionalSaude, on_delete=models.CASCADE, related_name='conversas')
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    ultima_mensagem = models.DateTimeField(auto_now=True)
+    ativa = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('paciente', 'profissional')
+
+    def __str__(self):
+        return f"Conversa entre {self.paciente.nome} e {self.profissional.nome}"
+
 class MsgChatInd(models.Model):
+    conversa = models.ForeignKey(Conversa, on_delete=models.CASCADE, related_name='mensagens', null=True, blank=True)
     emissor = models.ForeignKey(Utilizador, on_delete=models.CASCADE, related_name='mensagens_enviadas')
     receptor = models.ForeignKey(Utilizador, on_delete=models.CASCADE, related_name='mensagens_recebidas')
     conteudo = models.TextField()
     data = models.DateTimeField(auto_now_add=True)
+    lida = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Mensagem de {self.emissor} para {self.receptor}"
@@ -179,7 +194,7 @@ class TopTestemunho(models.Model):
     titulo = models.CharField(max_length=200)
     texto = models.TextField()
     data = models.DateField(auto_now_add=True)
-    visibilidade = models.CharField(max_length=10, choices=[('publico', 'Público'), ('anonimo', 'Anônimo')])
+    visibilidade = models.CharField(max_length=10, choices=[('publico', 'Público'), ('anonimo', 'Anónimo')])
     autor = models.ForeignKey(Utilizador, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):

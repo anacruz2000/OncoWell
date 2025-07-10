@@ -45,7 +45,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return redirect('home')
+    return redirect('login')
 
 def beneficios(request):
     return render(request, 'beneficios.html', {'current_page': 'beneficios'})
@@ -163,8 +163,230 @@ def qa(request):
         'current_page': 'q&a',
     })
 
-def chat(request):
-    return render(request, 'chat.html', {'current_page': 'chat'})
+def chat(request, paciente_id=None):
+    from myapp.models import Conversa, MsgChatInd
+    from django.shortcuts import get_object_or_404
+    from django.utils import timezone
+    
+    if paciente_id:
+        paciente = get_object_or_404(Paciente, id=paciente_id)
+        
+        # Buscar ou criar conversa do profissional atual com este paciente
+        conversa_atual = None
+        conversas = []
+        
+        if request.user.is_authenticated and hasattr(request.user, 'profissionalsaude'):
+            # Verificar se o profissional está atribuído ao paciente
+            if paciente.profissionais.filter(id=request.user.profissionalsaude.id).exists():
+                # Buscar conversa existente
+                conversa_atual, created = Conversa.objects.get_or_create(
+                    paciente=paciente,
+                    profissional=request.user.profissionalsaude,
+                    defaults={
+                        'data_criacao': timezone.now(),
+                        'ativa': True
+                    }
+                )
+                
+                # Buscar todas as conversas para a lista
+                conversas = Conversa.objects.filter(
+                    profissional=request.user.profissionalsaude
+                ).order_by('-ultima_mensagem')
+            else:
+                # Profissional não está atribuído ao paciente
+                conversa_atual = None
+                conversas = []
+        
+        return render(request, 'chat.html', {
+            'current_page': 'chat',
+            'paciente': paciente,
+            'conversas': conversas,
+            'conversa_atual': conversa_atual
+        })
+    
+    # Para chat geral, buscar todas as conversas do profissional
+    conversas = []
+    if request.user.is_authenticated and hasattr(request.user, 'profissionalsaude'):
+        conversas = Conversa.objects.filter(
+            profissional=request.user.profissionalsaude
+        ).order_by('-ultima_mensagem')
+        
+        # Adicionar contador de mensagens não lidas para cada conversa
+        for conversa in conversas:
+            conversa.unread_count = MsgChatInd.objects.filter(
+                conversa=conversa,
+                receptor=request.user,
+                lida=False
+            ).count()
+    
+    return render(request, 'chat.html', {
+        'current_page': 'chat',
+        'conversas': conversas
+    })
+
+@csrf_exempt
+def carregar_mensagens(request, conversa_id):
+    """Carrega mensagens de uma conversa específica via AJAX"""
+    from myapp.models import Conversa, MsgChatInd
+    from django.http import JsonResponse
+    
+    try:
+        conversa = Conversa.objects.get(id=conversa_id)
+        
+        # Verificar se o usuário atual tem acesso a esta conversa
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Acesso negado'}, status=403)
+        
+        # Verificar se é o profissional da conversa
+        if hasattr(request.user, 'profissionalsaude') and conversa.profissional == request.user.profissionalsaude:
+            # Verificar se o profissional está atribuído ao paciente
+            if not conversa.paciente.profissionais.filter(id=request.user.profissionalsaude.id).exists():
+                return JsonResponse({'error': 'Profissional não está atribuído a este paciente'}, status=403)
+        # Verificar se é o paciente da conversa
+        elif hasattr(request.user, 'paciente') and conversa.paciente == request.user.paciente:
+            pass  # Paciente tem acesso à sua própria conversa
+        else:
+            return JsonResponse({'error': 'Acesso negado'}, status=403)
+        
+        # Buscar mensagens da conversa
+        mensagens = MsgChatInd.objects.filter(conversa=conversa).order_by('data')
+        
+        # Marcar mensagens não lidas como lidas quando o utilizador carrega a conversa
+        mensagens_nao_lidas = mensagens.filter(
+            receptor=request.user,
+            lida=False
+        )
+        mensagens_nao_lidas.update(lida=True)
+        
+        mensagens_data = []
+        for msg in mensagens:
+            # Determinar o tipo da mensagem baseado no emissor
+            # Mensagens enviadas pelo utilizador atual são sempre 'sent' (lado direito)
+            # Mensagens enviadas por outros são sempre 'received' (lado esquerdo)
+            tipo = 'sent' if msg.emissor == request.user else 'received'
+            
+            mensagens_data.append({
+                'id': msg.id,
+                'conteudo': msg.conteudo,
+                'data': msg.data.strftime('%H:%M'),
+                'tipo': tipo,
+                'lida': msg.lida
+            })
+        
+        # Determinar o nome a mostrar no título
+        if hasattr(request.user, 'paciente'):
+            nome_mostrar = conversa.profissional.nome
+        else:
+            nome_mostrar = conversa.paciente.nome
+        
+        return JsonResponse({
+            'conversa_id': conversa.id,
+            'paciente_nome': nome_mostrar,
+            'mensagens': mensagens_data
+        })
+        
+    except Conversa.DoesNotExist:
+        return JsonResponse({'error': 'Conversa não encontrada'}, status=404)
+
+@csrf_exempt
+def apagar_conversa(request, conversa_id):
+    """Apaga uma conversa específica"""
+    from myapp.models import Conversa
+    
+    if request.method != 'DELETE':
+        return JsonResponse({'error': 'Método não permitido'}, status=405)
+    
+    try:
+        conversa = Conversa.objects.get(id=conversa_id)
+        
+        # Verificar se o usuário atual tem acesso a esta conversa
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Acesso negado'}, status=403)
+        
+        # Verificar se é o profissional da conversa
+        if hasattr(request.user, 'profissionalsaude') and conversa.profissional == request.user.profissionalsaude:
+            pass  # Profissional tem acesso à sua conversa
+        # Verificar se é o paciente da conversa
+        elif hasattr(request.user, 'paciente') and conversa.paciente == request.user.paciente:
+            pass  # Paciente tem acesso à sua conversa
+        else:
+            return JsonResponse({'error': 'Acesso negado'}, status=403)
+        
+        # Apagar a conversa (isso também apaga as mensagens devido ao CASCADE)
+        conversa.delete()
+        
+        return JsonResponse({'success': True, 'message': 'Conversa apagada com sucesso'})
+        
+    except Conversa.DoesNotExist:
+        return JsonResponse({'error': 'Conversa não encontrada'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+def enviar_mensagem(request, conversa_id):
+    """Envia uma nova mensagem para uma conversa"""
+    from myapp.models import Conversa, MsgChatInd
+    from django.http import JsonResponse
+    from django.utils import timezone
+    import json
+    
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método não permitido'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        conteudo = data.get('conteudo', '').strip()
+        
+        if not conteudo:
+            return JsonResponse({'error': 'Mensagem não pode estar vazia'}, status=400)
+        
+        # Buscar conversa
+        conversa = Conversa.objects.get(id=conversa_id)
+        
+        # Verificar permissões
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Utilizador não autenticado'}, status=403)
+        
+        # Verificar se é o profissional da conversa
+        if hasattr(request.user, 'profissionalsaude') and conversa.profissional == request.user.profissionalsaude:
+            # Verificar se o profissional está atribuído ao paciente
+            if not conversa.paciente.profissionais.filter(id=request.user.profissionalsaude.id).exists():
+                return JsonResponse({'error': 'Profissional não está atribuído a este paciente'}, status=403)
+            emissor = request.user.profissionalsaude
+            receptor = conversa.paciente
+        # Verificar se é o paciente da conversa
+        elif hasattr(request.user, 'paciente') and conversa.paciente == request.user.paciente:
+            emissor = request.user.paciente
+            receptor = conversa.profissional
+        else:
+            return JsonResponse({'error': 'Acesso negado'}, status=403)
+        
+        # Criar mensagem
+        mensagem = MsgChatInd.objects.create(
+            conversa=conversa,
+            emissor=emissor,
+            receptor=receptor,
+            conteudo=conteudo
+        )
+        
+        # Atualizar última mensagem da conversa
+        conversa.ultima_mensagem = timezone.now()
+        conversa.save()
+        
+        return JsonResponse({
+            'success': True,
+            'mensagem': {
+                'id': mensagem.id,
+                'conteudo': mensagem.conteudo,
+                'data': mensagem.data.strftime('%H:%M'),
+                'tipo': 'sent'
+            }
+        })
+        
+    except Conversa.DoesNotExist:
+        return JsonResponse({'error': 'Conversa não encontrada'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 def pacientes(request):
     return render(request, 'pacientes.html')
@@ -751,4 +973,149 @@ def atualizar_status(request):
 
 def paciente_detail(request, paciente_id):
     paciente = get_object_or_404(Paciente, id=paciente_id)
-    return render(request, 'pacientes.html', {'paciente': paciente})
+    
+    # Buscar profissionais associados ao paciente
+    profissionais = []
+    medico = None
+    enfermeiro = None
+    psicologo = None
+    
+    if request.user.is_authenticated and hasattr(request.user, 'profissionalsaude'):
+        # Buscar todos os profissionais atribuídos a este paciente (incluindo o próprio)
+        profissionais_geral = paciente.profissionais.all()
+        
+        # Buscar por tipo específico
+        medico = profissionais_geral.filter(tipo_profissional='MEDICO').first()
+        enfermeiro = profissionais_geral.filter(tipo_profissional='ENFERMEIRO').first()
+        psicologo = profissionais_geral.filter(tipo_profissional='PSICOLOGO').first()
+    
+    return render(request, 'pacientes.html', {
+        'paciente': paciente,
+        'profissionais': profissionais_geral if 'profissionais_geral' in locals() else [],
+        'medico': medico,
+        'enfermeiro': enfermeiro,
+        'psicologo': psicologo,
+        'profissional_logado': request.user.profissionalsaude if request.user.is_authenticated and hasattr(request.user, 'profissionalsaude') else None
+    })
+
+def chat_paciente_view(request):
+    """View específica para pacientes logados acederem ao chat"""
+    from myapp.models import Conversa, MsgChatInd
+    from django.utils import timezone
+    
+    if not request.user.is_authenticated:
+        return redirect('login')
+    
+    # Verificar se o utilizador é um paciente
+    try:
+        paciente = Paciente.objects.get(id=request.user.id)
+    except Paciente.DoesNotExist:
+        # Se não for paciente, redirecionar para o chat normal (para profissionais)
+        return redirect('chat')
+    
+    # Buscar todas as conversas do paciente
+    conversas = Conversa.objects.filter(
+        paciente=paciente
+    ).order_by('-ultima_mensagem')
+    
+    # Buscar profissionais atribuídos ao paciente
+    profissionais = paciente.profissionais.all()
+    
+    # Adicionar contador de mensagens não lidas para cada conversa
+    for conversa in conversas:
+        conversa.unread_count = MsgChatInd.objects.filter(
+            conversa=conversa,
+            receptor=request.user,
+            lida=False
+        ).count()
+    
+    return render(request, 'chat_paciente.html', {
+        'current_page': 'chat',
+        'paciente': paciente,
+        'conversas': conversas,
+        'profissionais': profissionais
+    })
+
+@csrf_exempt
+def marcar_mensagens_lidas(request, conversa_id):
+    """Marca todas as mensagens de uma conversa como lidas"""
+    from myapp.models import Conversa, MsgChatInd
+    from django.http import JsonResponse
+    
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método não permitido'}, status=405)
+    
+    try:
+        conversa = Conversa.objects.get(id=conversa_id)
+        
+        # Verificar permissões
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Utilizador não autenticado'}, status=403)
+        
+        # Verificar se é o profissional da conversa
+        if hasattr(request.user, 'profissionalsaude') and conversa.profissional == request.user.profissionalsaude:
+            pass  # Profissional tem acesso à sua conversa
+        # Verificar se é o paciente da conversa
+        elif hasattr(request.user, 'paciente') and conversa.paciente == request.user.paciente:
+            pass  # Paciente tem acesso à sua conversa
+        else:
+            return JsonResponse({'error': 'Acesso negado'}, status=403)
+        
+        # Marcar mensagens não lidas como lidas
+        mensagens_nao_lidas = MsgChatInd.objects.filter(
+            conversa=conversa,
+            receptor=request.user,
+            lida=False
+        )
+        
+        count = mensagens_nao_lidas.count()
+        mensagens_nao_lidas.update(lida=True)
+        
+        return JsonResponse({
+            'success': True,
+            'mensagens_marcadas': count
+        })
+        
+    except Conversa.DoesNotExist:
+        return JsonResponse({'error': 'Conversa não encontrada'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+def get_unread_count(request):
+    """Retorna o número de mensagens não lidas para o utilizador atual"""
+    from myapp.models import Conversa, MsgChatInd
+    from django.http import JsonResponse
+    from django.db.models import Q
+    
+    if not request.user.is_authenticated:
+        return JsonResponse({'unread_count': 0})
+    
+    try:
+        # Otimizar query usando select_related e apenas os campos necessários
+        if hasattr(request.user, 'paciente'):
+            # Para pacientes, buscar conversas onde são o paciente
+            unread_count = MsgChatInd.objects.filter(
+                conversa__paciente=request.user.paciente,
+                receptor=request.user,
+                lida=False
+            ).count()
+        elif hasattr(request.user, 'profissionalsaude'):
+            # Para profissionais, buscar conversas onde são o profissional
+            unread_count = MsgChatInd.objects.filter(
+                conversa__profissional=request.user.profissionalsaude,
+                receptor=request.user,
+                lida=False
+            ).count()
+        else:
+            return JsonResponse({'unread_count': 0})
+        
+        response = JsonResponse({'unread_count': unread_count})
+        # Adicionar cabeçalhos de cache para reduzir requisições
+        response['Cache-Control'] = 'public, max-age=30'  # Cache por 30 segundos
+        return response
+        
+    except Exception as e:
+        # Em caso de erro, retornar 0 em vez de causar erro 500
+        response = JsonResponse({'unread_count': 0})
+        response['Cache-Control'] = 'public, max-age=30'
+        return response
