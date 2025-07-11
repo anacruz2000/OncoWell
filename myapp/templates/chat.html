@@ -256,47 +256,54 @@
 </head>
 
 <body>
-      {% if user.is_authenticated and user.profissionalsaude %}
-        {% include '_navbar_profissional.html' %}
+  {% if user.is_authenticated and user.profissionalsaude %}
+  {% include '_navbar_profissional.html' %}
+  {% else %}
+  <div class="nav">
+    <a href="{% url 'beneficios' %}"
+      class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
+    <a href="{% url 'informacoes' %}"
+      class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
+    <div
+      class="nav-item dropdown {% if current_page == 'journaling' or current_page == 'journaling_delhes' %}active{% endif %}">
+      <span class="dropdown-toggle">Journalling</span>
+      <div class="dropdown-content">
+        <a href="{% url 'journaling' %}" class="{% if current_page == 'journaling' %}active{% endif %}">Meu
+          Journalling</a>
+        <a href="{% url 'journaling_delhes' %}"
+          class="{% if current_page == 'journaling_delhes' %}active{% endif %}">Journalling Público</a>
+      </div>
+    </div>
+
+    <a href="{% url 'testemunhos' %}"
+      class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
+    <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
+    {% if user.is_authenticated and user.paciente %}
+    <a href="{% url 'chat_paciente_view' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
     {% else %}
-        <div class="nav">
-            <a href="{% url 'beneficios' %}"
-                class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
-            <a href="{% url 'informacoes' %}"
-                class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
-            <a href="{% url 'journaling' %}"
-                class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Meu Journaling</a>
-            <a href="{% url 'journaling_delhes' %}"
-                class="nav-item {% if current_page == 'journaling_delhes' %}active{% endif %}">Journaling Público</a>
-            <a href="{% url 'testemunhos' %}"
-                class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
-            <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
-            {% if user.is_authenticated and user.paciente %}
-                <a href="{% url 'chat_paciente_view' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
-            {% else %}
-                <a href="{% url 'chat' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">
-              Chat
-              <span class="unread-badge" id="chat-unread-badge" style="display: none;">0</span>
-            </a>
-            {% endif %}
-        </div>
-
-        {% if user.is_authenticated %}
-        <a href="#" class="user-icon" onclick="toggleUserMenu()">
-            <i class="fas fa-user"></i>
-        </a>
-        <div class="user-menu" id="userMenu">
-            <a href="{% url 'meu_perfil' %}">Perfil</a>
-            <a href="{% url 'logout' %}" onclick="logoutUser(event)">Terminar Sessão</a>
-        </div>
-        {% else %}
-        <a href="{% url 'login' %}" class="login-button">Login</a>
-        {% endif %}
-
-        <a href="{% url 'home' %}" class="logo">
-            <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;">
-        </a>
+    <a href="{% url 'chat' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">
+      Chat
+      <span class="unread-badge" id="chat-unread-badge" style="display: none;">0</span>
+    </a>
     {% endif %}
+  </div>
+
+  {% if user.is_authenticated %}
+  <a href="#" class="user-icon" onclick="toggleUserMenu()">
+    <i class="fas fa-user"></i>
+  </a>
+  <div class="user-menu" id="userMenu">
+    <a href="{% url 'meu_perfil' %}">Perfil</a>
+    <a href="{% url 'logout' %}" onclick="logoutUser(event)">Terminar Sessão</a>
+  </div>
+  {% else %}
+  <a href="{% url 'login' %}" class="login-button">Login</a>
+  {% endif %}
+
+  <a href="{% url 'home' %}" class="logo">
+    <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;">
+  </a>
+  {% endif %}
 
   <!-- Área principal -->
   <div class="main-container">
@@ -304,60 +311,64 @@
     <!-- Lista de conversas -->
     <div class="sidebar">
       {% if paciente %}
-        <h3>Chat com {{ paciente.nome }}</h3>
-        <div style="margin-bottom: 20px; padding: 10px; background: #f5f5f5; border-radius: 6px;">
-          <p><strong>Tipo de Cancro:</strong> {{ paciente.get_tipo_cancro_display }}</p>
-          {% if paciente.hospital %}
-            <p><strong>Hospital:</strong> {{ paciente.hospital }}</p>
-          {% endif %}
-        </div>
+      <h3>Chat com {{ paciente.nome }}</h3>
+      <div style="margin-bottom: 20px; padding: 10px; background: #f5f5f5; border-radius: 6px;">
+        <p><strong>Tipo de Cancro:</strong> {{ paciente.get_tipo_cancro_display }}</p>
+        {% if paciente.hospital %}
+        <p><strong>Hospital:</strong> {{ paciente.hospital }}</p>
+        {% endif %}
+      </div>
       {% else %}
-        <h3>Conversas</h3>
-        <!-- Campo de busca -->
-        <div style="margin-bottom: 15px; position: relative;">
-          <input type="text" id="busca-conversas" placeholder="Procurar por nome..." 
-                 style="width: 100%; padding: 8px 12px 8px 35px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
-          <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; font-size: 12px;"></i>
-          <button id="limpar-busca" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #999; cursor: pointer; display: none; font-size: 12px;" title="Limpar busca">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
+      <h3>Conversas</h3>
+      <!-- Campo de busca -->
+      <div style="margin-bottom: 15px; position: relative;">
+        <input type="text" id="busca-conversas" placeholder="Procurar por nome..."
+          style="width: 100%; padding: 8px 12px 8px 35px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+        <i class="fas fa-search"
+          style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; font-size: 12px;"></i>
+        <button id="limpar-busca"
+          style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #999; cursor: pointer; display: none; font-size: 12px;"
+          title="Limpar busca">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
       {% endif %}
-      
+
       {% if conversas %}
-        <div class="conversas-list">
-          {% for conversa in conversas %}
-            <div class="conversa-item" data-conversa-id="{{ conversa.id }}">
-              <div class="conversa-header">
-                <strong>{{ conversa.paciente.nome }}</strong>
-                <div class="conversa-actions">
-                  <div style="display: flex; align-items: center;">
-                    <span class="conversa-data">{{ conversa.ultima_mensagem|date:"d/m H:i" }}</span>
-                    {% if conversa.unread_count > 0 %}
-                      <span class="unread-badge">{{ conversa.unread_count }}</span>
-                    {% endif %}
-                  </div>
-                  <button class="btn-apagar" data-conversa-id="{{ conversa.id }}" onclick="apagarConversa(this.dataset.conversaId, event)" title="Apagar conversa">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="conversa-preview" onclick="carregarConversa(this.parentElement.dataset.conversaId, event)">
-                {% if conversa.mensagens.last %}
-                  {{ conversa.mensagens.last.conteudo|truncatechars:50 }}
-                {% else %}
-                  Nova conversa
+      <div class="conversas-list">
+        {% for conversa in conversas %}
+        <div class="conversa-item" data-conversa-id="{{ conversa.id }}">
+          <div class="conversa-header">
+            <strong>{{ conversa.paciente.nome }}</strong>
+            <div class="conversa-actions">
+              <div style="display: flex; align-items: center;">
+                <span class="conversa-data">{{ conversa.ultima_mensagem|date:"d/m H:i" }}</span>
+                {% if conversa.unread_count > 0 %}
+                <span class="unread-badge">{{ conversa.unread_count }}</span>
                 {% endif %}
               </div>
+              <button class="btn-apagar" data-conversa-id="{{ conversa.id }}"
+                onclick="apagarConversa(this.dataset.conversaId, event)" title="Apagar conversa">
+                <i class="fas fa-trash"></i>
+              </button>
             </div>
-          {% endfor %}
+          </div>
+          <div class="conversa-preview" onclick="carregarConversa(this.parentElement.dataset.conversaId, event)">
+            {% if conversa.mensagens.last %}
+            {{ conversa.mensagens.last.conteudo|truncatechars:50 }}
+            {% else %}
+            Nova conversa
+            {% endif %}
+          </div>
         </div>
+        {% endfor %}
+      </div>
       {% else %}
-        <div class="no-conversas">
-          <p>Nenhuma conversa encontrada</p>
-        </div>
+      <div class="no-conversas">
+        <p>Nenhuma conversa encontrada</p>
+      </div>
       {% endif %}
-      
+
 
     </div>
 
@@ -365,9 +376,9 @@
     <div class="chat-container">
       <div class="chat-header" id="chat-title">
         {% if paciente %}
-          Chat com {{ paciente.nome }} - Médico
+        Chat com {{ paciente.nome }} - Médico
         {% else %}
-          Chat com Médico
+        Chat com Médico
         {% endif %}
       </div>
 
@@ -387,11 +398,11 @@
   <script>
     const pacienteNome = "{% if paciente %}{{ paciente.nome }}{% endif %}";
     let conversaAtual = null;
-    
+
     // Adicionar token CSRF
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
-                     '{{ csrf_token }}';
-    
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+      '{{ csrf_token }}';
+
     const mensagensSimuladas = {
       'Médico': [
         { tipo: 'received', texto: 'Olá, em que posso ajudar?' },
@@ -420,12 +431,12 @@
       const container = document.getElementById('chat-messages');
       container.innerHTML = '';
       if (mensagensSimuladas[profissional]) {
-      mensagensSimuladas[profissional].forEach(m => {
-        const div = document.createElement('div');
-        div.className = `message ${m.tipo}`;
-        div.textContent = m.texto;
-        container.appendChild(div);
-      });
+        mensagensSimuladas[profissional].forEach(m => {
+          const div = document.createElement('div');
+          div.className = `message ${m.tipo}`;
+          div.textContent = m.texto;
+          container.appendChild(div);
+        });
       }
 
       container.scrollTop = container.scrollHeight;
@@ -465,66 +476,66 @@
           conteudo: text
         })
       })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          // Mensagem enviada com sucesso
-          console.log('Mensagem enviada:', data.mensagem);
-          
-          // Atualizar preview da conversa na lista
-          const conversaItem = document.querySelector(`[data-conversa-id="${conversaAtual}"]`);
-          if (conversaItem) {
-            const preview = conversaItem.querySelector('.conversa-preview');
-            if (preview) {
-              preview.textContent = text.length > 50 ? text.substring(0, 50) + '...' : text;
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Mensagem enviada com sucesso
+            console.log('Mensagem enviada:', data.mensagem);
+
+            // Atualizar preview da conversa na lista
+            const conversaItem = document.querySelector(`[data-conversa-id="${conversaAtual}"]`);
+            if (conversaItem) {
+              const preview = conversaItem.querySelector('.conversa-preview');
+              if (preview) {
+                preview.textContent = text.length > 50 ? text.substring(0, 50) + '...' : text;
+              }
+
+              // Atualizar data da última mensagem
+              const dataElement = conversaItem.querySelector('.conversa-data');
+              if (dataElement) {
+                const now = new Date();
+                dataElement.textContent = now.getHours().toString().padStart(2, '0') + ':' +
+                  now.getMinutes().toString().padStart(2, '0');
+              }
             }
-            
-            // Atualizar data da última mensagem
-            const dataElement = conversaItem.querySelector('.conversa-data');
-            if (dataElement) {
-              const now = new Date();
-              dataElement.textContent = now.getHours().toString().padStart(2, '0') + ':' + 
-                                     now.getMinutes().toString().padStart(2, '0');
-            }
+          } else {
+            // Erro ao enviar mensagem
+            console.error('Erro ao enviar mensagem:', data.error);
+            alert('Erro ao enviar mensagem: ' + data.error);
+
+            // Remover mensagem da interface se falhou
+            div.remove();
           }
-        } else {
-          // Erro ao enviar mensagem
-          console.error('Erro ao enviar mensagem:', data.error);
-          alert('Erro ao enviar mensagem: ' + data.error);
-          
+        })
+        .catch(error => {
+          console.error('Erro ao enviar mensagem:', error);
+          alert('Erro ao enviar mensagem. Tente novamente.');
+
           // Remover mensagem da interface se falhou
           div.remove();
-        }
-      })
-      .catch(error => {
-        console.error('Erro ao enviar mensagem:', error);
-        alert('Erro ao enviar mensagem. Tente novamente.');
-        
-        // Remover mensagem da interface se falhou
-        div.remove();
-      });
+        });
     }
 
     function carregarConversa(conversaId, event = null) {
       conversaAtual = conversaId;
-      
+
       // Atualizar classe active nas conversas
       document.querySelectorAll('.conversa-item').forEach(item => {
         item.classList.remove('active');
       });
-      
+
       // Encontrar o elemento e adicionar classe active
       const conversaItem = document.querySelector(`[data-conversa-id="${conversaId}"]`);
       if (conversaItem) {
         conversaItem.classList.add('active');
-        
+
         // Remover badge de mensagens não lidas
         const badge = conversaItem.querySelector('.unread-badge');
         if (badge) {
           badge.remove();
         }
       }
-      
+
       // Fazer requisição AJAX para carregar as mensagens da conversa
       fetch(`/chat/mensagens/${conversaId}/`)
         .then(response => response.json())
@@ -533,10 +544,10 @@
             console.error('Erro:', data.error);
             return;
           }
-          
+
           const container = document.getElementById('chat-messages');
           container.innerHTML = '';
-          
+
           // Carregar mensagens reais
           data.mensagens.forEach(m => {
             const div = document.createElement('div');
@@ -547,35 +558,35 @@
             div.textContent = m.conteudo;
             container.appendChild(div);
           });
-          
+
           container.scrollTop = container.scrollHeight;
-          
+
           // Atualizar título do chat
           const chatTitle = document.getElementById('chat-title');
           chatTitle.textContent = `Chat com ${data.paciente_nome}`;
         })
         .catch(error => {
           console.error('Erro ao carregar mensagens:', error);
-          
+
           // Fallback para mensagens simuladas
           const container = document.getElementById('chat-messages');
           container.innerHTML = '';
-          
+
           const mensagens = [
             { tipo: 'received', texto: 'Olá, como está a sentir-se hoje?' },
             { tipo: 'sent', texto: 'Estou melhor, obrigado por perguntar.' },
             { tipo: 'received', texto: 'Que bom! Tem alguma dúvida sobre o tratamento?' }
           ];
-          
+
           mensagens.forEach(m => {
             const div = document.createElement('div');
             div.className = `message ${m.tipo}`;
             div.textContent = m.texto;
             container.appendChild(div);
           });
-          
+
           container.scrollTop = container.scrollHeight;
-          
+
           // Atualizar título do chat
           const chatTitle = document.getElementById('chat-title');
           const conversaItem = document.querySelector(`[data-conversa-id="${conversaId}"]`);
@@ -588,11 +599,11 @@
 
     function apagarConversa(conversaId, event) {
       event.stopPropagation(); // Evita que o clique propague para o item da conversa
-      
+
       if (!confirm('Tem certeza que deseja apagar esta conversa? Esta ação não pode ser desfeita.')) {
         return;
       }
-      
+
       // Fazer requisição AJAX para apagar a conversa
       fetch(`/chat/apagar/${conversaId}/`, {
         method: 'DELETE',
@@ -601,67 +612,67 @@
           'Content-Type': 'application/json',
         }
       })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          // Remover o elemento da conversa da interface
-          const conversaItem = document.querySelector(`[data-conversa-id="${conversaId}"]`);
-          if (conversaItem) {
-            conversaItem.remove();
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Remover o elemento da conversa da interface
+            const conversaItem = document.querySelector(`[data-conversa-id="${conversaId}"]`);
+            if (conversaItem) {
+              conversaItem.remove();
+            }
+
+            // Se esta era a conversa ativa, limpar o chat
+            if (conversaAtual == conversaId) {
+              const container = document.getElementById('chat-messages');
+              container.innerHTML = '';
+              const chatTitle = document.getElementById('chat-title');
+              chatTitle.textContent = 'Selecione uma conversa';
+              conversaAtual = null;
+            }
+
+            // Verificar se não há mais conversas
+            const conversasRestantes = document.querySelectorAll('.conversa-item');
+            if (conversasRestantes.length === 0) {
+              const container = document.querySelector('.conversas-list');
+              container.innerHTML = '<div class="no-conversas"><p>Nenhuma conversa encontrada</p></div>';
+            }
+          } else {
+            alert('Erro ao apagar conversa: ' + (data.error || 'Erro desconhecido'));
           }
-          
-          // Se esta era a conversa ativa, limpar o chat
-          if (conversaAtual == conversaId) {
-            const container = document.getElementById('chat-messages');
-            container.innerHTML = '';
-            const chatTitle = document.getElementById('chat-title');
-            chatTitle.textContent = 'Selecione uma conversa';
-            conversaAtual = null;
-          }
-          
-          // Verificar se não há mais conversas
-          const conversasRestantes = document.querySelectorAll('.conversa-item');
-          if (conversasRestantes.length === 0) {
-            const container = document.querySelector('.conversas-list');
-            container.innerHTML = '<div class="no-conversas"><p>Nenhuma conversa encontrada</p></div>';
-          }
-        } else {
-          alert('Erro ao apagar conversa: ' + (data.error || 'Erro desconhecido'));
-        }
-      })
-      .catch(error => {
-        console.error('Erro ao apagar conversa:', error);
-        alert('Erro ao apagar conversa. Tente novamente.');
-      });
+        })
+        .catch(error => {
+          console.error('Erro ao apagar conversa:', error);
+          alert('Erro ao apagar conversa. Tente novamente.');
+        });
     }
 
     // Inicialização baseada no contexto
     const isPacienteEspecifico = pacienteNome && pacienteNome.trim() !== '';
     const conversaAtualId = "{% if conversa_atual %}{{ conversa_atual.id }}{% endif %}";
-    
+
     // Funcionalidade de busca
     const campoBusca = document.getElementById('busca-conversas');
     const limparBuscaBtn = document.getElementById('limpar-busca');
-    
+
     if (campoBusca) {
-      campoBusca.addEventListener('input', function() {
+      campoBusca.addEventListener('input', function () {
         const termoBusca = this.value.toLowerCase().trim();
         const conversas = document.querySelectorAll('.conversa-item');
-        
+
         conversas.forEach(conversa => {
           const nomePaciente = conversa.querySelector('.conversa-header strong').textContent.toLowerCase();
-          
+
           if (nomePaciente.includes(termoBusca)) {
             conversa.style.display = 'block';
           } else {
             conversa.style.display = 'none';
           }
         });
-        
+
         // Mostrar mensagem se nenhuma conversa for encontrada
         const conversasVisiveis = document.querySelectorAll('.conversa-item[style*="display: block"], .conversa-item:not([style*="display: none"])');
         const mensagemNenhuma = document.querySelector('.no-conversas-busca');
-        
+
         if (conversasVisiveis.length === 0 && termoBusca !== '') {
           if (!mensagemNenhuma) {
             const mensagem = document.createElement('div');
@@ -671,14 +682,14 @@
             mensagem.style.color = '#666';
             mensagem.style.fontStyle = 'italic';
             mensagem.style.padding = '20px 0';
-            
+
             const container = document.querySelector('.conversas-list');
             container.appendChild(mensagem);
           }
         } else if (mensagemNenhuma) {
           mensagemNenhuma.remove();
         }
-        
+
         // Mostrar/esconder botão de limpar busca
         if (limparBuscaBtn) {
           if (termoBusca === '') {
@@ -689,15 +700,15 @@
         }
       });
     }
-    
+
     if (limparBuscaBtn) {
-      limparBuscaBtn.addEventListener('click', function() {
+      limparBuscaBtn.addEventListener('click', function () {
         campoBusca.value = '';
         campoBusca.dispatchEvent(new Event('input')); // Dispara o evento de input para atualizar a lista
         limparBuscaBtn.style.display = 'none';
       });
     }
-    
+
     if (!isPacienteEspecifico) {
       // Para profissionais, não inicializar automaticamente - devem selecionar uma conversa
       document.getElementById('chat-messages').innerHTML = '';
@@ -706,7 +717,7 @@
       // Para chat específico de paciente, carregar conversa automaticamente
       conversaAtual = parseInt(conversaAtualId);
       carregarConversa(conversaAtual);
-      
+
       // Marcar conversa como ativa na lista
       const conversaItem = document.querySelector(`[data-conversa-id="${conversaAtual}"]`);
       if (conversaItem) {
@@ -714,7 +725,7 @@
       }
     } else {
       // Para chat específico de paciente, manter inicialização
-    trocarChat(chatAtual);
+      trocarChat(chatAtual);
     }
 
     function toggleUserMenu() {
@@ -723,10 +734,10 @@
     }
 
     // Fechar menu quando clicar fora dele
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', function (event) {
       const userMenu = document.getElementById('userMenu');
       const userIcon = document.querySelector('.user-icon');
-      
+
       if (userMenu && !userMenu.contains(event.target) && !userIcon.contains(event.target)) {
         userMenu.style.display = 'none';
       }
@@ -751,15 +762,15 @@
 
     function logoutUser(event) {
       event.preventDefault(); // Evita que o formulário seja enviado
-      
+
       // Redirecionamento direto para logout
       window.location.href = '{% url "logout" %}';
     }
 
     // Atualizar contador de mensagens não lidas quando a página carrega
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       updateUnreadCount();
-      
+
       // Atualizar contador a cada 30 segundos
       setInterval(updateUnreadCount, 30000);
     });

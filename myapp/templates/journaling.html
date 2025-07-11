@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>OncoWell - Meu Journaling </title>
+  <title>OncoWell - Meu Journalling </title>
 
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
@@ -187,17 +187,18 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(255,255,255,0.7);
+      background: rgba(255, 255, 255, 0.7);
       backdrop-filter: blur(6px);
       z-index: 9999;
       display: flex;
       align-items: center;
       justify-content: center;
     }
+
     .login-modal {
       background: #fff;
       border-radius: 16px;
-      box-shadow: 0 4px 32px rgba(0,0,0,0.12);
+      box-shadow: 0 4px 32px rgba(0, 0, 0, 0.12);
       padding: 36px 32px 28px 32px;
       text-align: center;
       max-width: 350px;
@@ -207,16 +208,19 @@
       align-items: center;
       gap: 18px;
     }
+
     .login-modal h2 {
       font-size: 1.3rem;
       margin-bottom: 10px;
       color: #630000;
     }
+
     .login-modal p {
       color: #333;
       font-size: 1rem;
       margin-bottom: 18px;
     }
+
     .login-modal .modal-btn {
       width: 100%;
       min-width: 220px;
@@ -232,15 +236,18 @@
       transition: background 0.2s;
       letter-spacing: 0.5px;
     }
+
     .login-modal .modal-btn:last-child {
       background: #a10a0a;
       color: #fff;
       border: 1.5px solid #a10a0a;
     }
+
     .login-modal .modal-btn:hover {
       background: #630000;
       color: #fff;
     }
+
     .login-modal .modal-btn:last-child:hover {
       background: #630000;
       color: #fff;
@@ -299,43 +306,54 @@
 <body>
   {% csrf_token %}
   {% if user.is_authenticated and user.profissionalsaude %}
-    {% include '_navbar_profissional.html' %}
+  {% include '_navbar_profissional.html' %}
   {% else %}
-    <div class="nav">
-        <a href="{% url 'beneficios' %}" class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
-        <a href="{% url 'informacoes' %}" class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
-        <a href="{% url 'journaling' %}" class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Meu Journaling</a>
-        <a href="{% url 'journaling_delhes' %}" class="nav-item {% if current_page == 'journaling_delhes' %}active{% endif %}">Journaling Público</a>
-        <a href="{% url 'testemunhos' %}" class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
-        <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
-        {% if user.is_authenticated %}
-            {% if user.paciente %}
-                <a href="{% url 'chat_paciente_view' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">
-                  Chat
-                  <span class="unread-badge" id="chat-unread-badge" style="display: none;">0</span>
-                </a>
-            {% else %}
-                <a href="{% url 'chat' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">
-                  Chat
-                  <span class="unread-badge" id="chat-unread-badge" style="display: none;">0</span>
-                </a>
-            {% endif %}
-        {% endif %}
+  <div class="nav">
+    <a href="{% url 'beneficios' %}"
+      class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
+    <a href="{% url 'informacoes' %}"
+      class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
+    <div
+      class="nav-item dropdown {% if current_page == 'journaling' or current_page == 'journaling_delhes' %}active{% endif %}">
+      <span class="dropdown-toggle">Journalling</span>
+      <div class="dropdown-content">
+        <a href="{% url 'journaling' %}" class="{% if current_page == 'journaling' %}active{% endif %}">Meu
+          Journalling</a>
+        <a href="{% url 'journaling_delhes' %}"
+          class="{% if current_page == 'journaling_delhes' %}active{% endif %}">Journalling Público</a>
+      </div>
     </div>
+    <a href="{% url 'testemunhos' %}"
+      class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
+    <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
     {% if user.is_authenticated %}
-    <a href="#" class="user-icon" onclick="toggleUserMenu()">
-        <i class="fas fa-user"></i>
+    {% if user.paciente %}
+    <a href="{% url 'chat_paciente_view' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">
+      Chat
+      <span class="unread-badge" id="chat-unread-badge" style="display: none;">0</span>
     </a>
-    <div class="user-menu" id="userMenu">
-        <a href="{% url 'meu_perfil' %}">Perfil</a>
-        <a href="{% url 'logout' %}">Terminar Sessão</a>
-    </div>
     {% else %}
-    <a href="{% url 'login' %}" class="login-button">Login</a>
-    {% endif %}
-    <a href="{% url 'home' %}" class="logo">
-        <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;">
+    <a href="{% url 'chat' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">
+      Chat
+      <span class="unread-badge" id="chat-unread-badge" style="display: none;">0</span>
     </a>
+    {% endif %}
+    {% endif %}
+  </div>
+  {% if user.is_authenticated %}
+  <a href="#" class="user-icon" onclick="toggleUserMenu()">
+    <i class="fas fa-user"></i>
+  </a>
+  <div class="user-menu" id="userMenu">
+    <a href="{% url 'meu_perfil' %}">Perfil</a>
+    <a href="{% url 'logout' %}">Terminar Sessão</a>
+  </div>
+  {% else %}
+  <a href="{% url 'login' %}" class="login-button">Login</a>
+  {% endif %}
+  <a href="{% url 'home' %}" class="logo">
+    <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;">
+  </a>
   {% endif %}
 
   <!-- Conteúdo: Sidebar + Livro -->
@@ -360,18 +378,20 @@
 
       <div id="submitted-text" class="page-left">
         {% if respostas_utilizador_lista %}
-          {% for resposta in respostas_utilizador_lista %}
-            <p><strong>P:</strong> {{ pergunta.texto }}</p>
-            <p><strong>R:</strong> {{ resposta.resposta_texto }}</p>
-            <p style="color: #888; font-size: 13px;"><strong>Hora:</strong> {{ resposta.data_resposta|date:'H:i' }} | <strong>{% if resposta.privacidade == 'publico' %}Público{% else %}Privado{% endif %}</strong></p>
-            <hr style="border: none; border-top: 1px solid #eee; margin: 8px 0;" />
-          {% endfor %}
+        {% for resposta in respostas_utilizador_lista %}
+        <p><strong>P:</strong> {{ pergunta.texto }}</p>
+        <p><strong>R:</strong> {{ resposta.resposta_texto }}</p>
+        <p style="color: #888; font-size: 13px;"><strong>Hora:</strong> {{ resposta.data_resposta|date:'H:i' }} |
+          <strong>{% if resposta.privacidade == 'publico' %}Público{% else %}Privado{% endif %}</strong></p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 8px 0;" />
+        {% endfor %}
         {% else %}
-          <p style="color: #888;">O que escrever aqui aparecerá nesta página.</p>
+        <p style="color: #888;">O que escrever aparecerá nesta página.</p>
         {% endif %}
       </div>
 
-      <div id="texto-error" style="position: absolute; top: 18%; right: 8%; color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <div id="texto-error"
+        style="position: absolute; top: 18%; right: 8%; color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         ⚠️ Por favor, escreva algo antes de submeter.
       </div>
       <textarea id="journaling-textarea" class="page-right" placeholder="Escreva aqui sua reflexão..."></textarea>
@@ -388,29 +408,42 @@
             Privado
           </label>
         </div>
-        <div id="privacidade-error" style="color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div id="privacidade-error"
+          style="color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
           ⚠️ Por favor, selecione se deseja que o texto seja público ou privado.
         </div>
       </div>
 
-      <div id="edit-warning" style="color:#a10a0a; font-size:13px; display:none; margin-top:8px; background:#fff3f3; border:1px solid #a10a0a; border-radius:6px; padding:8px 12px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+      <div id="edit-warning"
+        style="color:#a10a0a; font-size:13px; display:none; margin-top:8px; background:#fff3f3; border:1px solid #a10a0a; border-radius:6px; padding:8px 12px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
         Só pode submeter respostas para o dia de hoje.
       </div>
 
       <button id="submitBtn">Submeter</button>
-      <button id="btn-reflexao-livre" type="button" style="position:absolute; bottom:5%; left:50%; transform:translateX(-50%); background:#fff; color:#a10a0a; border:1.5px solid #a10a0a; border-radius:5px; padding:8px 16px; font-size:16px; cursor:pointer;">Adicionar reflexão livre</button>
-      <div id="reflexao-livre-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(255,255,255,0.8); z-index:10000; align-items:center; justify-content:center;">
-        <div style="background:#fff; border-radius:12px; box-shadow:0 4px 32px rgba(0,0,0,0.12); padding:32px 28px; max-width:400px; width:90vw; display:flex; flex-direction:column; gap:16px; align-items:center;">
+      <button id="btn-reflexao-livre" type="button"
+        style="position:absolute; bottom:5%; left:50%; transform:translateX(-50%); background:#fff; color:#a10a0a; border:1.5px solid #a10a0a; border-radius:5px; padding:8px 16px; font-size:16px; cursor:pointer;">Adicionar
+        reflexão livre</button>
+      <div id="reflexao-livre-modal"
+        style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(255,255,255,0.8); z-index:10000; align-items:center; justify-content:center;">
+        <div
+          style="background:#fff; border-radius:12px; box-shadow:0 4px 32px rgba(0,0,0,0.12); padding:32px 28px; max-width:400px; width:90vw; display:flex; flex-direction:column; gap:16px; align-items:center;">
           <h3>Reflexão livre</h3>
-          <textarea id="reflexao-livre-textarea" rows="5" style="width:100%; font-size:16px; border-radius:6px; border:1px solid #ccc; padding:8px;"></textarea>
+          <textarea id="reflexao-livre-textarea" rows="5"
+            style="width:100%; font-size:16px; border-radius:6px; border:1px solid #ccc; padding:8px;"></textarea>
           <div style="display:flex; gap:12px; align-items:center;">
-            <label style="font-size:15px;"><input type="radio" name="privacidade-livre" value="publico" /> Público</label>
-            <label style="font-size:15px;"><input type="radio" name="privacidade-livre" value="anonimo" /> Privado</label>
+            <label style="font-size:15px;"><input type="radio" name="privacidade-livre" value="publico" />
+              Público</label>
+            <label style="font-size:15px;"><input type="radio" name="privacidade-livre" value="anonimo" />
+              Privado</label>
           </div>
-          <div id="reflexao-livre-error" style="color:#a10a0a; font-size:13px; display:none; background:#fff3f3; border:1px solid #a10a0a; border-radius:6px; padding:8px 12px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">Preencha o texto e escolha a privacidade.</div>
+          <div id="reflexao-livre-error"
+            style="color:#a10a0a; font-size:13px; display:none; background:#fff3f3; border:1px solid #a10a0a; border-radius:6px; padding:8px 12px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+            Preencha o texto e escolha a privacidade.</div>
           <div style="display:flex; gap:12px;">
-            <button id="btn-enviar-reflexao-livre" style="background:#a10a0a; color:#fff; border:none; border-radius:6px; padding:8px 18px; font-size:16px; cursor:pointer;">Submeter</button>
-            <button id="btn-cancelar-reflexao-livre" style="background:#fff; color:#a10a0a; border:1.5px solid #a10a0a; border-radius:6px; padding:8px 18px; font-size:16px; cursor:pointer;">Cancelar</button>
+            <button id="btn-enviar-reflexao-livre"
+              style="background:#a10a0a; color:#fff; border:none; border-radius:6px; padding:8px 18px; font-size:16px; cursor:pointer;">Submeter</button>
+            <button id="btn-cancelar-reflexao-livre"
+              style="background:#fff; color:#a10a0a; border:1.5px solid #a10a0a; border-radius:6px; padding:8px 18px; font-size:16px; cursor:pointer;">Cancelar</button>
           </div>
         </div>
       </div>
@@ -585,60 +618,60 @@
           pergunta_id: perguntaId
         })
       })
-      .then(response => response.json())
-      .then(data => {
-        if (data.status === 'ok') {
-          // NOVO: Atualiza todas as respostas do lado esquerdo
-          const submittedTextDiv = document.getElementById('submitted-text');
-          fetch(`/journaling_data/?data=${selectedDate}`)
-            .then(response => response.json())
-            .then(data2 => {
-              if (data2.respostas.length > 0) {
-                submittedTextDiv.innerHTML = data2.respostas.map(r => {
-                  const texto = r.texto;
-                  if (texto.length > 50) {
-                    const half = Math.ceil(texto.length / 2);
-                    const short = texto.slice(0, half) + '...';
-                    return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> <span class='short-text'>${short}</span><span class='full-text' style='display:none;'>${texto}</span> <a href='#' class='toggle-link' onclick='toggleTextJournaling(this);return false;'>(ver mais)</a></p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
-                  } else {
-                    return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> ${texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
-                  }
-                }).join('');
-              } else {
-                submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aqui aparecerá nesta página.</p>";
-              }
-            });
-          textarea.value = '';
-          // NOVO: Atualiza para próxima pergunta se houver
-          if (data.proxima_pergunta) {
-            document.getElementById('pergunta-id').value = data.proxima_pergunta.id;
-            document.getElementById('pergunta').innerHTML = `<h2 data-pergunta-id="${data.proxima_pergunta.id}">${data.proxima_pergunta.texto}</h2>`;
-            // Limpa radios
-            document.querySelectorAll('input[name="privacidade"]').forEach(radio => { radio.checked = false; });
-            textarea.disabled = false;
-            submitBtn.disabled = false;
-            submitBtn.style.opacity = 1;
-            submitBtn.title = "";
-            document.getElementById('edit-warning').style.display = 'none';
-            document.querySelectorAll('input[name="privacidade"]').forEach(radio => { radio.disabled = false; });
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'ok') {
+            // NOVO: Atualiza todas as respostas do lado esquerdo
+            const submittedTextDiv = document.getElementById('submitted-text');
+            fetch(`/journaling_data/?data=${selectedDate}`)
+              .then(response => response.json())
+              .then(data2 => {
+                if (data2.respostas.length > 0) {
+                  submittedTextDiv.innerHTML = data2.respostas.map(r => {
+                    const texto = r.texto;
+                    if (texto.length > 50) {
+                      const half = Math.ceil(texto.length / 2);
+                      const short = texto.slice(0, half) + '...';
+                      return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> <span class='short-text'>${short}</span><span class='full-text' style='display:none;'>${texto}</span> <a href='#' class='toggle-link' onclick='toggleTextJournaling(this);return false;'>(ver mais)</a></p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
+                    } else {
+                      return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> ${texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
+                    }
+                  }).join('');
+                } else {
+                  submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aqui aparecerá nesta página.</p>";
+                }
+              });
+            textarea.value = '';
+            // NOVO: Atualiza para próxima pergunta se houver
+            if (data.proxima_pergunta) {
+              document.getElementById('pergunta-id').value = data.proxima_pergunta.id;
+              document.getElementById('pergunta').innerHTML = `<h2 data-pergunta-id="${data.proxima_pergunta.id}">${data.proxima_pergunta.texto}</h2>`;
+              // Limpa radios
+              document.querySelectorAll('input[name="privacidade"]').forEach(radio => { radio.checked = false; });
+              textarea.disabled = false;
+              submitBtn.disabled = false;
+              submitBtn.style.opacity = 1;
+              submitBtn.title = "";
+              document.getElementById('edit-warning').style.display = 'none';
+              document.querySelectorAll('input[name="privacidade"]').forEach(radio => { radio.disabled = false; });
+            } else {
+              document.getElementById('pergunta-id').value = '';
+              document.getElementById('pergunta').innerHTML = `<p>🎉 Já respondeste a todas as perguntas disponíveis!</p>`;
+              // Opcional: desabilita campos
+              textarea.disabled = true;
+              submitBtn.disabled = true;
+              submitBtn.style.opacity = 0.5;
+              submitBtn.title = "Já respondeu a todas as perguntas de hoje";
+              document.getElementById('edit-warning').style.display = 'block';
+              document.querySelectorAll('input[name="privacidade"]').forEach(radio => { radio.disabled = true; radio.checked = false; });
+            }
           } else {
-            document.getElementById('pergunta-id').value = '';
-            document.getElementById('pergunta').innerHTML = `<p>🎉 Já respondeste a todas as perguntas disponíveis!</p>`;
-            // Opcional: desabilita campos
-            textarea.disabled = true;
-            submitBtn.disabled = true;
-            submitBtn.style.opacity = 0.5;
-            submitBtn.title = "Já respondeu a todas as perguntas de hoje";
-            document.getElementById('edit-warning').style.display = 'block';
-            document.querySelectorAll('input[name="privacidade"]').forEach(radio => { radio.disabled = true; radio.checked = false; });
+            alert('Erro ao guardar resposta: ' + data.message);
           }
-        } else {
-          alert('Erro ao guardar resposta: ' + data.message);
-        }
-      })
-      .catch(error => {
-        alert('Erro ao enviar resposta!');
-      });
+        })
+        .catch(error => {
+          alert('Erro ao enviar resposta!');
+        });
     });
 
     // Ajustar max date no datepicker para hoje
@@ -648,7 +681,7 @@
     }
 
     // Listener para o datepicker
-    datepicker.addEventListener('change', function() {
+    datepicker.addEventListener('change', function () {
       selectDate(this.value);
     });
 
@@ -661,16 +694,16 @@
     selectDate(hojeStr);
 
     // --- Reflexão livre ---
-    document.getElementById('btn-reflexao-livre').addEventListener('click', function() {
+    document.getElementById('btn-reflexao-livre').addEventListener('click', function () {
       document.getElementById('reflexao-livre-modal').style.display = 'flex';
       document.getElementById('reflexao-livre-textarea').value = '';
       document.querySelectorAll('input[name="privacidade-livre"]').forEach(r => r.checked = false);
       document.getElementById('reflexao-livre-error').style.display = 'none';
     });
-    document.getElementById('btn-cancelar-reflexao-livre').addEventListener('click', function() {
+    document.getElementById('btn-cancelar-reflexao-livre').addEventListener('click', function () {
       document.getElementById('reflexao-livre-modal').style.display = 'none';
     });
-    document.getElementById('btn-enviar-reflexao-livre').addEventListener('click', function() {
+    document.getElementById('btn-enviar-reflexao-livre').addEventListener('click', function () {
       const texto = document.getElementById('reflexao-livre-textarea').value.trim();
       const priv = document.querySelector('input[name="privacidade-livre"]:checked');
       if (!texto || !priv) {
@@ -690,30 +723,30 @@
           pergunta_id: null
         })
       })
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById('reflexao-livre-modal').style.display = 'none';
-        // Atualiza todas as respostas do lado esquerdo
-        fetch(`/journaling_data/?data=${selectedDate}`)
-          .then(response => response.json())
-          .then(data2 => {
-            const submittedTextDiv = document.getElementById('submitted-text');
-            if (data2.respostas.length > 0) {
-              submittedTextDiv.innerHTML = data2.respostas.map(r => {
-                const texto = r.texto;
-                if (texto.length > 50) {
-                  const half = Math.ceil(texto.length / 2);
-                  const short = texto.slice(0, half) + '...';
-                  return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> <span class='short-text'>${short}</span><span class='full-text' style='display:none;'>${texto}</span> <a href='#' class='toggle-link' onclick='toggleTextJournaling(this);return false;'>(ver mais)</a></p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
-                } else {
-                  return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> ${texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
-                }
-              }).join('');
-            } else {
-              submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aqui aparecerá nesta página.</p>";
-            }
-          });
-      });
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('reflexao-livre-modal').style.display = 'none';
+          // Atualiza todas as respostas do lado esquerdo
+          fetch(`/journaling_data/?data=${selectedDate}`)
+            .then(response => response.json())
+            .then(data2 => {
+              const submittedTextDiv = document.getElementById('submitted-text');
+              if (data2.respostas.length > 0) {
+                submittedTextDiv.innerHTML = data2.respostas.map(r => {
+                  const texto = r.texto;
+                  if (texto.length > 50) {
+                    const half = Math.ceil(texto.length / 2);
+                    const short = texto.slice(0, half) + '...';
+                    return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> <span class='short-text'>${short}</span><span class='full-text' style='display:none;'>${texto}</span> <a href='#' class='toggle-link' onclick='toggleTextJournaling(this);return false;'>(ver mais)</a></p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
+                  } else {
+                    return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> ${texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
+                  }
+                }).join('');
+              } else {
+                submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aqui aparecerá nesta página.</p>";
+              }
+            });
+        });
     });
 
     function toggleTextJournaling(link) {
@@ -750,9 +783,9 @@
     }
 
     // Atualizar contador de mensagens não lidas quando a página carrega
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       updateUnreadCount();
-      
+
       // Atualizar contador a cada 30 segundos
       setInterval(updateUnreadCount, 30000);
     });
@@ -762,10 +795,12 @@
   <div class="blur-overlay">
     <div class="login-modal">
       <h2>Para veres esta página tens que efetuar login</h2>
-      <p>Por favor, faz login ou regista-te para aceder ao Meu Journaling.</p>
+      <p>Por favor, faz login ou regista-te para aceder ao Meu Journalling.</p>
       <a href="{% url 'login' %}"><button class="modal-btn">Fazer Login</button></a>
       <a href="{% url 'register' %}"><button class="modal-btn">Registar</button></a>
-      <button class="modal-btn" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;color:#a10a0a;border:1.5px solid #a10a0a;" onclick="window.history.back()">
+      <button class="modal-btn"
+        style="display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;color:#a10a0a;border:1.5px solid #a10a0a;"
+        onclick="window.history.back()">
         <i class="fas fa-arrow-left"></i> Voltar
       </button>
     </div>

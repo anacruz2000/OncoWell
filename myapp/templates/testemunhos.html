@@ -171,7 +171,7 @@
             right: 0;
             background-color: #f9f9f9;
             min-width: 120px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
             z-index: 1;
             border-radius: 4px;
         }
@@ -200,7 +200,7 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0, 0, 0, 0.5);
         }
 
         .edit-modal-content {
@@ -212,7 +212,8 @@
             max-width: 500px;
         }
 
-        .edit-modal input, .edit-modal textarea {
+        .edit-modal input,
+        .edit-modal textarea {
             width: 100%;
             padding: 8px;
             margin: 8px 0;
@@ -249,37 +250,49 @@
 
     <!-- Nav bar -->
     {% if user.is_authenticated and user.profissionalsaude %}
-        {% include '_navbar_profissional.html' %}
+    {% include '_navbar_profissional.html' %}
     {% else %}
-        <div class="nav">
-            <a href="{% url 'beneficios' %}" class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
-            <a href="{% url 'informacoes' %}" class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
-            <a href="{% url 'journaling' %}" class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Meu Journaling</a>
-            <a href="{% url 'journaling_delhes' %}" class="nav-item {% if current_page == 'journaling_delhes' %}active{% endif %}">Journaling Público</a>
-            <a href="{% url 'testemunhos' %}" class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
-            <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
-            {% if user.is_authenticated %}
-                {% if user.paciente %}
-                    <a href="{% url 'chat_paciente_view' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
-                {% else %}
-                    <a href="{% url 'chat' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
-                {% endif %}
-            {% endif %}
+    <div class="nav">
+        <a href="{% url 'beneficios' %}"
+            class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
+        <a href="{% url 'informacoes' %}"
+            class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
+        <div
+            class="nav-item dropdown {% if current_page == 'journaling' or current_page == 'journaling_delhes' %}active{% endif %}">
+            <span class="dropdown-toggle">Journalling</span>
+            <div class="dropdown-content">
+                <a href="{% url 'journaling' %}" class="{% if current_page == 'journaling' %}active{% endif %}">Meu
+                    Journalling</a>
+                <a href="{% url 'journaling_delhes' %}"
+                    class="{% if current_page == 'journaling_delhes' %}active{% endif %}">Journalling Público</a>
+            </div>
         </div>
+        <a href="{% url 'testemunhos' %}"
+            class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
+        <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
         {% if user.is_authenticated %}
-        <a href="#" class="user-icon" onclick="toggleUserMenu()">
-            <i class="fas fa-user"></i>
-        </a>
-        <div class="user-menu" id="userMenu">
-            <a href="{% url 'meu_perfil' %}">Perfil</a>
-            <a href="{% url 'logout' %}">Terminar Sessão</a>
-        </div>
+        {% if user.paciente %}
+        <a href="{% url 'chat_paciente_view' %}"
+            class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
         {% else %}
-        <a href="{% url 'login' %}" class="login-button">Login</a>
+        <a href="{% url 'chat' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
         {% endif %}
-        <a href="{% url 'home' %}" class="logo">
-            <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;">
-        </a>
+        {% endif %}
+    </div>
+    {% if user.is_authenticated %}
+    <a href="#" class="user-icon" onclick="toggleUserMenu()">
+        <i class="fas fa-user"></i>
+    </a>
+    <div class="user-menu" id="userMenu">
+        <a href="{% url 'meu_perfil' %}">Perfil</a>
+        <a href="{% url 'logout' %}">Terminar Sessão</a>
+    </div>
+    {% else %}
+    <a href="{% url 'login' %}" class="login-button">Login</a>
+    {% endif %}
+    <a href="{% url 'home' %}" class="logo">
+        <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;">
+    </a>
     {% endif %}
 
     <!-- Conteúdo principal -->
@@ -298,52 +311,66 @@
                     </div>
                     <button type="submit">Filtrar</button>
                 </form>
-                
+
                 <!-- Seção para novo testemunho -->
                 <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
                     <h4 style="margin: 0 0 12px 0; color: #630000; font-size: 16px;">Escrever Novo Testemunho</h4>
                     {% if not user.is_authenticated %}
-                        <div style="color: #a10a0a; font-size: 15px; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 12px;">
-                            Para escrever um testemunho, faça login na sua conta.
-                        </div>
+                    <div
+                        style="color: #a10a0a; font-size: 15px; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 12px;">
+                        Para escrever um testemunho, faça login na sua conta.
+                    </div>
                     {% elif is_professional %}
-                        <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 12px; color: #856404; font-size: 14px;">
-                            <strong>Nota:</strong> Profissionais de saúde não podem criar testemunhos. Esta funcionalidade está disponível apenas para pacientes.
-                        </div>
+                    <div
+                        style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 12px; color: #856404; font-size: 14px;">
+                        <strong>Nota:</strong> Profissionais de saúde não podem criar testemunhos. Esta funcionalidade
+                        está disponível apenas para pacientes.
+                    </div>
                     {% else %}
-                        <form id="newTestimonialForm">
-                            <div style="margin-bottom: 12px;">
-                                <label for="testimonialTitle" style="font-weight: 600; margin-bottom: 4px; display: block;">Título:</label>
-                                <input type="text" id="testimonialTitle" name="testimonialTitle" placeholder="Digite o título do testemunho" style="width: 100%; padding: 6px 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; box-sizing: border-box;" />
+                    <form id="newTestimonialForm">
+                        <div style="margin-bottom: 12px;">
+                            <label for="testimonialTitle"
+                                style="font-weight: 600; margin-bottom: 4px; display: block;">Título:</label>
+                            <input type="text" id="testimonialTitle" name="testimonialTitle"
+                                placeholder="Digite o título do testemunho"
+                                style="width: 100%; padding: 6px 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; box-sizing: border-box;" />
+                        </div>
+                        <div id="titulo-error"
+                            style="color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 12px;">
+                            ⚠️ Por favor, digite um título para o testemunho.
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label for="testimonialText"
+                                style="font-weight: 600; margin-bottom: 4px; display: block;">Testemunho:</label>
+                            <textarea id="testimonialText" name="testimonialText"
+                                placeholder="Escreva aqui o seu testemunho..."
+                                style="width: 100%; height: 100px; padding: 6px 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; resize: vertical; box-sizing: border-box; font-family: inherit;"></textarea>
+                        </div>
+                        <div id="texto-error"
+                            style="color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 12px;">
+                            ⚠️ Por favor, escreva o conteúdo do testemunho.
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="font-weight: 600; margin-bottom: 4px; display: block;">Visibilidade:</label>
+                            <div style="display: flex; gap: 12px;">
+                                <label style="font-size: 14px; display: flex; align-items: center; gap: 4px;">
+                                    <input type="radio" name="testimonialVisibility" value="publico" />
+                                    Público
+                                </label>
+                                <label style="font-size: 14px; display: flex; align-items: center; gap: 4px;">
+                                    <input type="radio" name="testimonialVisibility" value="anonimo" />
+                                    Anônimo
+                                </label>
                             </div>
-                            <div id="titulo-error" style="color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 12px;">
-                                ⚠️ Por favor, digite um título para o testemunho.
-                            </div>
-                            <div style="margin-bottom: 12px;">
-                                <label for="testimonialText" style="font-weight: 600; margin-bottom: 4px; display: block;">Testemunho:</label>
-                                <textarea id="testimonialText" name="testimonialText" placeholder="Escreva aqui o seu testemunho..." style="width: 100%; height: 100px; padding: 6px 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; resize: vertical; box-sizing: border-box; font-family: inherit;"></textarea>
-                            </div>
-                            <div id="texto-error" style="color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 12px;">
-                                ⚠️ Por favor, escreva o conteúdo do testemunho.
-                            </div>
-                            <div style="margin-bottom: 12px;">
-                                <label style="font-weight: 600; margin-bottom: 4px; display: block;">Visibilidade:</label>
-                                <div style="display: flex; gap: 12px;">
-                                    <label style="font-size: 14px; display: flex; align-items: center; gap: 4px;">
-                                        <input type="radio" name="testimonialVisibility" value="publico" />
-                                        Público
-                                    </label>
-                                    <label style="font-size: 14px; display: flex; align-items: center; gap: 4px;">
-                                        <input type="radio" name="testimonialVisibility" value="anonimo" />
-                                        Anônimo
-                                    </label>
-                                </div>
-                            </div>
-                            <div id="visibilidade-error" style="color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 12px;">
-                                ⚠️ Por favor, selecione se deseja que o testemunho seja público ou anônimo.
-                            </div>
-                            <button type="submit" style="background: #a10a0a; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%;">Publicar Testemunho</button>
-                        </form>
+                        </div>
+                        <div id="visibilidade-error"
+                            style="color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 12px;">
+                            ⚠️ Por favor, selecione se deseja que o testemunho seja público ou anônimo.
+                        </div>
+                        <button type="submit"
+                            style="background: #a10a0a; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%;">Publicar
+                            Testemunho</button>
+                    </form>
                     {% endif %}
                 </div>
             </div>
@@ -358,13 +385,16 @@
                             {{ t.titulo }}
                             <span style="color: #666; font-size: 0.9em;">{{ t.data|date:'d/m/Y' }}</span>
                             <span style="color: #666; font-size: 0.9em;">
-                                (por {% if t.visibilidade == 'publico' and t.autor %}{{ t.autor.username }}{% else %}Anônimo{% endif %})
+                                (por {% if t.visibilidade == 'publico' and t.autor %}{{ t.autor.username }}{% else
+                                %}Anônimo{% endif %})
                             </span>
                             {% if user.is_authenticated and t.autor == user %}
                             <div class="testimonial-menu">
                                 <button class="testimonial-menu-btn">⋮</button>
                                 <div class="testimonial-menu-content">
-                                    <a href="#" class="edit-testimonial" data-id="{{ t.id }}" data-titulo="{{ t.titulo|escapejs }}" data-texto="{{ t.texto|escapejs }}" data-visibilidade="{{ t.visibilidade }}">Editar</a>
+                                    <a href="#" class="edit-testimonial" data-id="{{ t.id }}"
+                                        data-titulo="{{ t.titulo|escapejs }}" data-texto="{{ t.texto|escapejs }}"
+                                        data-visibilidade="{{ t.visibilidade }}">Editar</a>
                                     <a href="#" class="delete-testimonial" data-id="{{ t.id }}">Apagar</a>
                                 </div>
                             </div>
@@ -393,13 +423,16 @@
                             {{ t.titulo }}
                             <span style="color: #666; font-size: 0.9em;">{{ t.data|date:'d/m/Y' }}</span>
                             <span style="color: #666; font-size: 0.9em;">
-                                (por {% if t.visibilidade == 'publico' and t.autor %}{{ t.autor.username }}{% else %}Anônimo{% endif %})
+                                (por {% if t.visibilidade == 'publico' and t.autor %}{{ t.autor.username }}{% else
+                                %}Anônimo{% endif %})
                             </span>
                             {% if user.is_authenticated and t.autor == user %}
                             <div class="testimonial-menu">
                                 <button class="testimonial-menu-btn">⋮</button>
                                 <div class="testimonial-menu-content">
-                                    <a href="#" class="edit-testimonial" data-id="{{ t.id }}" data-titulo="{{ t.titulo|escapejs }}" data-texto="{{ t.texto|escapejs }}" data-visibilidade="{{ t.visibilidade }}">Editar</a>
+                                    <a href="#" class="edit-testimonial" data-id="{{ t.id }}"
+                                        data-titulo="{{ t.titulo|escapejs }}" data-texto="{{ t.texto|escapejs }}"
+                                        data-visibilidade="{{ t.visibilidade }}">Editar</a>
                                     <a href="#" class="delete-testimonial" data-id="{{ t.id }}">Apagar</a>
                                 </div>
                             </div>
@@ -420,7 +453,7 @@
             </div>
         </div>
     </div>
-  
+
     <!-- Modal de Edição -->
     <div id="editModal" class="edit-modal">
         <div class="edit-modal-content">
@@ -588,7 +621,7 @@
             // Adicionar na página que tem menos conteúdo para manter o equilíbrio
             const leftPage = document.querySelector('.book-container .page:first-child');
             const rightPage = document.querySelector('.book-container .page:last-child');
-            
+
             if (leftPage.children.length <= rightPage.children.length) {
                 leftPage.insertAdjacentHTML('afterbegin', newTestimonialHTML);  // Adicionar no início da página esquerda
             } else {
@@ -600,7 +633,7 @@
             const menu = document.getElementById('userMenu');
             menu.classList.toggle('active');
         }
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             const menu = document.getElementById('userMenu');
             const userIcon = document.querySelector('.user-icon');
             if (!menu.contains(event.target) && !userIcon.contains(event.target)) {
@@ -658,7 +691,7 @@
                     if (testemunhoElement) {
                         const tituloElement = testemunhoElement.querySelector('.question-title');
                         tituloElement.innerHTML = tituloElement.innerHTML.replace(/^[^<]+/, titulo);
-                        
+
                         const shortTextElement = testemunhoElement.querySelector('.short-text');
                         const fullTextElement = testemunhoElement.querySelector('.full-text');
                         shortTextElement.textContent = texto.length > 80 ? texto.substring(0, 80) + '...' : texto;
@@ -672,7 +705,7 @@
                                 newToggleLink.href = '#';
                                 newToggleLink.className = 'toggle-link';
                                 newToggleLink.textContent = '(ver mais)';
-                                newToggleLink.onclick = function() { toggleText(this); return false; };
+                                newToggleLink.onclick = function () { toggleText(this); return false; };
                                 testemunhoElement.appendChild(newToggleLink);
                             }
                         } else if (toggleLink) {
@@ -721,7 +754,7 @@
         }
 
         // Fechar modal ao clicar fora dele
-        window.onclick = function(event) {
+        window.onclick = function (event) {
             const modal = document.getElementById('editModal');
             if (event.target === modal) {
                 fecharModal();
@@ -729,7 +762,7 @@
         }
 
         // Event listeners para editar e apagar testemunhos
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             // Editar testemunho
             if (event.target.classList.contains('edit-testimonial')) {
                 event.preventDefault();
@@ -739,7 +772,7 @@
                 const visibilidade = event.target.getAttribute('data-visibilidade');
                 editarTestemunho(id, titulo, texto, visibilidade);
             }
-            
+
             // Apagar testemunho
             if (event.target.classList.contains('delete-testimonial')) {
                 event.preventDefault();
@@ -773,9 +806,9 @@
         }
 
         // Atualizar contador de mensagens não lidas quando a página carrega
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             updateUnreadCount();
-            
+
             // Atualizar contador a cada 60 segundos
             setInterval(updateUnreadCount, 60000);
         });

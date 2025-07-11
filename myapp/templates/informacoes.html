@@ -21,19 +21,27 @@
             class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
         <a href="{% url 'informacoes' %}"
             class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
-        <a href="{% url 'journaling' %}" class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Meu
-            Journaling</a>
-        <a href="{% url 'journaling_delhes' %}"
-            class="nav-item {% if current_page == 'journaling_delhes' %}active{% endif %}">Journaling Público</a>
+        <div
+            class="nav-item dropdown {% if current_page == 'journaling' or current_page == 'journaling_delhes' %}active{% endif %}">
+            <span class="dropdown-toggle">Journalling</span>
+            <div class="dropdown-content">
+                <a href="{% url 'journaling' %}" class="{% if current_page == 'journaling' %}active{% endif %}">Meu
+                    Journalling</a>
+                <a href="{% url 'journaling_delhes' %}"
+                    class="{% if current_page == 'journaling_delhes' %}active{% endif %}">Journalling Público</a>
+            </div>
+        </div>
+
         <a href="{% url 'testemunhos' %}"
             class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
         <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
         {% if user.is_authenticated %}
-            {% if user.paciente %}
-                <a href="{% url 'chat_paciente_view' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
-            {% else %}
-                <a href="{% url 'chat' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
-            {% endif %}
+        {% if user.paciente %}
+        <a href="{% url 'chat_paciente_view' %}"
+            class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
+        {% else %}
+        <a href="{% url 'chat' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
+        {% endif %}
         {% endif %}
     </div>
 
@@ -70,7 +78,8 @@
             <div
                 style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.05); text-align: left;">
                 <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Perucas: onde conseguir</h3>
-                <button onclick="window.open('https://www.google.com/maps/d/u/0/edit?mid=1IVjr_Xs8tk5RXsLPnG8kKsGTnkONgZ0&usp=sharing')"
+                <button
+                    onclick="window.open('https://www.google.com/maps/d/u/0/edit?mid=1IVjr_Xs8tk5RXsLPnG8kKsGTnkONgZ0&usp=sharing')"
                     style="margin-top: 10px; background: #5E1612; color: white; padding: 12px 24px; border: none; border-radius: 20px; font-size: 20px; font-weight: 500; cursor: pointer;">
                     Mapa de Locais
                 </button>

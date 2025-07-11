@@ -391,6 +391,7 @@ def enviar_mensagem(request, conversa_id):
 def pacientes(request):
     return render(request, 'pacientes.html')
 
+
 def inicio_psi(request):
     profissional = None
     n_pacientes_ativos = 0

@@ -236,16 +236,27 @@
 
 <body>
   <div class="nav">
-    <a href="{% url 'beneficios' %}" class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
-    <a href="{% url 'informacoes' %}" class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
-    <a href="{% url 'journaling' %}" class="nav-item {% if current_page == 'journaling' %}active{% endif %}">Meu Journaling</a>
-    <a href="{% url 'journaling_delhes' %}" class="nav-item {% if current_page == 'journaling_delhes' %}active{% endif %}">Journaling Público</a>
-    <a href="{% url 'testemunhos' %}" class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
-            <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
-        <a href="{% url 'chat_paciente_view' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">
-          Chat
-          <span class="unread-badge" id="chat-unread-badge" style="display: none;">0</span>
-        </a>
+    <a href="{% url 'beneficios' %}"
+      class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
+    <a href="{% url 'informacoes' %}"
+      class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
+    <div
+      class="nav-item dropdown {% if current_page == 'journaling' or current_page == 'journaling_delhes' %}active{% endif %}">
+      <span class="dropdown-toggle">Journalling</span>
+      <div class="dropdown-content">
+        <a href="{% url 'journaling' %}" class="{% if current_page == 'journaling' %}active{% endif %}">Meu
+          Journalling</a>
+        <a href="{% url 'journaling_delhes' %}"
+          class="{% if current_page == 'journaling_delhes' %}active{% endif %}">Journaling Público</a>
+      </div>
+    </div>
+    <a href="{% url 'testemunhos' %}"
+      class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
+    <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
+    <a href="{% url 'chat_paciente_view' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">
+      Chat
+      <span class="unread-badge" id="chat-unread-badge" style="display: none;">0</span>
+    </a>
   </div>
 
   {% if user.is_authenticated %}
@@ -270,61 +281,62 @@
     <!-- Lista de conversas -->
     <div class="sidebar">
       <h3>Chat com Profissionais</h3>
-      
+
       <!-- Informações do paciente -->
       <div class="profissional-info">
         <h4>{{ paciente.nome }}</h4>
         <p><strong>Tipo de Cancro:</strong> {{ paciente.get_tipo_cancro_display }}</p>
         {% if paciente.hospital %}
-          <p><strong>Hospital:</strong> {{ paciente.hospital }}</p>
+        <p><strong>Hospital:</strong> {{ paciente.hospital }}</p>
         {% endif %}
       </div>
 
       <!-- Lista de profissionais -->
       <h4>Profissionais de Saúde</h4>
       {% if profissionais %}
-        {% for profissional in profissionais %}
-          <div class="profissional-info">
-            <h4>{{ profissional.nome }}</h4>
-            <p><strong>Tipo:</strong> {{ profissional.get_tipo_profissional_display }}</p>
-            <p class="{% if profissional.status == 'ONLINE' %}status-online{% elif profissional.status == 'OFFLINE' %}status-offline{% else %}status-ausente{% endif %}">
-              <strong>Status:</strong> {{ profissional.get_status_display }}
-            </p>
-          </div>
-        {% endfor %}
+      {% for profissional in profissionais %}
+      <div class="profissional-info">
+        <h4>{{ profissional.nome }}</h4>
+        <p><strong>Tipo:</strong> {{ profissional.get_tipo_profissional_display }}</p>
+        <p
+          class="{% if profissional.status == 'ONLINE' %}status-online{% elif profissional.status == 'OFFLINE' %}status-offline{% else %}status-ausente{% endif %}">
+          <strong>Status:</strong> {{ profissional.get_status_display }}
+        </p>
+      </div>
+      {% endfor %}
       {% else %}
-        <p style="color: #666; font-style: italic;">Nenhum profissional atribuído</p>
+      <p style="color: #666; font-style: italic;">Nenhum profissional atribuído</p>
       {% endif %}
-      
+
       <!-- Lista de conversas -->
       <h4>Conversas</h4>
       {% if conversas %}
-        <div class="conversas-list">
-          {% for conversa in conversas %}
-            <div class="conversa-item" data-conversa-id="{{ conversa.id }}">
-              <div class="conversa-header">
-                <strong>{{ conversa.profissional.nome }}</strong>
-                <div style="display: flex; align-items: center;">
-                  <span class="conversa-data">{{ conversa.ultima_mensagem|date:"d/m H:i" }}</span>
-                  {% if conversa.unread_count > 0 %}
-                    <span class="unread-badge">{{ conversa.unread_count }}</span>
-                  {% endif %}
-                </div>
-              </div>
-              <div class="conversa-preview" onclick="carregarConversa(this.parentElement.dataset.conversaId, event)">
-                {% if conversa.mensagens.last %}
-                  {{ conversa.mensagens.last.conteudo|truncatechars:50 }}
-                {% else %}
-                  Nova conversa
-                {% endif %}
-              </div>
+      <div class="conversas-list">
+        {% for conversa in conversas %}
+        <div class="conversa-item" data-conversa-id="{{ conversa.id }}">
+          <div class="conversa-header">
+            <strong>{{ conversa.profissional.nome }}</strong>
+            <div style="display: flex; align-items: center;">
+              <span class="conversa-data">{{ conversa.ultima_mensagem|date:"d/m H:i" }}</span>
+              {% if conversa.unread_count > 0 %}
+              <span class="unread-badge">{{ conversa.unread_count }}</span>
+              {% endif %}
             </div>
-          {% endfor %}
+          </div>
+          <div class="conversa-preview" onclick="carregarConversa(this.parentElement.dataset.conversaId, event)">
+            {% if conversa.mensagens.last %}
+            {{ conversa.mensagens.last.conteudo|truncatechars:50 }}
+            {% else %}
+            Nova conversa
+            {% endif %}
+          </div>
         </div>
+        {% endfor %}
+      </div>
       {% else %}
-        <div class="no-conversas">
-          <p>Nenhuma conversa encontrada</p>
-        </div>
+      <div class="no-conversas">
+        <p>Nenhuma conversa encontrada</p>
+      </div>
       {% endif %}
     </div>
 
@@ -350,31 +362,31 @@
 
   <script>
     let conversaAtual = null;
-    
+
     // Adicionar token CSRF
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
-                     '{{ csrf_token }}';
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+      '{{ csrf_token }}';
 
     function carregarConversa(conversaId, event = null) {
       conversaAtual = conversaId;
-      
+
       // Atualizar classe active nas conversas
       document.querySelectorAll('.conversa-item').forEach(item => {
         item.classList.remove('active');
       });
-      
+
       // Encontrar o elemento e adicionar classe active
       const conversaItem = document.querySelector(`[data-conversa-id="${conversaId}"]`);
       if (conversaItem) {
         conversaItem.classList.add('active');
-        
+
         // Remover badge de mensagens não lidas
         const badge = conversaItem.querySelector('.unread-badge');
         if (badge) {
           badge.remove();
         }
       }
-      
+
       // Fazer requisição AJAX para carregar as mensagens da conversa
       fetch(`/chat/mensagens/${conversaId}/`)
         .then(response => response.json())
@@ -383,10 +395,10 @@
             console.error('Erro:', data.error);
             return;
           }
-          
+
           const container = document.getElementById('chat-messages');
           container.innerHTML = '';
-          
+
           // Carregar mensagens reais
           data.mensagens.forEach(m => {
             const div = document.createElement('div');
@@ -397,16 +409,16 @@
             div.textContent = m.conteudo;
             container.appendChild(div);
           });
-          
+
           container.scrollTop = container.scrollHeight;
-          
+
           // Atualizar título do chat
           const chatTitle = document.getElementById('chat-title');
           chatTitle.textContent = `Chat com ${data.paciente_nome}`;
-          
+
           // Mostrar formulário de envio
           document.getElementById('chat-form').style.display = 'flex';
-          
+
           // Atualizar contador de mensagens não lidas
           updateUnreadCount();
         })
@@ -417,19 +429,19 @@
 
     function sendMessage(event) {
       event.preventDefault();
-      
+
       if (!conversaAtual) {
         alert('Selecione uma conversa primeiro');
         return;
       }
-      
+
       const mensagemInput = document.getElementById('mensagem');
       const conteudo = mensagemInput.value.trim();
-      
+
       if (!conteudo) {
         return;
       }
-      
+
       // Enviar mensagem via AJAX
       fetch(`/chat/enviar/${conversaAtual}/`, {
         method: 'POST',
@@ -441,36 +453,36 @@
           conteudo: conteudo
         })
       })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          // Adicionar mensagem ao chat
-          const container = document.getElementById('chat-messages');
-          const div = document.createElement('div');
-          div.className = 'message sent';
-          div.textContent = data.mensagem.conteudo;
-          container.appendChild(div);
-          
-          // Limpar input
-          mensagemInput.value = '';
-          
-          // Scroll para baixo
-          container.scrollTop = container.scrollHeight;
-          
-          // Atualizar preview da conversa
-          const conversaItem = document.querySelector(`[data-conversa-id="${conversaAtual}"]`);
-          if (conversaItem) {
-            const preview = conversaItem.querySelector('.conversa-preview');
-            preview.textContent = conteudo.length > 50 ? conteudo.substring(0, 50) + '...' : conteudo;
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Adicionar mensagem ao chat
+            const container = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = 'message sent';
+            div.textContent = data.mensagem.conteudo;
+            container.appendChild(div);
+
+            // Limpar input
+            mensagemInput.value = '';
+
+            // Scroll para baixo
+            container.scrollTop = container.scrollHeight;
+
+            // Atualizar preview da conversa
+            const conversaItem = document.querySelector(`[data-conversa-id="${conversaAtual}"]`);
+            if (conversaItem) {
+              const preview = conversaItem.querySelector('.conversa-preview');
+              preview.textContent = conteudo.length > 50 ? conteudo.substring(0, 50) + '...' : conteudo;
+            }
+          } else {
+            alert('Erro ao enviar mensagem: ' + (data.error || 'Erro desconhecido'));
           }
-        } else {
-          alert('Erro ao enviar mensagem: ' + (data.error || 'Erro desconhecido'));
-        }
-      })
-      .catch(error => {
-        console.error('Erro ao enviar mensagem:', error);
-        alert('Erro ao enviar mensagem');
-      });
+        })
+        .catch(error => {
+          console.error('Erro ao enviar mensagem:', error);
+          alert('Erro ao enviar mensagem');
+        });
     }
 
     function toggleUserMenu() {
@@ -479,10 +491,10 @@
     }
 
     // Fechar menu quando clicar fora dele
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', function (event) {
       const userMenu = document.getElementById('userMenu');
       const userIcon = document.querySelector('.user-icon');
-      
+
       if (userMenu && !userMenu.contains(event.target) && !userIcon.contains(event.target)) {
         userMenu.style.display = 'none';
       }
@@ -512,12 +524,13 @@
     }
 
     // Atualizar contador de mensagens não lidas quando a página carrega
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       updateUnreadCount();
-      
+
       // Atualizar contador a cada 30 segundos
       setInterval(updateUnreadCount, 30000);
     });
   </script>
 </body>
-</html> 
+
+</html>
