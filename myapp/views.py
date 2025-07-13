@@ -18,6 +18,7 @@ from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_GET, require_POST
 from .models import PerguntaResposta, FAQ, TopicFAQ
 from server import chatbot_response
+from django.core.paginator import Paginator
 
 # Create your views here.
 def home(request):
@@ -972,6 +973,27 @@ def atualizar_status(request):
     except ProfissionalSaude.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Utilizador não é profissional de saúde.'}, status=403)
 
+@csrf_exempt
+@require_POST
+def atualizar_cor_resposta(request):
+    from myapp.models import JournRespostas
+    import json
+    data = json.loads(request.body)
+    resposta_id = data.get('resposta_id')
+    cor = data.get('cor')
+    if not resposta_id or cor not in ['vermelho','amarelo','verde']:
+        return JsonResponse({'status': 'error', 'message': 'Dados inválidos.'}, status=400)
+    try:
+        resposta = JournRespostas.objects.get(id=resposta_id)
+        # Permitir apenas se o user for profissional ou dono da resposta
+        if not (request.user.is_authenticated and (hasattr(request.user, 'profissionalsaude') or resposta.utilizador == request.user)):
+            return JsonResponse({'status': 'error', 'message': 'Sem permissão.'}, status=403)
+        resposta.cor_manual = cor
+        resposta.save()
+        return JsonResponse({'status': 'ok'})
+    except JournRespostas.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Resposta não encontrada.'}, status=404)
+
 def paciente_detail(request, paciente_id):
     paciente = get_object_or_404(Paciente, id=paciente_id)
     
@@ -990,13 +1012,57 @@ def paciente_detail(request, paciente_id):
         enfermeiro = profissionais_geral.filter(tipo_profissional='ENFERMEIRO').first()
         psicologo = profissionais_geral.filter(tipo_profissional='PSICOLOGO').first()
     
+    # Buscar perguntas e respostas do paciente
+    from myapp.models import JournRespostas
+    respostas_paciente = JournRespostas.objects.filter(utilizador=paciente).select_related('pergunta').order_by('-data_resposta')
+
+    # Paginação das respostas
+    page_number = request.GET.get('page', 1)
+    paginator = Paginator(respostas_paciente, 5)
+    page_obj = paginator.get_page(page_number)
+
+    # Atualizar estado do paciente conforme as respostas (usar todas, não só da página)
+    novo_estado = 'estavel'
+    respostas = list(respostas_paciente)
+    # Usar cor_manual se existir, senão cor automática
+    cores = []
+    for r in respostas:
+        if r.cor_manual:
+            cor = r.cor_manual
+        else:
+            tam = len(r.resposta_texto or '')
+            if tam > 40:
+                cor = 'vermelho'
+            elif tam > 20:
+                cor = 'amarelo'
+            else:
+                cor = 'verde'
+        cores.append(cor)
+    # 1 vermelho = critico
+    if 'vermelho' in cores:
+        novo_estado = 'critico'
+    # 2 amarelos em 4 textos = moderado
+    elif sum(1 for c in cores[:4] if c == 'amarelo') >= 2:
+        novo_estado = 'moderado'
+    # 6 verdes seguidos = estavel
+    elif len(cores) >= 6 and all(c == 'verde' for c in cores[:6]):
+        novo_estado = 'estavel'
+    # Se não, mantém o estado atual
+    if paciente.estado_pac != novo_estado:
+        paciente.estado_pac = novo_estado
+        paciente.save()
+        from myapp.models import EstadoPaciente
+        EstadoPaciente.objects.create(paciente=paciente, estado=novo_estado)
+
     return render(request, 'pacientes.html', {
         'paciente': paciente,
         'profissionais': profissionais_geral if 'profissionais_geral' in locals() else [],
         'medico': medico,
         'enfermeiro': enfermeiro,
         'psicologo': psicologo,
-        'profissional_logado': request.user.profissionalsaude if request.user.is_authenticated and hasattr(request.user, 'profissionalsaude') else None
+        'profissional_logado': request.user.profissionalsaude if request.user.is_authenticated and hasattr(request.user, 'profissionalsaude') else None,
+        'respostas_paciente': page_obj.object_list,
+        'page_obj': page_obj,
     })
 
 def chat_paciente_view(request):

@@ -146,15 +146,12 @@
   min-height: 500px;
   background: transparent;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0;
   padding: 40px 20px;
   box-sizing: border-box;
-  background-image: url("{% static 'images/livro_journaling.png' %}");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center top;
+  /* Fundo de livro removido */
 }
 
 
@@ -517,35 +514,45 @@
       </div>
     </div>
 
-    <div class="main-content" id="mainContent">
-
-      <div class="coluna-textos" id="coluna-esquerda">
-        <div class="texto texto-vermelho">
-          O tratamento teve complicações sérias inicialmente, mas com apoio constante da equipe médica e acompanhamento
-          psicológico, conseguimos superar os momentos mais críticos.
-        </div>
-
-        <div class="texto texto-amarelo">
-          Durante o processo, houve momentos de incerteza e medo, mas o journaling ajudou a lidar melhor com as emoções
-          e trazer clareza ao meu estado mental.
-        </div>
-
-        <div class="texto texto-verde">
-          Atualmente, sinto-me mais forte e confiante na minha recuperação, graças ao suporte da plataforma e aos
-          exercícios diários de journaling.
-        </div>
-      </div>
-
-      <div class="coluna-textos" id="coluna-direita">
-        <div class="texto texto-vermelho">
-          Houve momentos em que pensei em desistir, mas o apoio da equipe e dos colegas virtuais foi fundamental para
-          continuar e acreditar que a cura é possível.
-        </div>
-
-        <div class="texto texto-amarelo">
-          A plataforma facilitou a expressão dos meus sentimentos e ajudou a organizar meus pensamentos, tornando o
-          processo de cura menos solitário e mais estruturado.
-        </div>
+    <div class="main-content" id="mainContent" style="align-items: flex-start; padding-top: 10px;">
+      <div style="margin-top: 0;">
+        {% for resposta in respostas_paciente %}
+          <div class="texto {% if resposta.cor_manual %}texto-{{ resposta.cor_manual }}{% elif resposta.resposta_texto|length > 40 %}texto-vermelho{% elif resposta.resposta_texto|length > 20 %}texto-amarelo{% else %}texto-verde{% endif %}"
+               data-resposta-id="{{ resposta.id }}"
+               style="border:1px solid #ccc; margin-bottom:10px; padding:8px; background:#f9f9f9;">
+            <b>Pergunta:</b> {% if resposta.pergunta %}{{ resposta.pergunta.texto }}{% else %}Reflexão livre{% endif %}<br>
+            <b>Resposta:</b> {{ resposta.resposta_texto }}<br>
+            <b>Privacidade:</b> {{ resposta.get_privacidade_display }} ({{ resposta.privacidade }})<br>
+            <b>Data:</b> {{ resposta.data_resposta }}<br>
+            <b>Estado do paciente:</b>
+            {% if resposta.resposta_texto|length > 40 %}
+              Crítico
+            {% elif resposta.resposta_texto|length > 20 %}
+              Moderado
+            {% else %}
+              Estável
+            {% endif %}
+          </div>
+        {% empty %}
+          <div style="color: #888; font-style: italic;">Nenhuma resposta encontrada para este paciente.</div>
+        {% endfor %}
+        {% if page_obj.has_other_pages %}
+          <div style="text-align:center; margin-top:20px;">
+            {% if page_obj.has_previous %}
+              <a href="?page={{ page_obj.previous_page_number }}" style="margin-right:10px;">&laquo; Anterior</a>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+              {% if page_obj.number == num %}
+                <strong style="margin:0 5px;">{{ num }}</strong>
+              {% else %}
+                <a href="?page={{ num }}" style="margin:0 5px;">{{ num }}</a>
+              {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number }}" style="margin-left:10px;">Próxima &raquo;</a>
+            {% endif %}
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -587,8 +594,26 @@
         return;
       }
       const novaCor = document.getElementById('corTextoSelect').value;
+      // Remove todas as classes de cor
       textoSelecionado.classList.remove('texto-vermelho', 'texto-amarelo', 'texto-verde');
+      // Adiciona a nova cor
       textoSelecionado.classList.add(`texto-${novaCor}`);
+
+      // Salvar no backend
+      const respostaId = textoSelecionado.getAttribute('data-resposta-id');
+      fetch('{% url "atualizar_cor_resposta" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || ''
+        },
+        body: JSON.stringify({ resposta_id: respostaId, cor: novaCor })
+      }).then(resp => resp.json()).then(data => {
+        if (data.status !== 'ok') {
+          alert('Erro ao salvar cor: ' + (data.message || '')); 
+        }
+      });
+
       textoSelecionado.style.outline = '';
       textoSelecionado = null;
       atualizarFiltro();

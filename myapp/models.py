@@ -212,6 +212,7 @@ class JournRespostas(models.Model):
     resposta_texto = models.TextField()
     data_resposta = models.DateTimeField(auto_now_add=True)
     privacidade = models.CharField(max_length=10, choices=[('publico', 'Público'), ('anonimo', 'Privado')], default='anonimo')
+    cor_manual = models.CharField(max_length=10, blank=True, null=True, choices=[('vermelho','Vermelho'),('amarelo','Amarelo'),('verde','Verde')])
 
     class Meta:
         unique_together = ('utilizador', 'pergunta')  # Evita duplicações
@@ -229,4 +230,12 @@ class PerguntaResposta(models.Model):
     topico = models.CharField(max_length=100, default="Outro")
     vezes_feita = models.IntegerField(default=1)
     data = models.DateTimeField(auto_now_add=True)
+
+class EstadoPaciente(models.Model):
+    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE, related_name='historico_estados')
+    estado = models.CharField(max_length=20, choices=[('critico','Crítico'),('moderado','Moderado'),('estavel','Estável')])
+    data = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.paciente.nome} - {self.estado} em {self.data.strftime('%Y-%m-%d %H:%M')}"
 
