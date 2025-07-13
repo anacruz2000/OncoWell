@@ -16,7 +16,7 @@
     </div>
 
     {% if user.is_authenticated and user.profissionalsaude %}
-    <a href="{% url 'inicio_psi' %}"
+    <a href="{% url 'pacientes' %}"
         class="nav-item {% if current_page == 'inicio_psi' %}active{% endif %}">Pacientes</a>
     {% endif %}
     <a href="{% url 'testemunhos' %}"

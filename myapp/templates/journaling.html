@@ -102,6 +102,58 @@
       min-height: 600px;
     }
 
+    /* Controles de paginação */
+    .pagination-controls {
+      position: absolute;
+      top: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 15px;
+      z-index: 15;
+    }
+
+    .pagination-controls button {
+      background: rgba(161, 10, 10, 0.9);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.2s;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .pagination-controls button:hover {
+      background: rgba(99, 0, 0, 0.9);
+      transform: scale(1.1);
+    }
+
+    .pagination-controls button:disabled {
+      background: rgba(204, 204, 204, 0.6);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .pagination-info {
+      font-size: 13px;
+      color: #333;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 6px 12px;
+      border-radius: 15px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      min-width: 40px;
+      text-align: center;
+    }
+
     .book-image {
       width: 100%;
       height: auto;
@@ -116,12 +168,17 @@
       top: 12%;
       height: 76%;
       padding: 15px;
-      overflow-y: auto;
+      overflow-y: hidden;
       font-size: 16px;
       line-height: 1.5;
       font-family: 'Instrument Sans', sans-serif;
       background: transparent;
       white-space: pre-wrap;
+    }
+
+    /* Estilo para perguntas nas respostas */
+    .page-left p strong:first-child {
+      font-size: 14px;
     }
 
     .page-left {
@@ -166,7 +223,7 @@
       left: 50%;
       transform: translateX(-50%);
       font-family: 'Instrument Sans', sans-serif;
-      font-size: 16px;
+      font-size: 14px;
       color: #333;
       background: rgba(255, 255, 255, 0.8);
       padding: 6px 30px;
@@ -299,6 +356,16 @@
         font-size: 16px;
         padding: 4px 8px;
       }
+
+      .pagination-controls {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+        flex-direction: row;
+        gap: 15px;
+        margin: 10px 0;
+      }
     }
   </style>
 </head>
@@ -374,12 +441,23 @@
         {% endif %}
       </div>
 
+      <!-- Controles de paginação -->
+      <div class="pagination-controls" id="paginationControls" style="display: none;">
+        <button id="prevPageBtn" onclick="changePage(-1)" title="Página anterior">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <span class="pagination-info" id="pageInfo">1/1</span>
+        <button id="nextPageBtn" onclick="changePage(1)" title="Próxima página">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+
       <img src="{% static 'images/livro_journaling.png' %}" class="book-image" alt="Livro journaling" />
 
       <div id="submitted-text" class="page-left">
         {% if respostas_utilizador_lista %}
         {% for resposta in respostas_utilizador_lista %}
-        <p><strong>P:</strong> {{ pergunta.texto }}</p>
+        <p><strong>P:</strong> {% if resposta.pergunta %}{{ resposta.pergunta.texto }}{% else %}Reflexão livre{% endif %}</p>
         <p><strong>R:</strong> {{ resposta.resposta_texto }}</p>
         <p style="color: #888; font-size: 13px;"><strong>Hora:</strong> {{ resposta.data_resposta|date:'H:i' }} |
           <strong>{% if resposta.privacidade == 'publico' %}Público{% else %}Privado{% endif %}</strong></p>
@@ -471,6 +549,11 @@
 
     // Data selecionada atualmente (string 'YYYY-MM-DD')
     let selectedDate = null;
+    
+    // Variáveis de paginação
+    let currentPage = 1;
+    let answersPerPage = 1; // Apenas 1 resposta por página (2 total no livro)
+    let allAnswers = [];
 
     const dayList = document.getElementById('dayList');
     const datepicker = document.getElementById('datepicker');
@@ -479,6 +562,17 @@
     const submitBtn = document.getElementById('submitBtn');
     const privacidadeError = document.getElementById('privacidade-error');
     const textoError = document.getElementById('texto-error');
+    
+    // Verificar se todos os elementos foram encontrados
+    console.log('Elementos encontrados:', {
+      dayList: !!dayList,
+      datepicker: !!datepicker,
+      submittedText: !!submittedText,
+      textarea: !!textarea,
+      submitBtn: !!submitBtn,
+      privacidadeError: !!privacidadeError,
+      textoError: !!textoError
+    });
 
     // Função para formatar datas para exibir na sidebar
     function formatDateDisplay(date) {
@@ -489,8 +583,70 @@
       });
     }
 
+    // Função para renderizar respostas com paginação
+    function renderAnswers() {
+      const submittedTextDiv = document.getElementById('submitted-text');
+      const paginationControls = document.getElementById('paginationControls');
+      const pageInfo = document.getElementById('pageInfo');
+      const prevBtn = document.getElementById('prevPageBtn');
+      const nextBtn = document.getElementById('nextPageBtn');
+      
+      if (allAnswers.length === 0) {
+        submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aparecerá nesta página.</p>";
+        paginationControls.style.display = 'none';
+        return;
+      }
+      
+      const totalPages = Math.ceil(allAnswers.length / answersPerPage);
+      const startIndex = (currentPage - 1) * answersPerPage;
+      const endIndex = startIndex + answersPerPage;
+      const currentAnswers = allAnswers.slice(startIndex, endIndex);
+      
+      // Renderizar apenas 1 resposta da página atual
+      if (currentAnswers.length > 0) {
+        const r = currentAnswers[0];
+        const texto = r.texto;
+        if (texto.length > 50) {
+          const half = Math.ceil(texto.length / 2);
+          const short = texto.slice(0, half) + '...';
+          submittedTextDiv.innerHTML = `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> <span class='short-text'>${short}</span><span class='full-text' style='display:none;'>${texto}</span> <a href='#' class='toggle-link' onclick='toggleTextJournaling(this);return false;'>(ver mais)</a></p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
+        } else {
+          submittedTextDiv.innerHTML = `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> ${texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
+        }
+      } else {
+        submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aparecerá nesta página.</p>";
+      }
+      
+      // Atualizar controles de paginação
+      if (totalPages > 1) {
+        paginationControls.style.display = 'flex';
+        pageInfo.textContent = `${currentPage}/${totalPages}`;
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages;
+      } else {
+        paginationControls.style.display = 'none';
+      }
+    }
+
+    // Função para mudar de página
+    function changePage(direction) {
+      const totalPages = Math.ceil(allAnswers.length / answersPerPage);
+      const newPage = currentPage + direction;
+      
+      if (newPage >= 1 && newPage <= totalPages) {
+        currentPage = newPage;
+        renderAnswers();
+      }
+    }
+
     // Função para criar a lista dos últimos 7 dias na sidebar
     function populateLast7Days() {
+      console.log('populateLast7Days chamada');
+      if (!dayList) {
+        console.error('dayList não encontrado');
+        return;
+      }
+      
       dayList.innerHTML = '';
       const today = new Date();
       for (let i = 6; i >= 0; i--) {
@@ -500,24 +656,43 @@
         const li = document.createElement('li');
         li.textContent = formatDateDisplay(day);
         li.dataset.date = dayStr;
-        li.addEventListener('click', () => selectDate(dayStr));
+        li.style.cursor = 'pointer';
+        li.addEventListener('click', () => {
+          console.log('Clique na data:', dayStr);
+          selectDate(dayStr);
+        });
         dayList.appendChild(li);
       }
+      console.log('Lista de dias criada com', dayList.children.length, 'elementos');
     }
 
     // Selecionar uma data — mostra texto e atualiza sidebar e datepicker
     function selectDate(dateStr) {
+      console.log('selectDate chamada com:', dateStr);
+      
       selectedDate = dateStr;
+      
       // Atualiza destaque da lista
-      [...dayList.children].forEach(li => li.classList.toggle('active', li.dataset.date === dateStr));
+      [...dayList.children].forEach(li => {
+        li.classList.remove('active');
+        if (li.dataset.date === dateStr) {
+          li.classList.add('active');
+        }
+      });
+      
       // Atualiza datepicker
       datepicker.value = dateStr;
+      
       // Buscar pergunta e respostas via AJAX
       fetch(`/journaling_data/?data=${dateStr}`)
         .then(response => response.json())
         .then(data => {
+          console.log('Dados recebidos:', data);
+          
           const perguntaDiv = document.getElementById('pergunta');
           const submittedTextDiv = document.getElementById('submitted-text');
+          
+          // Atualizar pergunta
           if (data.status === 'ok' && data.pergunta) {
             perguntaDiv.innerHTML = `<h2 data-pergunta-id="${data.pergunta.id}">${data.pergunta.texto}</h2>`;
             document.getElementById('pergunta-id').value = data.pergunta.id;
@@ -525,26 +700,27 @@
             perguntaDiv.innerHTML = `<p>🎉 Já respondeste a todas as perguntas disponíveis!</p>`;
             document.getElementById('pergunta-id').value = '';
           }
-          // NOVO: mostrar todas as respostas do dia
-          if (data.respostas.length > 0) {
-            submittedTextDiv.innerHTML = data.respostas.map(r => {
-              const texto = r.texto;
-              if (texto.length > 50) {
-                const half = Math.ceil(texto.length / 2);
-                const short = texto.slice(0, half) + '...';
-                return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> <span class='short-text'>${short}</span><span class='full-text' style='display:none;'>${texto}</span> <a href='#' class='toggle-link' onclick='toggleTextJournaling(this);return false;'>(ver mais)</a></p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
-              } else {
-                return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> ${texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
-              }
-            }).join('');
+          
+          // Atualizar respostas com paginação
+          if (data.respostas && data.respostas.length > 0) {
+            allAnswers = data.respostas;
+            currentPage = 1; // Reset para primeira página
+            renderAnswers();
           } else {
-            submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aqui aparecerá nesta página.</p>";
+            allAnswers = [];
+            currentPage = 1;
+            renderAnswers();
           }
+        })
+        .catch(error => {
+          console.error('Erro ao carregar dados:', error);
         });
+      
       // Limpa textarea
       textarea.value = '';
       textarea.focus();
-      // NOVO: Desabilitar textarea e botão se não for hoje
+      
+      // Desabilitar textarea e botão se não for hoje
       const hojeStr = new Date().toISOString().slice(0, 10);
       const editWarning = document.getElementById('edit-warning');
       if (dateStr !== hojeStr) {
@@ -553,7 +729,6 @@
         submitBtn.style.opacity = 0.5;
         submitBtn.title = "Só pode submeter para o dia de hoje";
         editWarning.style.display = 'block';
-        // NOVO: desativa radio buttons
         document.querySelectorAll('input[name="privacidade"]').forEach(radio => {
           radio.disabled = true;
         });
@@ -563,7 +738,6 @@
         submitBtn.style.opacity = 1;
         submitBtn.title = "";
         editWarning.style.display = 'none';
-        // NOVO: ativa radio buttons
         document.querySelectorAll('input[name="privacidade"]').forEach(radio => {
           radio.disabled = false;
         });
@@ -621,24 +795,18 @@
         .then(response => response.json())
         .then(data => {
           if (data.status === 'ok') {
-            // NOVO: Atualiza todas as respostas do lado esquerdo
-            const submittedTextDiv = document.getElementById('submitted-text');
+            // NOVO: Atualiza todas as respostas do lado esquerdo com paginação
             fetch(`/journaling_data/?data=${selectedDate}`)
               .then(response => response.json())
               .then(data2 => {
-                if (data2.respostas.length > 0) {
-                  submittedTextDiv.innerHTML = data2.respostas.map(r => {
-                    const texto = r.texto;
-                    if (texto.length > 50) {
-                      const half = Math.ceil(texto.length / 2);
-                      const short = texto.slice(0, half) + '...';
-                      return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> <span class='short-text'>${short}</span><span class='full-text' style='display:none;'>${texto}</span> <a href='#' class='toggle-link' onclick='toggleTextJournaling(this);return false;'>(ver mais)</a></p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
-                    } else {
-                      return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> ${texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
-                    }
-                  }).join('');
+                if (data2.respostas && data2.respostas.length > 0) {
+                  allAnswers = data2.respostas;
+                  currentPage = 1; // Reset para primeira página
+                  renderAnswers();
                 } else {
-                  submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aqui aparecerá nesta página.</p>";
+                  allAnswers = [];
+                  currentPage = 1;
+                  renderAnswers();
                 }
               });
             textarea.value = '';
@@ -682,16 +850,24 @@
 
     // Listener para o datepicker
     datepicker.addEventListener('change', function () {
-      selectDate(this.value);
+      if (this.value && this.value !== selectedDate) {
+        selectDate(this.value);
+      }
     });
 
     // Inicialização
+    console.log('Iniciando journaling...');
     ajustarMaxDate();
     populateLast7Days();
 
     // Seleciona o último dia da lista por padrão (hoje)
     const hojeStr = new Date().toISOString().slice(0, 10);
-    selectDate(hojeStr);
+    console.log('Data de hoje:', hojeStr);
+    
+    // Aguardar um pouco antes de selecionar a data
+    setTimeout(() => {
+      selectDate(hojeStr);
+    }, 100);
 
     // --- Reflexão livre ---
     document.getElementById('btn-reflexao-livre').addEventListener('click', function () {
@@ -726,24 +902,18 @@
         .then(response => response.json())
         .then(data => {
           document.getElementById('reflexao-livre-modal').style.display = 'none';
-          // Atualiza todas as respostas do lado esquerdo
+          // Atualiza todas as respostas do lado esquerdo com paginação
           fetch(`/journaling_data/?data=${selectedDate}`)
             .then(response => response.json())
             .then(data2 => {
-              const submittedTextDiv = document.getElementById('submitted-text');
-              if (data2.respostas.length > 0) {
-                submittedTextDiv.innerHTML = data2.respostas.map(r => {
-                  const texto = r.texto;
-                  if (texto.length > 50) {
-                    const half = Math.ceil(texto.length / 2);
-                    const short = texto.slice(0, half) + '...';
-                    return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> <span class='short-text'>${short}</span><span class='full-text' style='display:none;'>${texto}</span> <a href='#' class='toggle-link' onclick='toggleTextJournaling(this);return false;'>(ver mais)</a></p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
-                  } else {
-                    return `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> ${texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
-                  }
-                }).join('');
+              if (data2.respostas && data2.respostas.length > 0) {
+                allAnswers = data2.respostas;
+                currentPage = 1; // Reset para primeira página
+                renderAnswers();
               } else {
-                submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aqui aparecerá nesta página.</p>";
+                allAnswers = [];
+                currentPage = 1;
+                renderAnswers();
               }
             });
         });
@@ -764,16 +934,16 @@
       }
     }
 
-    // Função para atualizar contador de mensagens não lidas
+    // Função para atualizar contador de mensagens não lidas (apenas uma vez ao carregar)
     function updateUnreadCount() {
       fetch('/chat/unread-count/')
         .then(response => response.json())
         .then(data => {
           const badge = document.getElementById('chat-unread-badge');
-          if (data.unread_count > 0) {
+          if (badge && data.unread_count > 0) {
             badge.textContent = data.unread_count;
             badge.style.display = 'block';
-          } else {
+          } else if (badge) {
             badge.style.display = 'none';
           }
         })
@@ -782,12 +952,9 @@
         });
     }
 
-    // Atualizar contador de mensagens não lidas quando a página carrega
+    // Atualizar contador apenas uma vez quando a página carrega
     document.addEventListener('DOMContentLoaded', function () {
       updateUnreadCount();
-
-      // Atualizar contador a cada 30 segundos
-      setInterval(updateUnreadCount, 30000);
     });
   </script>
 

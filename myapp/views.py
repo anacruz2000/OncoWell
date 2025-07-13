@@ -36,7 +36,7 @@ def login_view(request):
             # Redirecionar profissionais de saúde para a página de pacientes
             try:
                 ProfissionalSaude.objects.get(id=user.id)
-                return redirect('inicio_psi')
+                return redirect('pacientes')
             except ProfissionalSaude.DoesNotExist:
                 return redirect('journaling')
         else:
@@ -74,17 +74,35 @@ def journaling(request):
                 pergunta = JournPerguntas.objects.get(id=pergunta_id)
             else:
                 pergunta = None
-            JournRespostas.objects.create(
+            # Atualiza a resposta existente (em branco) se houver, senão cria nova
+            resposta_obj, created = JournRespostas.objects.get_or_create(
                 utilizador=request.user,
                 pergunta=pergunta,
-                resposta_texto=resposta_texto,
-                privacidade=privacidade
+                data_resposta__date=data_resposta,
+                defaults={
+                    'resposta_texto': resposta_texto,
+                    'privacidade': privacidade
+                }
             )
-            # Buscar próxima pergunta ainda não respondida para o mesmo dia
-            perguntas_respondidas_ids = JournRespostas.objects.filter(utilizador=request.user, data_resposta__date=data_resposta, pergunta__isnull=False).values_list('pergunta_id', flat=True)
+            if not created:
+                resposta_obj.resposta_texto = resposta_texto
+                resposta_obj.privacidade = privacidade
+                resposta_obj.save()
+            # Após responder, sorteia próxima pergunta ainda não respondida para o mesmo dia
+            perguntas_respondidas_ids = JournRespostas.objects.filter(utilizador=request.user, data_resposta__date=data_resposta, pergunta__isnull=False).exclude(resposta_texto='').values_list('pergunta_id', flat=True)
             perguntas_disponiveis = JournPerguntas.objects.exclude(id__in=perguntas_respondidas_ids)
-            perguntas = list(perguntas_disponiveis)
-            proxima_pergunta = random.choice(perguntas) if perguntas else None
+            proxima_pergunta = None
+            if perguntas_disponiveis.exists():
+                proxima_pergunta = random.choice(list(perguntas_disponiveis))
+                # Cria registro em aberto para a próxima pergunta
+                from django.utils import timezone
+                JournRespostas.objects.create(
+                    utilizador=request.user,
+                    pergunta=proxima_pergunta,
+                    resposta_texto='',
+                    privacidade='anonimo',
+                    data_resposta=timezone.now()
+                )
             if proxima_pergunta:
                 return JsonResponse({'status': 'ok', 'proxima_pergunta': {'id': proxima_pergunta.id, 'texto': proxima_pergunta.texto}})
             else:
@@ -100,22 +118,53 @@ def journaling(request):
         if not selected_date:
             selected_date = today
     pergunta = None
+    resposta_em_aberto = None
     if request.user.is_authenticated:
-        resposta_existente = JournRespostas.objects.filter(utilizador=request.user, data_resposta__date=selected_date).first()
-        if resposta_existente:
-            pergunta = resposta_existente.pergunta
+        # Procurar resposta do dia SEM texto (em aberto) - usar data_resposta__date para ignorar hora
+        resposta_em_aberto = JournRespostas.objects.filter(
+            utilizador=request.user, 
+            data_resposta__date=selected_date, 
+            resposta_texto=''
+        ).first()
+        if resposta_em_aberto:
+            pergunta = resposta_em_aberto.pergunta
         else:
-            # Buscar perguntas ainda não respondidas neste dia
-            perguntas_respondidas_ids = JournRespostas.objects.filter(utilizador=request.user, data_resposta__date=selected_date).values_list('pergunta_id', flat=True)
-            perguntas_disponiveis = JournPerguntas.objects.exclude(id__in=perguntas_respondidas_ids)
-            perguntas = list(perguntas_disponiveis)
-            pergunta = random.choice(perguntas) if perguntas else None
+            # Procurar resposta já respondida
+            resposta_existente = JournRespostas.objects.filter(
+                utilizador=request.user, 
+                data_resposta__date=selected_date
+            ).exclude(resposta_texto='').first()
+            if resposta_existente:
+                pergunta = resposta_existente.pergunta
+            else:
+                # Buscar perguntas ainda não respondidas neste dia
+                perguntas_respondidas_ids = JournRespostas.objects.filter(
+                    utilizador=request.user, 
+                    data_resposta__date=selected_date
+                ).values_list('pergunta_id', flat=True)
+                perguntas_disponiveis = JournPerguntas.objects.exclude(id__in=perguntas_respondidas_ids)
+                perguntas = list(perguntas_disponiveis)
+                if perguntas:
+                    pergunta = random.choice(perguntas)
+                    # Cria registro em aberto
+                    from django.utils import timezone
+                    JournRespostas.objects.create(
+                        utilizador=request.user,
+                        pergunta=pergunta,
+                        resposta_texto='',
+                        privacidade='anonimo',
+                        data_resposta=timezone.now()
+                    )
     else:
         perguntas = list(JournPerguntas.objects.all())
         pergunta = random.choice(perguntas) if perguntas else None
     respostas_utilizador_lista = []
-    if request.user.is_authenticated and pergunta:
-        respostas_utilizador_lista = list(JournRespostas.objects.filter(utilizador=request.user, pergunta=pergunta).order_by('data_resposta'))
+    if request.user.is_authenticated:
+        # Buscar todas as respostas do utilizador para o dia selecionado
+        respostas_utilizador_lista = list(JournRespostas.objects.filter(
+            utilizador=request.user, 
+            data_resposta__date=selected_date
+        ).order_by('data_resposta'))
     return render(request, 'journaling.html', {
         'current_page': 'journaling',
         'last_7_days': last_7_days,
@@ -130,16 +179,19 @@ def informacoes(request):
 def testemunhos(request):
     testemunhos = TopTestemunho.objects.order_by('-data')  # Ordenar por data decrescente (mais recentes primeiro)
     
-    # Distribuir testemunhos alternadamente entre as páginas
-    # para que os mais recentes apareçam no início de cada página
+    # Paginação - 4 testemunhos por página (2 de cada lado)
+    paginator = Paginator(testemunhos, 4)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
+    # Distribuir os 4 testemunhos da página atual em duas colunas
     page_left = []
     page_right = []
-    
-    for i, testemunho in enumerate(testemunhos):
-        if i % 2 == 0:  # Índices pares (0, 2, 4, ...) vão para página esquerda
-            page_left.append(testemunho)
-        else:  # Índices ímpares (1, 3, 5, ...) vão para página direita
-            page_right.append(testemunho)
+    for i, t in enumerate(page_obj):
+        if i % 2 == 0:
+            page_left.append(t)
+        else:
+            page_right.append(t)
     
     # Verificar se o usuário é um profissional de saúde
     is_professional = False
@@ -155,6 +207,7 @@ def testemunhos(request):
         'page_left': page_left,
         'page_right': page_right,
         'is_professional': is_professional,
+        'page_obj': page_obj,
     })
 
 def qa(request):
@@ -389,8 +442,8 @@ def enviar_mensagem(request, conversa_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-def pacientes(request):
-    return render(request, 'pacientes.html')
+def pac_indiv(request):
+    return render(request, 'pac_indiv.html')
 
 
 def inicio_psi(request):
@@ -607,6 +660,9 @@ def criar_hospitais_se_necessario():
 
 def journaling_delhes(request):
     from myapp.models import JournRespostas, ProfissionalSaude
+    from django.core.paginator import Paginator
+    from django.shortcuts import render
+    
     profissionais_ids = ProfissionalSaude.objects.values_list('id', flat=True)
     if hasattr(request.user, 'profissionalsaude') and request.user.profissionalsaude:
         # Profissionais de saúde veem todas as respostas públicas, exceto as suas
@@ -620,21 +676,46 @@ def journaling_delhes(request):
             respostas = JournRespostas.objects.filter(privacidade='publico').exclude(utilizador__id__in=profissionais_ids).exclude(utilizador=request.user).order_by('-data_resposta')
         else:
             respostas = JournRespostas.objects.filter(privacidade='publico').exclude(utilizador__id__in=profissionais_ids).order_by('-data_resposta')
+    
+    # Aplicar filtros
+    search_text = request.GET.get('search', '').strip()
+    filter_type = request.GET.get('filter', '')
+    
+    if search_text:
+        respostas = respostas.filter(resposta_texto__icontains=search_text)
+    
+    if filter_type == 'favoritos' and request.user.is_authenticated:
+        user_favoritos_ids = list(Favorito.objects.filter(utilizador=request.user).values_list('favorito_id', flat=True))
+        respostas = respostas.filter(utilizador_id__in=user_favoritos_ids)
+    elif filter_type == 'recentes':
+        from datetime import datetime, timedelta
+        recent_date = datetime.now() - timedelta(days=7)
+        respostas = respostas.filter(data_resposta__gte=recent_date)
+    
+    # Paginação - 4 respostas por página (2 de cada lado)
+    paginator = Paginator(respostas, 4)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
+    # Dividir as respostas da página atual em duas colunas
     page_left = []
     page_right = []
-    for i, resposta in enumerate(respostas):
+    for i, resposta in enumerate(page_obj):
         if i % 2 == 0:
             page_left.append(resposta)
         else:
             page_right.append(resposta)
+    
     user_favoritos_ids = []
     if request.user.is_authenticated:
         user_favoritos_ids = list(Favorito.objects.filter(utilizador=request.user).values_list('favorito_id', flat=True))
+    
     return render(request, 'journaling_deles.html', {
         'current_page': 'journaling_delhes',
         'page_left': page_left,
         'page_right': page_right,
         'user_favoritos_ids': user_favoritos_ids,
+        'page_obj': page_obj,
     })
 
 @csrf_exempt
@@ -915,13 +996,47 @@ def journaling_data(request):
     if not selected_date:
         return JsonResponse({'status': 'error', 'message': 'Data inválida.'}, status=400)
     respostas = []
+    pergunta = None
     if request.user.is_authenticated:
         # Buscar todas as respostas do utilizador para o dia selecionado
         respostas = list(JournRespostas.objects.filter(utilizador=request.user, data_resposta__date=selected_date).order_by('data_resposta'))
-        # Pergunta atual (a próxima a responder, se houver)
-        perguntas_respondidas_ids = [r.pergunta_id for r in respostas if r.pergunta_id]
-        perguntas_disponiveis = JournPerguntas.objects.exclude(id__in=perguntas_respondidas_ids)
-        pergunta = random.choice(list(perguntas_disponiveis)) if perguntas_disponiveis.exists() else None
+        
+        # Procurar resposta do dia SEM texto (em aberto) - usar data_resposta__date para ignorar hora
+        resposta_em_aberto = JournRespostas.objects.filter(
+            utilizador=request.user, 
+            data_resposta__date=selected_date, 
+            resposta_texto=''
+        ).first()
+        
+        if resposta_em_aberto:
+            pergunta = resposta_em_aberto.pergunta
+        else:
+            # Procurar resposta já respondida
+            resposta_existente = JournRespostas.objects.filter(
+                utilizador=request.user, 
+                data_resposta__date=selected_date
+            ).exclude(resposta_texto='').first()
+            if resposta_existente:
+                pergunta = resposta_existente.pergunta
+            else:
+                # Buscar perguntas ainda não respondidas neste dia
+                perguntas_respondidas_ids = JournRespostas.objects.filter(
+                    utilizador=request.user, 
+                    data_resposta__date=selected_date
+                ).values_list('pergunta_id', flat=True)
+                perguntas_disponiveis = JournPerguntas.objects.exclude(id__in=perguntas_respondidas_ids)
+                perguntas = list(perguntas_disponiveis)
+                if perguntas:
+                    pergunta = random.choice(perguntas)
+                    # Cria registro em aberto
+                    from django.utils import timezone
+                    JournRespostas.objects.create(
+                        utilizador=request.user,
+                        pergunta=pergunta,
+                        resposta_texto='',
+                        privacidade='anonimo',
+                        data_resposta=timezone.now()
+                    )
     data = {
         'status': 'ok',
         'pergunta': {'id': pergunta.id, 'texto': pergunta.texto} if pergunta else None,

@@ -210,12 +210,12 @@ class JournRespostas(models.Model):
     utilizador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     pergunta = models.ForeignKey(JournPerguntas, on_delete=models.CASCADE, null=True, blank=True)
     resposta_texto = models.TextField()
-    data_resposta = models.DateTimeField(auto_now_add=True)
+    data_resposta = models.DateTimeField()  # Removido auto_now_add temporariamente
     privacidade = models.CharField(max_length=10, choices=[('publico', 'Público'), ('anonimo', 'Privado')], default='anonimo')
     cor_manual = models.CharField(max_length=10, blank=True, null=True, choices=[('vermelho','Vermelho'),('amarelo','Amarelo'),('verde','Verde')])
 
     class Meta:
-        unique_together = ('utilizador', 'pergunta')  # Evita duplicações
+        unique_together = ('utilizador', 'pergunta', 'data_resposta')
 
 class Favorito(models.Model):
     utilizador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favoritos')

@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
     <link href="{% static 'css/style.css' %}" rel="stylesheet" />
-    <title>Página Pacientes</title>
+    <title>Pacientes</title>
     <style>
         body {
             font-family: Roboto, sans-serif;
@@ -207,7 +207,7 @@
     <!-- Lista de pacientes -->
     <div id="pacientesContainer">
         {% for paciente in pacientes %}
-            <a href="{% url 'paciente_detail' paciente.id %}">
+            <a href="{% url 'pac_indiv' paciente.id %}">
                 <div class="paciente-info" data-nome="{{ paciente.nome }}">
                     <img class="paciente-foto" src="https://placehold.co/124x119" alt="Foto do paciente" />
                     <div class="paciente-nome">{{ paciente.nome }}<br>{% if paciente.tipo_cancro %}{{ paciente.get_tipo_cancro_display }}{% endif %}</div>
