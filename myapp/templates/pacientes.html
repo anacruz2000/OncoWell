@@ -444,6 +444,7 @@
         </select>
         <button id="btnAlterarCor">Aplicar</button>
         <button id="btnReverterCores" style="margin-top: 10px; background-color: #28a745;">Reverter para Cores Originais</button>
+        <button id="btnAvaliarOncologica" style="margin-top: 10px; background-color: #dc3545;">Avaliar com Contexto Oncológico</button>
       </div>
 
       <div class="profissionais-container">
@@ -733,6 +734,54 @@
           alert('Erro ao reverter cores: ' + error);
         });
       }
+    });
+
+    // Adicionar funcionalidade para avaliação oncológica
+    document.getElementById('btnAvaliarOncologica').addEventListener('click', () => {
+      if (!textoSelecionado) {
+        alert('Clique em um texto para selecionar antes de avaliar.');
+        return;
+      }
+      
+      const respostaId = textoSelecionado.getAttribute('data-resposta-id');
+      
+      // Mostrar loading
+      const btn = document.getElementById('btnAvaliarOncologica');
+      const originalText = btn.textContent;
+      btn.textContent = 'Avaliando...';
+      btn.disabled = true;
+      
+      fetch('{% url "avaliar_resposta_oncologica" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || ''
+        },
+        body: JSON.stringify({ resposta_id: respostaId })
+      }).then(resp => resp.json()).then(data => {
+        if (data.status === 'ok') {
+          // Mostrar avaliação em modal ou alert
+          try {
+            const avaliacao = JSON.parse(data.avaliacao);
+            let mensagem = `**Avaliação Oncológica**\n\n`;
+            mensagem += `**Risco:** ${avaliacao.risco || 'N/A'}\n\n`;
+            mensagem += `**Avaliação:** ${avaliacao.avaliacao || 'N/A'}\n\n`;
+            mensagem += `**Recomendações:** ${avaliacao.recomendacoes || 'N/A'}`;
+            alert(mensagem);
+          } catch (e) {
+            // Se não conseguir fazer parse do JSON, mostrar resposta bruta
+            alert('Avaliação Oncológica:\n\n' + data.avaliacao);
+          }
+        } else {
+          alert('Erro ao avaliar: ' + (data.message || ''));
+        }
+      }).catch(error => {
+        alert('Erro ao avaliar: ' + error);
+      }).finally(() => {
+        // Restaurar botão
+        btn.textContent = originalText;
+        btn.disabled = false;
+      });
     });
   </script>
 

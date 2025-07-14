@@ -1440,3 +1440,42 @@ def get_unread_count(request):
         response = JsonResponse({'unread_count': 0})
         response['Cache-Control'] = 'public, max-age=30'
         return response
+
+@csrf_exempt
+@require_POST
+def avaliar_resposta_oncologica(request):
+    """Avalia uma resposta de journaling com contexto oncológico"""
+    from myapp.models import JournRespostas
+    import json
+    
+    try:
+        data = json.loads(request.body)
+        resposta_id = data.get('resposta_id')
+        
+        if not resposta_id:
+            return JsonResponse({'status': 'error', 'message': 'ID da resposta não fornecido.'}, status=400)
+        
+        # Verificar permissões - apenas profissionais podem avaliar
+        if not (request.user.is_authenticated and hasattr(request.user, 'profissionalsaude')):
+            return JsonResponse({'status': 'error', 'message': 'Sem permissão.'}, status=403)
+        
+        # Buscar a resposta
+        try:
+            resposta = JournRespostas.objects.get(id=resposta_id)
+        except JournRespostas.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Resposta não encontrada.'}, status=404)
+        
+        # Avaliar com contexto oncológico
+        from server import avaliar_resposta_journaling
+        
+        pergunta_texto = resposta.pergunta.texto if resposta.pergunta else None
+        avaliacao = avaliar_resposta_journaling(resposta.resposta_texto, pergunta_texto)
+        
+        return JsonResponse({
+            'status': 'ok',
+            'avaliacao': avaliacao,
+            'resposta_id': resposta_id
+        })
+        
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
