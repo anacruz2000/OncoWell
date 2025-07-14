@@ -402,6 +402,7 @@
   {% include '_navbar_profissional.html' %}
 
   <div class="content-wrapper">
+    {% csrf_token %}
     <div style="position: fixed; top: 140px; right: 30px; z-index: 1000;">
       <a href="{% url 'chat_paciente' paciente.id %}" style="display: inline-block; background: #007BFF; color: white; padding: 15px 20px; border-radius: 50px; text-decoration: none; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3); transition: all 0.3s ease;">
         <i class="fas fa-comments" style="margin-right: 8px;"></i>
@@ -442,6 +443,7 @@
           <option value="verde">Verde (Estável)</option>
         </select>
         <button id="btnAlterarCor">Aplicar</button>
+        <button id="btnReverterCores" style="margin-top: 10px; background-color: #28a745;">Reverter para Cores Originais</button>
       </div>
 
       <div class="profissionais-container">
@@ -666,6 +668,29 @@
       textoSelecionado.style.outline = '';
       textoSelecionado = null;
       atualizarFiltro();
+    });
+
+    // Adicionar funcionalidade para reverter cores originais
+    document.getElementById('btnReverterCores').addEventListener('click', () => {
+      if (confirm('Tem certeza que deseja reverter todas as cores para as originais baseadas no comprimento do texto?')) {
+        fetch('{% url "reverter_cores_originais" %}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || ''
+          },
+          body: JSON.stringify({ paciente_id: '{{ paciente.id }}' })
+        }).then(resp => resp.json()).then(data => {
+          if (data.status === 'ok') {
+            // Recarregar a página para mostrar as cores atualizadas
+            location.reload();
+          } else {
+            alert('Erro ao reverter cores: ' + (data.message || ''));
+          }
+        }).catch(error => {
+          alert('Erro ao reverter cores: ' + error);
+        });
+      }
     });
   </script>
 

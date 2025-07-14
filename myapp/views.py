@@ -1091,7 +1091,7 @@ def atualizar_status(request):
 @csrf_exempt
 @require_POST
 def atualizar_cor_resposta(request):
-    from myapp.models import JournRespostas
+    from myapp.models import JournRespostas, Paciente, EstadoPaciente
     import json
     data = json.loads(request.body)
     resposta_id = data.get('resposta_id')
@@ -1103,11 +1103,150 @@ def atualizar_cor_resposta(request):
         # Permitir apenas se o user for profissional ou dono da resposta
         if not (request.user.is_authenticated and (hasattr(request.user, 'profissionalsaude') or resposta.utilizador == request.user)):
             return JsonResponse({'status': 'error', 'message': 'Sem permissão.'}, status=403)
+        
+        # Atualizar a cor da resposta
         resposta.cor_manual = cor
         resposta.save()
-        return JsonResponse({'status': 'ok'})
+        
+        # Atualizar o estado do paciente - aceder ao Paciente corretamente
+        try:
+            paciente = Paciente.objects.get(id=resposta.utilizador.id)
+        except Paciente.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Paciente não encontrado.'}, status=404)
+        
+        respostas_paciente = JournRespostas.objects.filter(utilizador=paciente).order_by('-data_resposta')
+        
+        # Calcular novo estado baseado nas cores
+        novo_estado = 'estavel'
+        cores = []
+        for r in respostas_paciente:
+            if r.cor_manual:
+                cores.append(r.cor_manual)
+            else:
+                tam = len(r.resposta_texto or '')
+                if tam > 40:
+                    cores.append('vermelho')
+                elif tam > 20:
+                    cores.append('amarelo')
+                else:
+                    cores.append('verde')
+        
+        # Regras de estado
+        if 'vermelho' in cores:
+            novo_estado = 'critico'
+        elif sum(1 for c in cores[:4] if c == 'amarelo') >= 2:
+            novo_estado = 'moderado'
+        elif len(cores) >= 6 and all(c == 'verde' for c in cores[:6]):
+            novo_estado = 'estavel'
+        
+        # Atualizar estado do paciente se mudou
+        estado_anterior = paciente.estado_pac
+        if paciente.estado_pac != novo_estado:
+            paciente.estado_pac = novo_estado
+            paciente.save()
+            EstadoPaciente.objects.create(paciente=paciente, estado=novo_estado)
+        
+        return JsonResponse({
+            'status': 'ok',
+            'novo_estado': novo_estado,
+            'estado_anterior': estado_anterior
+        })
     except JournRespostas.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Resposta não encontrada.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@csrf_exempt
+@require_POST
+def reverter_cores_originais(request):
+    """Reverte todas as cores manuais para as cores originais baseadas no comprimento do texto"""
+    from myapp.models import JournRespostas, Paciente, EstadoPaciente
+    import json
+    
+    try:
+        data = json.loads(request.body)
+        paciente_id = data.get('paciente_id')
+        
+        if not paciente_id:
+            return JsonResponse({'status': 'error', 'message': 'ID do paciente não fornecido.'}, status=400)
+        
+        # Verificar permissões - apenas profissionais podem reverter cores
+        if not (request.user.is_authenticated and hasattr(request.user, 'profissionalsaude')):
+            return JsonResponse({'status': 'error', 'message': 'Sem permissão.'}, status=403)
+        
+        # Buscar o paciente
+        try:
+            paciente = Paciente.objects.get(id=paciente_id)
+        except Paciente.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Paciente não encontrado.'}, status=404)
+        
+        # Buscar todas as respostas do paciente com cores manuais
+        respostas_com_cores_manuais = JournRespostas.objects.filter(
+            utilizador_id=paciente_id,
+            cor_manual__isnull=False
+        ).exclude(cor_manual='')
+        
+        # Contador de respostas atualizadas
+        atualizadas = 0
+        
+        for resposta in respostas_com_cores_manuais:
+            # Calcular cor original baseada no comprimento
+            tam = len(resposta.resposta_texto or '')
+            if tam > 40:
+                cor_original = 'vermelho'
+            elif tam > 20:
+                cor_original = 'amarelo'
+            else:
+                cor_original = 'verde'
+            
+            # Atualizar para a cor original
+            resposta.cor_manual = cor_original
+            resposta.save()
+            atualizadas += 1
+        
+        # Atualizar o estado do paciente após reverter as cores
+        respostas_paciente = JournRespostas.objects.filter(utilizador=paciente).order_by('-data_resposta')
+        
+        # Calcular novo estado baseado nas cores
+        novo_estado = 'estavel'
+        cores = []
+        for r in respostas_paciente:
+            if r.cor_manual:
+                cores.append(r.cor_manual)
+            else:
+                tam = len(r.resposta_texto or '')
+                if tam > 40:
+                    cores.append('vermelho')
+                elif tam > 20:
+                    cores.append('amarelo')
+                else:
+                    cores.append('verde')
+        
+        # Regras de estado
+        if 'vermelho' in cores:
+            novo_estado = 'critico'
+        elif sum(1 for c in cores[:4] if c == 'amarelo') >= 2:
+            novo_estado = 'moderado'
+        elif len(cores) >= 6 and all(c == 'verde' for c in cores[:6]):
+            novo_estado = 'estavel'
+        
+        # Atualizar estado do paciente se mudou
+        estado_anterior = paciente.estado_pac
+        if paciente.estado_pac != novo_estado:
+            paciente.estado_pac = novo_estado
+            paciente.save()
+            EstadoPaciente.objects.create(paciente=paciente, estado=novo_estado)
+        
+        return JsonResponse({
+            'status': 'ok', 
+            'message': f'{atualizadas} respostas foram revertidas para as cores originais.',
+            'atualizadas': atualizadas,
+            'novo_estado': novo_estado,
+            'estado_anterior': estado_anterior
+        })
+        
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 def paciente_detail(request, paciente_id):
     paciente = get_object_or_404(Paciente, id=paciente_id)

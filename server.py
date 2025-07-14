@@ -1,6 +1,6 @@
 import requests
 
-API_KEY = "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"  # Replace with your OpenRouter API key
+API_KEY = "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"  # Replace with your OpenRouter API key
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 def chatbot_response(prompt):

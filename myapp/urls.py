@@ -15,6 +15,7 @@ urlpatterns = [
     path('pacientes/', views.inicio_psi, name='pacientes'),
     path('pac_indiv/<int:paciente_id>/', views.paciente_detail, name='pac_indiv'),
     path('atualizar_cor_resposta/', views.atualizar_cor_resposta, name='atualizar_cor_resposta'),
+    path('reverter_cores_originais/', views.reverter_cores_originais, name='reverter_cores_originais'),
     path('register/', views.register_view, name='register'),
     path('enviar-pergunta/', views.enviar_pergunta, name='enviar_pergunta'),
     path('chat/', views.chat, name='chat'),
