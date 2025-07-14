@@ -443,7 +443,6 @@
           <option value="verde">Verde (Estável)</option>
         </select>
         <button id="btnAlterarCor">Aplicar</button>
-        <button id="btnReverterCores" style="margin-top: 10px; background-color: #28a745;">Reverter para Cores Originais</button>
         <button id="btnAvaliarOncologica" style="margin-top: 10px; background-color: #dc3545;">Avaliar com Contexto Oncológico</button>
       </div>
 
@@ -692,49 +691,7 @@
       atualizarFiltro();
     });
 
-    // Adicionar funcionalidade para reverter cores originais
-    document.getElementById('btnReverterCores').addEventListener('click', () => {
-      if (confirm('Tem certeza que deseja reverter todas as cores para as originais baseadas no comprimento do texto?')) {
-        fetch('{% url "reverter_cores_originais" %}', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || ''
-          },
-          body: JSON.stringify({ paciente_id: '{{ paciente.id }}' })
-        }).then(resp => resp.json()).then(data => {
-          if (data.status === 'ok') {
-            // Atualizar o estado do paciente no texto se mudou
-            if (data.novo_estado && data.estado_anterior && data.novo_estado !== data.estado_anterior) {
-              const estados = {
-                'critico': 'Crítico',
-                'moderado': 'Moderado', 
-                'estavel': 'Estável'
-              };
-              
-              // Atualizar todos os textos que mostram o estado do paciente
-              const textos = document.querySelectorAll('.texto');
-              textos.forEach(texto => {
-                const estadoElement = texto.querySelector('b:last-of-type');
-                if (estadoElement && estadoElement.textContent.includes('Estado do paciente:')) {
-                  const estadoText = estadoElement.nextSibling;
-                  if (estadoText && estadoText.textContent.trim()) {
-                    estadoText.textContent = ' ' + estados[data.novo_estado];
-                  }
-                }
-              });
-            }
-            
-            // Recarregar a página para mostrar as cores atualizadas
-            location.reload();
-          } else {
-            alert('Erro ao reverter cores: ' + (data.message || ''));
-          }
-        }).catch(error => {
-          alert('Erro ao reverter cores: ' + error);
-        });
-      }
-    });
+
 
     // Adicionar funcionalidade para avaliação oncológica
     document.getElementById('btnAvaliarOncologica').addEventListener('click', () => {
@@ -760,18 +717,8 @@
         body: JSON.stringify({ resposta_id: respostaId })
       }).then(resp => resp.json()).then(data => {
         if (data.status === 'ok') {
-          // Mostrar avaliação em modal ou alert
-          try {
-            const avaliacao = JSON.parse(data.avaliacao);
-            let mensagem = `**Avaliação Oncológica**\n\n`;
-            mensagem += `**Risco:** ${avaliacao.risco || 'N/A'}\n\n`;
-            mensagem += `**Avaliação:** ${avaliacao.avaliacao || 'N/A'}\n\n`;
-            mensagem += `**Recomendações:** ${avaliacao.recomendacoes || 'N/A'}`;
-            alert(mensagem);
-          } catch (e) {
-            // Se não conseguir fazer parse do JSON, mostrar resposta bruta
-            alert('Avaliação Oncológica:\n\n' + data.avaliacao);
-          }
+          // Mostrar avaliação em janela lateral
+          mostrarAvaliacaoOncologica(data.avaliacao, textoSelecionado);
         } else {
           alert('Erro ao avaliar: ' + (data.message || ''));
         }
@@ -783,6 +730,60 @@
         btn.disabled = false;
       });
     });
+
+    // Função para mostrar avaliação oncológica em janela lateral
+    function mostrarAvaliacaoOncologica(avaliacaoData, textoElement) {
+      // Remover janela anterior se existir
+      const janelaAnterior = document.getElementById('janela-avaliacao');
+      if (janelaAnterior) {
+        janelaAnterior.remove();
+      }
+
+      // Criar janela lateral
+      const janela = document.createElement('div');
+      janela.id = 'janela-avaliacao';
+      janela.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 400px;
+        max-height: 80vh;
+        background: white;
+        border: 2px solid #dc3545;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        z-index: 10000;
+        padding: 20px;
+        overflow-y: auto;
+        font-family: Arial, sans-serif;
+      `;
+
+      // Conteúdo da janela
+      let conteudo = '<h3 style="color: #dc3545; margin-top: 0; border-bottom: 2px solid #dc3545; padding-bottom: 10px;">Avaliação Oncológica</h3>';
+      
+      try {
+        const avaliacao = JSON.parse(avaliacaoData);
+        conteudo += `<p><strong>Risco:</strong> ${avaliacao.risco || 'N/A'}</p>`;
+        conteudo += `<p><strong>Avaliação:</strong></p><p style="text-align: justify; line-height: 1.5;">${avaliacao.avaliacao || 'N/A'}</p>`;
+        conteudo += `<p><strong>Recomendações:</strong></p><p style="text-align: justify; line-height: 1.5;">${avaliacao.recomendacoes || 'N/A'}</p>`;
+      } catch (e) {
+        conteudo += `<p style="text-align: justify; line-height: 1.5;">${avaliacaoData}</p>`;
+      }
+
+      // Botão fechar
+      conteudo += '<button onclick="document.getElementById(\'janela-avaliacao\').remove()" style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 16px;">×</button>';
+      
+      janela.innerHTML = conteudo;
+      document.body.appendChild(janela);
+
+      // Fechar ao clicar fora da janela
+      janela.addEventListener('click', function(e) {
+        if (e.target === janela) {
+          janela.remove();
+        }
+      });
+    }
   </script>
 
   {% if user.is_authenticated %}

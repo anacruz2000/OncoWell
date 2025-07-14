@@ -69,6 +69,8 @@ def avaliar_resposta_journaling(resposta_texto, pergunta_texto=None):
         "Recomendações:\n"
         "- Sugestões específicas para melhorar o bem-estar\n"
         "- Recursos ou intervenções recomendadas\n"
+        "Sê relaxado e não penses muito nas entrelinhas enquanto avalias a resposta do paciente.\n\n"
+        "No fim da tua resposta dá uma resposta direta entre estável, moderada ou crítica.\n\n"
     )
     if pergunta_texto:
         user_prompt = f"Pergunta: {pergunta_texto}\nResposta do paciente: {resposta_texto}"
