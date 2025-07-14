@@ -660,7 +660,28 @@
         },
         body: JSON.stringify({ resposta_id: respostaId, cor: novaCor })
       }).then(resp => resp.json()).then(data => {
-        if (data.status !== 'ok') {
+        if (data.status === 'ok') {
+          // Atualizar o estado do paciente no texto se mudou
+          if (data.novo_estado && data.estado_anterior && data.novo_estado !== data.estado_anterior) {
+            const estados = {
+              'critico': 'Crítico',
+              'moderado': 'Moderado', 
+              'estavel': 'Estável'
+            };
+            
+            // Atualizar todos os textos que mostram o estado do paciente
+            const textos = document.querySelectorAll('.texto');
+            textos.forEach(texto => {
+              const estadoElement = texto.querySelector('b:last-of-type');
+              if (estadoElement && estadoElement.textContent.includes('Estado do paciente:')) {
+                const estadoText = estadoElement.nextSibling;
+                if (estadoText && estadoText.textContent.trim()) {
+                  estadoText.textContent = ' ' + estados[data.novo_estado];
+                }
+              }
+            });
+          }
+        } else {
           alert('Erro ao salvar cor: ' + (data.message || '')); 
         }
       });
@@ -682,6 +703,27 @@
           body: JSON.stringify({ paciente_id: '{{ paciente.id }}' })
         }).then(resp => resp.json()).then(data => {
           if (data.status === 'ok') {
+            // Atualizar o estado do paciente no texto se mudou
+            if (data.novo_estado && data.estado_anterior && data.novo_estado !== data.estado_anterior) {
+              const estados = {
+                'critico': 'Crítico',
+                'moderado': 'Moderado', 
+                'estavel': 'Estável'
+              };
+              
+              // Atualizar todos os textos que mostram o estado do paciente
+              const textos = document.querySelectorAll('.texto');
+              textos.forEach(texto => {
+                const estadoElement = texto.querySelector('b:last-of-type');
+                if (estadoElement && estadoElement.textContent.includes('Estado do paciente:')) {
+                  const estadoText = estadoElement.nextSibling;
+                  if (estadoText && estadoText.textContent.trim()) {
+                    estadoText.textContent = ' ' + estados[data.novo_estado];
+                  }
+                }
+              });
+            }
+            
             // Recarregar a página para mostrar as cores atualizadas
             location.reload();
           } else {
