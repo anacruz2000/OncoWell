@@ -74,6 +74,29 @@ def journaling(request):
                 pergunta = JournPerguntas.objects.get(id=pergunta_id)
             else:
                 pergunta = None
+            
+            # Avaliar automaticamente com LLM e determinar cor
+            from server import avaliar_resposta_journaling
+            pergunta_texto = pergunta.texto if pergunta else None
+            avaliacao_llm = avaliar_resposta_journaling(resposta_texto, pergunta_texto)
+            
+            # Determinar cor baseada na avaliação
+            cor_automatica = 'verde'  # padrão
+            try:
+                # Tentar fazer parse da resposta JSON
+                import re
+                # Procurar por palavras-chave na resposta do LLM
+                avaliacao_lower = avaliacao_llm.lower()
+                if any(palavra in avaliacao_lower for palavra in ['crítico', 'critico', 'alto risco', 'desesperança', 'isolamento', 'sofrimento']):
+                    cor_automatica = 'vermelho'
+                elif any(palavra in avaliacao_lower for palavra in ['moderado', 'preocupações', 'ansiedade', 'preocupacoes']):
+                    cor_automatica = 'amarelo'
+                else:
+                    cor_automatica = 'verde'
+            except:
+                # Se não conseguir analisar, usar verde como padrão
+                cor_automatica = 'verde'
+            
             # Atualiza a resposta existente (em branco) se houver, senão cria nova
             resposta_obj, created = JournRespostas.objects.get_or_create(
                 utilizador=request.user,
@@ -81,13 +104,16 @@ def journaling(request):
                 data_resposta__date=data_resposta,
                 defaults={
                     'resposta_texto': resposta_texto,
-                    'privacidade': privacidade
+                    'privacidade': privacidade,
+                    'cor_manual': cor_automatica
                 }
             )
             if not created:
                 resposta_obj.resposta_texto = resposta_texto
                 resposta_obj.privacidade = privacidade
+                resposta_obj.cor_manual = cor_automatica
                 resposta_obj.save()
+            
             # Após responder, sorteia próxima pergunta ainda não respondida para o mesmo dia
             perguntas_respondidas_ids = JournRespostas.objects.filter(utilizador=request.user, data_resposta__date=data_resposta, pergunta__isnull=False).exclude(resposta_texto='').values_list('pergunta_id', flat=True)
             perguntas_disponiveis = JournPerguntas.objects.exclude(id__in=perguntas_respondidas_ids)
@@ -1116,20 +1142,14 @@ def atualizar_cor_resposta(request):
         
         respostas_paciente = JournRespostas.objects.filter(utilizador=paciente).order_by('-data_resposta')
         
-        # Calcular novo estado baseado nas cores
+        # Calcular novo estado baseado nas cores (avaliação do LLM)
         novo_estado = 'estavel'
         cores = []
         for r in respostas_paciente:
             if r.cor_manual:
                 cores.append(r.cor_manual)
             else:
-                tam = len(r.resposta_texto or '')
-                if tam > 40:
-                    cores.append('vermelho')
-                elif tam > 20:
-                    cores.append('amarelo')
-                else:
-                    cores.append('verde')
+                cores.append('verde')  # padrão se não houver avaliação do LLM
         
         # Regras de estado
         if 'vermelho' in cores:
@@ -1190,16 +1210,25 @@ def reverter_cores_originais(request):
         atualizadas = 0
         
         for resposta in respostas_com_cores_manuais:
-            # Calcular cor original baseada no comprimento
-            tam = len(resposta.resposta_texto or '')
-            if tam > 40:
-                cor_original = 'vermelho'
-            elif tam > 20:
-                cor_original = 'amarelo'
-            else:
+            # Reavaliar com LLM para obter cor original
+            from server import avaliar_resposta_journaling
+            pergunta_texto = resposta.pergunta.texto if resposta.pergunta else None
+            avaliacao_llm = avaliar_resposta_journaling(resposta.resposta_texto, pergunta_texto)
+            
+            # Determinar cor baseada na avaliação do LLM
+            cor_original = 'verde'  # padrão
+            try:
+                avaliacao_lower = avaliacao_llm.lower()
+                if any(palavra in avaliacao_lower for palavra in ['crítico', 'critico', 'alto risco', 'desesperança', 'isolamento', 'sofrimento']):
+                    cor_original = 'vermelho'
+                elif any(palavra in avaliacao_lower for palavra in ['moderado', 'preocupações', 'ansiedade', 'preocupacoes']):
+                    cor_original = 'amarelo'
+                else:
+                    cor_original = 'verde'
+            except:
                 cor_original = 'verde'
             
-            # Atualizar para a cor original
+            # Atualizar para a cor original baseada na avaliação do LLM
             resposta.cor_manual = cor_original
             resposta.save()
             atualizadas += 1
@@ -1278,19 +1307,13 @@ def paciente_detail(request, paciente_id):
     # Atualizar estado do paciente conforme as respostas (usar todas, não só da página)
     novo_estado = 'estavel'
     respostas = list(respostas_paciente)
-    # Usar cor_manual se existir, senão cor automática
+    # Usar cor_manual (avaliação do LLM) se existir, senão verde como padrão
     cores = []
     for r in respostas:
         if r.cor_manual:
             cor = r.cor_manual
         else:
-            tam = len(r.resposta_texto or '')
-            if tam > 40:
-                cor = 'vermelho'
-            elif tam > 20:
-                cor = 'amarelo'
-            else:
-                cor = 'verde'
+            cor = 'verde'  # padrão se não houver avaliação do LLM
         cores.append(cor)
     # 1 vermelho = critico
     if 'vermelho' in cores:

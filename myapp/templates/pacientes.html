@@ -563,7 +563,7 @@
     <div class="main-content" id="mainContent" style="align-items: flex-start; padding-top: 10px;">
       <div style="margin-top: 0;">
         {% for resposta in respostas_paciente %}
-          <div class="texto {% if resposta.cor_manual %}texto-{{ resposta.cor_manual }}{% elif resposta.resposta_texto|length > 40 %}texto-vermelho{% elif resposta.resposta_texto|length > 20 %}texto-amarelo{% else %}texto-verde{% endif %}"
+          <div class="texto {% if resposta.cor_manual %}texto-{{ resposta.cor_manual }}{% else %}texto-verde{% endif %}"
                data-resposta-id="{{ resposta.id }}"
                style="border:1px solid #ccc; margin-bottom:10px; padding:8px; background:#f9f9f9;">
             <b>Pergunta:</b> {% if resposta.pergunta %}{{ resposta.pergunta.texto }}{% else %}Reflexão livre{% endif %}<br>
@@ -571,9 +571,9 @@
             <b>Privacidade:</b> {{ resposta.get_privacidade_display }} ({{ resposta.privacidade }})<br>
             <b>Data:</b> {{ resposta.data_resposta }}<br>
             <b>Estado do paciente:</b>
-            {% if resposta.resposta_texto|length > 40 %}
+            {% if resposta.cor_manual == 'vermelho' %}
               Crítico
-            {% elif resposta.resposta_texto|length > 20 %}
+            {% elif resposta.cor_manual == 'amarelo' %}
               Moderado
             {% else %}
               Estável
