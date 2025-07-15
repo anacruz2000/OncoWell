@@ -243,6 +243,7 @@
             background-color: #630000;
             color: white;
         }
+
         .pagination {
             display: flex;
             justify-content: center;
@@ -250,15 +251,17 @@
             gap: 8px;
             margin: 0 auto 0 auto;
             padding: 8px 18px;
-            background: rgba(255,255,255,0.95);
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 22px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
             position: relative;
             top: -18px;
             z-index: 10;
             min-width: 220px;
         }
-        .pagination a, .pagination span {
+
+        .pagination a,
+        .pagination span {
             padding: 7px 14px;
             text-decoration: none;
             color: #a10a0a;
@@ -268,23 +271,72 @@
             font-weight: 500;
             font-size: 15px;
             transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
         }
+
         .pagination a:hover {
             background: #a10a0a;
             color: #fff;
         }
+
         .pagination .current {
             background: #a10a0a;
             color: #fff;
             font-weight: 700;
-            box-shadow: 0 2px 6px rgba(161,10,10,0.10);
+            box-shadow: 0 2px 6px rgba(161, 10, 10, 0.10);
         }
+
         .pagination .disabled {
             color: #bbb;
             background: #f3f3f3;
             cursor: not-allowed;
             opacity: 0.7;
+        }
+
+        .qna-title {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            margin-top: 40px;
+            color: #222;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 8px;
+        }
+
+        .resposta-box {
+            max-height: 140px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .resposta-scroll {
+            max-height: none;
+            overflow-y: hidden;
+            padding-right: 6px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+            scrollbar-width: thin;
+            scrollbar-color: #ccc transparent;
+        }
+
+        .resposta-scroll.expandida {
+            max-height: 90px;
+            overflow-y: auto;
+        }
+
+        /* Scroll estilizado para WebKit */
+        .resposta-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .resposta-scroll::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        .resposta-scroll::-webkit-scrollbar-track {
+            background: transparent;
         }
     </style>
 </head>
@@ -340,6 +392,13 @@
 
     <!-- Conteúdo principal -->
     <div class="main-content">
+        <h2 class="qna-title">
+            Testemunhos
+            <span style="font-weight: 400; font-size: 15px; display:block; margin-top: 4px; color:#888;">
+                Relatos de outros utilizadores para te inspirar e ajudar.
+            </span>
+        </h2>
+
         <div class="content-wrapper">
             <!-- Filtros ao lado esquerdo -->
             <div class="sidebar-compact">
@@ -428,7 +487,8 @@
                             {{ t.titulo }}
                             <span style="color: #666; font-size: 0.9em;">{{ t.data|date:'d/m/Y' }}</span>
                             <span style="color: #666; font-size: 0.9em;">
-                                (por {% if t.visibilidade == 'publico' and t.autor %}{{ t.autor.username }}{% else %}Anónimo{% endif %})
+                                (por {% if t.visibilidade == 'publico' and t.autor %}{{ t.autor.username }}{% else
+                                %}Anónimo{% endif %})
                             </span>
                             {% if user.is_authenticated and t.autor == user %}
                             <div class="testimonial-menu">
@@ -442,12 +502,15 @@
                             </div>
                             {% endif %}
                         </h3>
-                        <span class="short-text">
-                            {{ t.texto|truncatechars:80 }}
-                        </span>
-                        <span class="full-text" style="display: none;">
-                            {{ t.texto }}
-                        </span>
+                        <div class="resposta-box">
+                            <div class="short-text">
+                                {{ t.texto|truncatechars:80 }}
+                            </div>
+                            <div class="full-text resposta-scroll" style="display: none;">
+                                {{ t.texto }}
+                            </div>
+                        </div>
+
                         {% if t.texto|length > 50 %}
                         <a href="#" class="toggle-link" onclick="toggleText(this); return false;">(ver mais)</a>
                         {% endif %}
@@ -465,7 +528,8 @@
                             {{ t.titulo }}
                             <span style="color: #666; font-size: 0.9em;">{{ t.data|date:'d/m/Y' }}</span>
                             <span style="color: #666; font-size: 0.9em;">
-                                (por {% if t.visibilidade == 'publico' and t.autor %}{{ t.autor.username }}{% else %}Anónimo{% endif %})
+                                (por {% if t.visibilidade == 'publico' and t.autor %}{{ t.autor.username }}{% else
+                                %}Anónimo{% endif %})
                             </span>
                             {% if user.is_authenticated and t.autor == user %}
                             <div class="testimonial-menu">
@@ -479,12 +543,14 @@
                             </div>
                             {% endif %}
                         </h3>
-                        <span class="short-text">
-                            {{ t.texto|truncatechars:80 }}
-                        </span>
-                        <span class="full-text" style="display: none;">
-                            {{ t.texto }}
-                        </span>
+                        <div class="resposta-box">
+                            <div class="short-text">
+                                {{ t.texto|truncatechars:80 }}
+                            </div>
+                            <div class="full-text resposta-scroll" style="display: none;">
+                                {{ t.texto }}
+                            </div>
+                        </div>
                         {% if t.texto|length > 50 %}
                         <a href="#" class="toggle-link" onclick="toggleText(this); return false;">(ver mais)</a>
                         {% endif %}
@@ -499,28 +565,28 @@
     {% if page_obj.has_other_pages %}
     <div class="pagination">
         {% if page_obj.has_previous %}
-            <a href="?page=1">&laquo;</a>
-            <a href="?page={{ page_obj.previous_page_number }}">&lsaquo;</a>
+        <a href="?page=1">&laquo;</a>
+        <a href="?page={{ page_obj.previous_page_number }}">&lsaquo;</a>
         {% else %}
-            <span class="disabled">&laquo;</span>
-            <span class="disabled">&lsaquo;</span>
+        <span class="disabled">&laquo;</span>
+        <span class="disabled">&lsaquo;</span>
         {% endif %}
 
         {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-                <span class="current">{{ num }}</span>
-            {% elif num > page_obj.number|add:'-2' and num < page_obj.number|add:'2' %}
-                <a href="?page={{ num }}">{{ num }}</a>
+        {% if page_obj.number == num %}
+        <span class="current">{{ num }}</span>
+        {% elif num > page_obj.number|add:'-2' and num < page_obj.number|add:'2' %} <a href="?page={{ num }}">{{ num
+            }}</a>
             {% endif %}
-        {% endfor %}
+            {% endfor %}
 
-        {% if page_obj.has_next %}
+            {% if page_obj.has_next %}
             <a href="?page={{ page_obj.next_page_number }}">&rsaquo;</a>
             <a href="?page={{ page_obj.paginator.num_pages }}">&raquo;</a>
-        {% else %}
+            {% else %}
             <span class="disabled">&rsaquo;</span>
             <span class="disabled">&raquo;</span>
-        {% endif %}
+            {% endif %}
     </div>
     {% endif %}
 
@@ -551,18 +617,23 @@
             const shortText = box.querySelector('.short-text');
             const fullText = box.querySelector('.full-text');
 
-            const isExpanded = fullText.style.display === 'inline';
+            const respostaScroll = fullText;  // div com classe resposta-scroll
+
+            const isExpanded = fullText.style.display === 'block';
 
             if (isExpanded) {
                 fullText.style.display = 'none';
-                shortText.style.display = 'inline';
+                shortText.style.display = 'block';
+                respostaScroll.classList.remove('expandida');
                 link.textContent = '(ver mais)';
             } else {
-                fullText.style.display = 'inline';
+                fullText.style.display = 'block';
                 shortText.style.display = 'none';
+                respostaScroll.classList.add('expandida');
                 link.textContent = '(ver menos)';
             }
         }
+
 
         document.getElementById('filterForm').addEventListener('submit', function (e) {
             e.preventDefault();

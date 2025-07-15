@@ -735,13 +735,15 @@ def journaling_delhes(request):
     user_favoritos_ids = []
     if request.user.is_authenticated:
         user_favoritos_ids = list(Favorito.objects.filter(utilizador=request.user).values_list('favorito_id', flat=True))
-    
+    filtro = request.GET.get("filter", "")
     return render(request, 'journaling_deles.html', {
+        'filtro': filtro,
         'current_page': 'journaling_delhes',
         'page_left': page_left,
         'page_right': page_right,
         'user_favoritos_ids': user_favoritos_ids,
         'page_obj': page_obj,
+        
     })
 
 @csrf_exempt

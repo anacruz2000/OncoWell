@@ -66,15 +66,15 @@
     }
 
     .day-list li:hover {
-      background-color: #007bff;
+      background-color: #630000;
       color: #fff;
-      border-color: #0056b3;
+      border-color: #630000;
     }
 
     .day-list li.active {
-      background-color: #0056b3;
+      background-color: #630000;
       color: #fff;
-      border-color: #003f7f;
+      border-color: #630000;
       font-weight: 700;
     }
 
@@ -99,7 +99,8 @@
       flex: 1;
       max-width: 730px;
       min-width: 300px;
-      min-height: 600px;
+      height: 600px;
+      /* ou height: 80vh; */
     }
 
     /* Controles de paginação */
@@ -116,7 +117,7 @@
     }
 
     .pagination-controls button {
-      background: rgba(161, 10, 10, 0.9);
+      background: rgba(161, 10, 10);
       color: white;
       border: none;
       border-radius: 50%;
@@ -160,12 +161,14 @@
       display: block;
       user-select: none;
       pointer-events: none;
+      position: relative;
+      z-index: 1;
     }
 
     .page-left,
     .page-right {
       position: absolute;
-      top: 12%;
+      top: 8%;
       height: 76%;
       padding: 15px;
       overflow-y: hidden;
@@ -182,11 +185,39 @@
     }
 
     .page-left {
+      position: absolute;
+      z-index: 2;
       left: 10%;
       width: 38%;
+      top: 8%;
+      height: 60%;
+      overflow-y: auto;
+      /* Permite scroll vertical */
+      padding-right: 5px;
       color: #333;
+      background: transparent;
       box-sizing: border-box;
+      scrollbar-width: thin;
+      scrollbar-color: #ccc transparent;
+      word-break: break-word;
     }
+
+
+    /* Scroll estilizado para navegadores baseados em WebKit (Chrome, Edge, Safari) */
+    .page-left::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .page-left::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+
+    .page-left::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+
 
     .page-right {
       left: 52%;
@@ -326,11 +357,13 @@
       }
 
       .book-container {
-        max-width: 95vw;
-        min-width: auto;
-        width: 100%;
-        height: 200px;
+        position: relative;
+        max-width: 730px;
+        min-width: 300px;
+        height: 500px;
+        /* ou ajusta com base na imagem do livro */
       }
+
 
       .page-left,
       .page-right {
@@ -366,6 +399,7 @@
         gap: 15px;
         margin: 10px 0;
       }
+    
     }
   </style>
 </head>
@@ -457,10 +491,16 @@
       <div id="submitted-text" class="page-left">
         {% if respostas_utilizador_lista %}
         {% for resposta in respostas_utilizador_lista %}
-        <p><strong>P:</strong> {% if resposta.pergunta %}{{ resposta.pergunta.texto }}{% else %}Reflexão livre{% endif %}</p>
+        <p><strong>P:</strong> {% if resposta.pergunta and resposta.pergunta.texto %}
+          {{ resposta.pergunta.texto }}
+          {% else %}
+          Reflexão livre
+          {% endif %}
+        </p>
         <p><strong>R:</strong> {{ resposta.resposta_texto }}</p>
         <p style="color: #888; font-size: 13px;"><strong>Hora:</strong> {{ resposta.data_resposta|date:'H:i' }} |
-          <strong>{% if resposta.privacidade == 'publico' %}Público{% else %}Privado{% endif %}</strong></p>
+          <strong>{% if resposta.privacidade == 'publico' %}Público{% else %}Privado{% endif %}</strong>
+        </p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 8px 0;" />
         {% endfor %}
         {% else %}
@@ -549,7 +589,7 @@
 
     // Data selecionada atualmente (string 'YYYY-MM-DD')
     let selectedDate = null;
-    
+
     // Variáveis de paginação
     let currentPage = 1;
     let answersPerPage = 1; // Apenas 1 resposta por página (2 total no livro)
@@ -562,7 +602,7 @@
     const submitBtn = document.getElementById('submitBtn');
     const privacidadeError = document.getElementById('privacidade-error');
     const textoError = document.getElementById('texto-error');
-    
+
     // Verificar se todos os elementos foram encontrados
     console.log('Elementos encontrados:', {
       dayList: !!dayList,
@@ -590,33 +630,33 @@
       const pageInfo = document.getElementById('pageInfo');
       const prevBtn = document.getElementById('prevPageBtn');
       const nextBtn = document.getElementById('nextPageBtn');
-      
+
       if (allAnswers.length === 0) {
         submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aparecerá nesta página.</p>";
         paginationControls.style.display = 'none';
         return;
       }
-      
+
       const totalPages = Math.ceil(allAnswers.length / answersPerPage);
       const startIndex = (currentPage - 1) * answersPerPage;
       const endIndex = startIndex + answersPerPage;
       const currentAnswers = allAnswers.slice(startIndex, endIndex);
-      
+
       // Renderizar apenas 1 resposta da página atual
       if (currentAnswers.length > 0) {
         const r = currentAnswers[0];
         const texto = r.texto;
-        if (texto.length > 50) {
+        if (texto.length > 300) {
           const half = Math.ceil(texto.length / 2);
           const short = texto.slice(0, half) + '...';
-          submittedTextDiv.innerHTML = `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> <span class='short-text'>${short}</span><span class='full-text' style='display:none;'>${texto}</span> <a href='#' class='toggle-link' onclick='toggleTextJournaling(this);return false;'>(ver mais)</a></p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
+          submittedTextDiv.innerHTML = `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> <span class='short-text'>${short}</span><span class='full-text' style='display:none;'>${texto}</span><a href='#' style='color: #630000; class='toggle-link' onclick='toggleTextJournaling(this);return false;'>(ver mais)</a></p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
         } else {
           submittedTextDiv.innerHTML = `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> ${texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
         }
       } else {
         submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aparecerá nesta página.</p>";
       }
-      
+
       // Atualizar controles de paginação
       if (totalPages > 1) {
         paginationControls.style.display = 'flex';
@@ -632,7 +672,7 @@
     function changePage(direction) {
       const totalPages = Math.ceil(allAnswers.length / answersPerPage);
       const newPage = currentPage + direction;
-      
+
       if (newPage >= 1 && newPage <= totalPages) {
         currentPage = newPage;
         renderAnswers();
@@ -646,7 +686,7 @@
         console.error('dayList não encontrado');
         return;
       }
-      
+
       dayList.innerHTML = '';
       const today = new Date();
       for (let i = 6; i >= 0; i--) {
@@ -669,9 +709,9 @@
     // Selecionar uma data — mostra texto e atualiza sidebar e datepicker
     function selectDate(dateStr) {
       console.log('selectDate chamada com:', dateStr);
-      
+
       selectedDate = dateStr;
-      
+
       // Atualiza destaque da lista
       [...dayList.children].forEach(li => {
         li.classList.remove('active');
@@ -679,19 +719,19 @@
           li.classList.add('active');
         }
       });
-      
+
       // Atualiza datepicker
       datepicker.value = dateStr;
-      
+
       // Buscar pergunta e respostas via AJAX
       fetch(`/journaling_data/?data=${dateStr}`)
         .then(response => response.json())
         .then(data => {
           console.log('Dados recebidos:', data);
-          
+
           const perguntaDiv = document.getElementById('pergunta');
           const submittedTextDiv = document.getElementById('submitted-text');
-          
+
           // Atualizar pergunta
           if (data.status === 'ok' && data.pergunta) {
             perguntaDiv.innerHTML = `<h2 data-pergunta-id="${data.pergunta.id}">${data.pergunta.texto}</h2>`;
@@ -700,7 +740,7 @@
             perguntaDiv.innerHTML = `<p>🎉 Já respondeste a todas as perguntas disponíveis!</p>`;
             document.getElementById('pergunta-id').value = '';
           }
-          
+
           // Atualizar respostas com paginação
           if (data.respostas && data.respostas.length > 0) {
             allAnswers = data.respostas;
@@ -715,11 +755,11 @@
         .catch(error => {
           console.error('Erro ao carregar dados:', error);
         });
-      
+
       // Limpa textarea
       textarea.value = '';
       textarea.focus();
-      
+
       // Desabilitar textarea e botão se não for hoje
       const hojeStr = new Date().toISOString().slice(0, 10);
       const editWarning = document.getElementById('edit-warning');
@@ -863,7 +903,7 @@
     // Seleciona o último dia da lista por padrão (hoje)
     const hojeStr = new Date().toISOString().slice(0, 10);
     console.log('Data de hoje:', hojeStr);
-    
+
     // Aguardar um pouco antes de selecionar a data
     setTimeout(() => {
       selectDate(hojeStr);
