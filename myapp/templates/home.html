@@ -1,0 +1,140 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>OncoWell - Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Instrument Sans', sans-serif;
+            background: #fafafa;
+        }
+
+        .livro-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 150px;
+            position: relative;
+        }
+
+        .livro-img {
+            width: 100%;
+            max-width: 1200px;
+            height: auto;
+            display: block;
+        }
+
+        .pagina-esquerda,
+        .pagina-direita {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            pointer-events: none;
+        }
+
+        .pagina-esquerda {
+            left: 0;
+        }
+
+        .pagina-direita {
+            right: 0;
+        }
+
+        .caixa-texto {
+            background-color: transparent;
+            padding: 20px;
+            border-radius: 16px;
+            color: #630000;
+            max-width: 380px;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.7);
+             transform: translateX(250px);
+        }
+
+
+        .caixa-texto h2 {
+            margin-top: 0;
+            font-size: 22px;
+            color: #630000;
+        }
+
+        .caixa-texto ul {
+            list-style: none;
+            padding-left: 0;
+            margin-top: 16px;
+        }
+
+        .caixa-texto li {
+            margin-bottom: 8px;
+            font-size: 20px;
+        }
+
+        .cadeado-link:hover {
+            transform: scale(1.2);
+            color: #630000;
+        }
+
+        .cadeado-link {
+            font-size: 32px;
+            color: #333;
+            text-decoration: none;
+            transition: transform 0.3s ease;
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            margin-left: -480px;
+        }
+
+        .cadeado-subtexto {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #444;
+            text-decoration: none;
+            margin-left: -25px;
+        }
+    </style>
+</head>
+
+<body>
+    {% include '_navbar_profissional.html' %}
+
+    <div class="livro-wrapper">
+        <!-- Imagem do livro -->
+        <img src="{% static 'images/livro_journaling.png' %}" alt="Livro" class="livro-img" />
+
+        <!-- Página Esquerda -->
+        <div class="pagina-esquerda">
+            <div class="caixa-texto">
+                <h2>Descubra o que a OncoWell tem para oferecer</h2>
+                <ul>
+                    <li>• Benefícios da escrita terapêutica</li>
+                    <li>• Conteúdos informativos de valor clínico</li>
+                    <li>• Testemunhos genuínos de utilizadores</li>
+                    <li>• Perguntas frequentes com respostas claras</li>
+                    <li>• Espaço reservado para diálogo com profissionais</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Página Direita -->
+        <div class="pagina-direita">
+            <a href="{% url 'register' %}" class="cadeado-link" title="Clica para te registares">
+                <i class="fas fa-lock"></i>
+                <p class="cadeado-subtexto"> Desbloqueia</p>
+            </a>
+        </div>
+    </div>
+</body>
+
+</html>

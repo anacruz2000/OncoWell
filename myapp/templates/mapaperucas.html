@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mapa com Vários Locais</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=SUA_CHAVE_API"></script>
+    <script>
+      function initMap() {
+        const locais = [
+          { nome: "Local A", lat: 38.736946, lng: -9.142685 },
+          { nome: "Local B", lat: 38.722252, lng: -9.139337 },
+          { nome: "Local C", lat: 38.707751, lng: -9.136592 },
+        ];
+
+
+        const map = new google.maps.Map(document.getElementById("map"), {
+          zoom: 12,
+          center: locais[0]
+        });
+
+
+        locais.forEach(local => {
+          new google.maps.Marker({
+            position: { lat: local.lat, lng: local.lng },
+            map,
+            title: local.nome
+          });
+        });
+      }
+    </script>
+  </head>
+  <body onload="initMap()">
+    <div id="map" style="height: 500px; width: 100%;"></div>
+  </body>
+</html>

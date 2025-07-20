@@ -1,0 +1,589 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>OncoWell - Journalling Público</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link href="{% static 'css/style.css' %}" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Instrument Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: #fff;
+        }
+
+        .main-content {
+            margin: 0 auto;
+            padding: 20px 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+            width: 100%;
+            margin-top: 90px; /* Adicionado para evitar sobreposição com a navbar */
+        }
+
+        .content-wrapper {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding-top: 30px;
+        }
+
+
+        .sidebar-compact {
+            background: #f3f3f3;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            min-width: 200px;
+            max-width: 240px;
+        }
+
+        .sidebar-compact form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sidebar-compact label {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-compact input[type="text"],
+        .sidebar-compact input[type="date"],
+        .sidebar-compact select {
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        .sidebar-compact button {
+            background: #630000;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .book-container {
+            background-image: url('{% static "images/livro_journaling.png" %}');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            width: 100%;
+            max-width: 900px;
+            height: 700px;
+            position: relative;
+            padding: 60px 80px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+        }
+
+        .resposta-box {
+            max-height: 140px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .resposta-scroll {
+            max-height: none;
+            overflow-y: hidden;
+            padding-right: 6px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+            scrollbar-width: thin;
+            /* Firefox */
+            scrollbar-color: #ccc transparent;
+        }
+
+        .resposta-scroll.expandida {
+            max-height: 90px;
+            overflow-y: auto;
+        }
+
+        /* Scroll estilizado para WebKit (Chrome, Edge, Safari) */
+        .resposta-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .resposta-scroll::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        .resposta-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .data-texto {
+            color: #888;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+
+
+
+        /* Quando texto curto, scroll não aparece */
+        .short-text {
+            display: block;
+        }
+
+        .full-text {
+            display: none;
+        }
+
+        .toggle-link {
+            color: #630000;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            display: block;
+            margin-top: 8px;
+            text-align: right;
+        }
+
+
+
+        .page {
+            width: 45%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            line-height: 1.5;
+            color: #330000;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
+            box-sizing: border-box;
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+        }
+
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin: 0 auto 0 auto;
+            padding: 8px 18px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 22px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+            position: relative;
+            top: -18px;
+            z-index: 10;
+            min-width: 220px;
+        }
+
+        .pagination a,
+        .pagination span {
+            padding: 7px 14px;
+            text-decoration: none;
+            color: #a10a0a;
+            border: none;
+            border-radius: 16px;
+            background: #f3f3f3;
+            font-weight: 500;
+            font-size: 15px;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+
+        .pagination a:hover {
+            background: #a10a0a;
+            color: #fff;
+        }
+
+        .pagination .current {
+            background: #a10a0a;
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(161, 10, 10, 0.10);
+        }
+
+        .pagination .disabled {
+            color: #bbb;
+            background: #f3f3f3;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .question-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #333333;
+            text-align: left;
+        }
+
+        .question-box {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .short-text,
+        .full-text {
+            display: block;
+        }
+
+        .toggle-link {
+            color: #630000;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            display: block;
+            margin-top: 8px;
+            text-align: right;
+        }
+
+        .favorite-user-star {
+            color: #ccc;
+            cursor: pointer;
+            font-size: 18px;
+            margin-left: 6px;
+            transition: color 0.3s;
+        }
+
+        .favorite-user-star.active {
+            color: #ffd700;
+        }
+
+        .question-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .title-text {
+            flex: 1;
+        }
+
+        .qna-title {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            margin-top: 40px;
+            color: #222;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 8px;
+        }
+
+    </style>
+</head>
+
+<body>
+    {% csrf_token %}
+
+    <!-- Nav bar -->
+    {% include '_navbar_profissional.html' %}
+
+    <a href="{% url 'home' %}" class="logo">
+        <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;">
+    </a>
+
+    <!-- Conteúdo principal -->
+    <div class="main-content">
+         <h2 class="qna-title">
+            Journalling Público
+            <span style="font-weight: 400; font-size: 15px; display:block; margin-top: 4px; color:#888;">
+                Este é o journalling de outras pessoas, podes ver as suas reflexões.
+            </span>
+        </h2>
+
+        <div class="content-wrapper">
+            <!-- Filtros ao lado esquerdo -->
+            <div class="sidebar-compact">
+                <form id="filterForm">
+                    <div>
+                        <label for="searchText">Pesquisar:</label>
+                        <input type="text" id="searchText" name="searchText" placeholder="palavras-chave"
+                            value="{{ request.GET.search }}" />
+                    </div>
+                    <div>
+                        <label for="filterType">Filtrar por:</label>
+                        <select id="filterType" name="filterType">
+                            <option value="">Todos</option>
+                            <option value="favoritos" {% if filtro == "favoritos" %}selected{% endif %}>Favoritos</option>
+                            <option value="recentes" {% if filtro == "recentes" %}selected{% endif %}>Recentes</option>
+                        </select>
+                    </div>
+                    <button type="submit">Filtrar</button>
+                </form>
+            </div>
+
+            <!-- Livro -->
+            <div class="book-container">
+                <!-- Página esquerda -->
+                <div class="page">
+                    {% for resposta in page_left %}
+                    <div class="question-box{% if resposta.utilizador.id in user_favoritos_ids %} favorite{% endif %}"
+                        data-date="{{ resposta.data_resposta|date:'Y-m-d' }}">
+                        <h3 class="question-title">
+                            <span class="title-text">
+                                {% if resposta.pergunta %}
+                                {{ resposta.pergunta.texto }}
+                                {% else %}
+                                Reflexão livre
+                                {% endif %}
+                            </span>
+                        </h3>
+                        <div style="font-size:14px; color:#555; margin-bottom:4px;">
+                            <strong>Por:</strong> {{ resposta.utilizador.nome|default:"Anónimo" }}
+                            {% if user.is_authenticated %}
+                            <span
+                                class="favorite-user-star{% if resposta.utilizador.id in user_favoritos_ids %} active{% endif %}"
+                                data-user-id="{{ resposta.utilizador.id }}">★</span>
+                            {% endif %}
+                        </div>
+                        <div class="resposta-box">
+                            {% if resposta.resposta_texto|length > 50 %}
+                            <div class="short-text">{{ resposta.resposta_texto|slice:':25' }}...</div>
+                            <div class="full-text resposta-scroll" style="display: none;">
+                                {{ resposta.resposta_texto }}
+                            </div>
+                            <a href="#" class="toggle-link" onclick="toggleTextJournaling(this); return false;">ver
+                                mais</a>
+                            {% else %}
+                            <div class="resposta-scroll">{{ resposta.resposta_texto }}</div>
+                            {% endif %}
+                        </div>
+                        <p class="data-texto">
+                            <strong>Data:</strong> {{ resposta.data_resposta|date:'d/m/Y H:i' }} |
+                            <strong>Público</strong>
+                        </p>
+
+                    </div>
+                    {% empty %}
+                    <p style="color: #888;">Ainda não há respostas públicas de outros utilizadores.</p>
+                    {% endfor %}
+                </div>
+
+                <!-- Página direita -->
+                <div class="page">
+                    {% for resposta in page_right %}
+                    <div class="question-box{% if resposta.utilizador.id in user_favoritos_ids %} favorite{% endif %}"
+                        data-date="{{ resposta.data_resposta|date:'Y-m-d' }}">
+                        <h3 class="question-title">
+                            <span class="title-text">
+                                {% if resposta.pergunta %}
+                                {{ resposta.pergunta.texto }}
+                                {% else %}
+                                Reflexão livre
+                                {% endif %}
+                            </span>
+                        </h3>
+                        <div style="font-size:14px; color:#555; margin-bottom:4px;">
+                            <strong>Por:</strong> {{ resposta.utilizador.nome|default:"Anónimo" }}
+                            {% if user.is_authenticated %}
+                            <span
+                                class="favorite-user-star{% if resposta.utilizador.id in user_favoritos_ids %} active{% endif %}"
+                                data-user-id="{{ resposta.utilizador.id }}">★</span>
+                            {% endif %}
+                        </div>
+                        <div class="resposta-box">
+                            {% if resposta.resposta_texto|length > 50 %}
+                            <div class="short-text">{{ resposta.resposta_texto|slice:':25' }}...</div>
+                            <div class="full-text resposta-scroll" style="display: none;">
+                                {{ resposta.resposta_texto }}
+                            </div>
+                            <a href="#" class="toggle-link" onclick="toggleTextJournaling(this); return false;">ver
+                                mais</a>
+                            {% else %}
+                            <div class="resposta-scroll">{{ resposta.resposta_texto }}</div>
+                            {% endif %}
+                        </div>
+                        <p class="data-texto">
+                            <strong>Data:</strong> {{ resposta.data_resposta|date:'d/m/Y H:i' }} |
+                            <strong>Público</strong>
+                        </p>
+
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Paginação -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a
+                href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}">&laquo;</a>
+            <a
+                href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}">&lsaquo;</a>
+            {% else %}
+            <span class="disabled">&laquo;</span>
+            <span class="disabled">&lsaquo;</span>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="current">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-2' and num < page_obj.number|add:'2' %} <a
+                href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}">
+                {{ num }}</a>
+                {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <a
+                    href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}">&rsaquo;</a>
+                <a
+                    href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}">&raquo;</a>
+                {% else %}
+                <span class="disabled">&rsaquo;</span>
+                <span class="disabled">&raquo;</span>
+                {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Script ver mais/ver menos + filtros -->
+    <script>
+        function toggleText(link) {
+            const box = link.closest('.question-box');
+            const shortText = box.querySelector('.short-text');
+            const fullText = box.querySelector('.full-text');
+
+            const isExpanded = fullText.style.display === 'block';
+
+            if (isExpanded) {
+                fullText.style.display = 'none';
+                shortText.style.display = 'block';
+                link.textContent = 'ver mais';
+            } else {
+                fullText.style.display = 'block';
+                shortText.style.display = 'none';
+                link.textContent = 'ver menos';
+            }
+        }
+
+        function toggleTextJournaling(link) {
+            const box = link.closest('.resposta-box');
+            const shortText = box.querySelector('.short-text');
+            const fullText = box.querySelector('.full-text');
+
+            const isExpanded = fullText.style.display === 'block';
+
+            if (isExpanded) {
+                fullText.style.display = 'none';
+                shortText.style.display = 'block';
+                fullText.classList.remove('expandida');
+                link.textContent = 'ver mais';
+            } else {
+                fullText.style.display = 'block';
+                shortText.style.display = 'none';
+                fullText.classList.add('expandida');
+                link.textContent = 'ver menos';
+            }
+        }
+
+
+
+
+        document.getElementById('filterForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const searchText = document.getElementById('searchText').value.toLowerCase();
+            const filterType = document.getElementById('filterType').value;
+
+            // Construir URL com parâmetros de filtro
+            const urlParams = new URLSearchParams(window.location.search);
+            if (searchText) {
+                urlParams.set('search', searchText);
+            } else {
+                urlParams.delete('search');
+            }
+            if (filterType) {
+                urlParams.set('filter', filterType);
+            } else {
+                urlParams.delete('filter');
+            }
+            urlParams.delete('page'); // Reset para primeira página
+
+            // Redirecionar com os filtros
+            window.location.href = window.location.pathname + '?' + urlParams.toString();
+        });
+
+        // Função para verificar se uma entrada é recente (últimos 7 dias)
+        function isRecentEntry(dateStr) {
+            const entryDate = new Date(dateStr);
+            const today = new Date();
+            const diffTime = Math.abs(today - entryDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays <= 7;
+        }
+
+        // Função para alternar o estado de favorito
+        function toggleFavorite(star) {
+            const questionBox = star.closest('.question-box');
+            const isFavorite = questionBox.classList.contains('favorite');
+            if (isFavorite) {
+                questionBox.classList.remove('favorite');
+                star.classList.remove('active');
+            } else {
+                questionBox.classList.add('favorite');
+                star.classList.add('active');
+            }
+        }
+
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenu');
+            menu.classList.toggle('active');
+        }
+        document.addEventListener('click', function (event) {
+            const menu = document.getElementById('userMenu');
+            const userIcon = document.querySelector('.user-icon');
+            if (!menu.contains(event.target) && !userIcon.contains(event.target)) {
+                menu.classList.remove('active');
+            }
+        });
+
+        // Favoritar utilizador
+        document.querySelectorAll('.favorite-user-star').forEach(star => {
+            star.addEventListener('click', function () {
+                const userId = this.getAttribute('data-user-id');
+                fetch('/toggle_favorito/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value
+                    },
+                    body: JSON.stringify({ favorito_id: userId })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'ok') {
+                            this.classList.toggle('active', data.favorited);
+                        }
+                    });
+            });
+        });
+    </script>
+</body>
+
+</html>

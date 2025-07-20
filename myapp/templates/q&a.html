@@ -1,0 +1,194 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <title>OncoWell - Q&A</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Instrument Sans', 'Inter', sans-serif;
+            background-color: #f9fafc;
+            color: #333;
+        }
+
+        .qna-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 120px 24px 60px;
+        }
+
+        .qna-title {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            margin-top: 40px;
+            color: #222;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 8px;
+        }
+
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .faq-item {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            padding: 16px 20px;
+            transition: box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+
+        .faq-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .faq-question {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-answer {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.5;
+            display: none;
+            margin-top: 10px;
+        }
+
+        .faq-item.active .faq-answer {
+            display: block;
+        }
+
+        .faq-toggle-icon {
+            transition: transform 0.3s ease;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .faq-item.active .faq-toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .form-wrapper {
+            background: #fff;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 60px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .form-title {
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .form-wrapper input[type="text"] {
+            padding: 12px 14px;
+            font-size: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .form-wrapper button {
+            padding: 10px;
+            background: #bf1212;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .form-wrapper button:hover {
+            background: #630000;
+        }
+    </style>
+</head>
+
+<body>
+    {% include '_navbar_profissional.html' %}
+
+    <div class="qna-container">
+        <h2 class="qna-title">
+            Perguntas mais frequentes
+            <span style="font-weight: 400; font-size: 15px; display:block; margin-top: 4px; color:#888;">
+                Respondidas automaticamente para te ajudar.
+            </span>
+        </h2>
+
+        {% if faqs %}
+        <div class="faq-list">
+            {% for faq in faqs %}
+            <div class="faq-item">
+                <div class="faq-question">
+                    {{ faq.pergunta }}
+                    <i class="fas fa-chevron-down faq-toggle-icon"></i>
+                </div>
+                <div class="faq-answer">{{ faq.resposta }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if pergunta_feita and resposta_gerada %}
+        <div class="faq-item" style="margin-top: 24px; background: #f5fbfd; border-left: 4px solid #00bcd4;">
+            <div class="faq-question">
+                <span><i class="fas fa-comment-dots"></i> Pergunta recente</span>
+                <i class="fas fa-chevron-down faq-toggle-icon"></i>
+            </div>
+            <div class="faq-answer">
+                <p><strong>Pergunta:</strong> {{ pergunta_feita }}</p>
+                {% if topico_gerado %}<p><strong>Tópico:</strong> {{ topico_gerado }}</p>{% endif %}
+                <p><strong>Resposta:</strong> {{ resposta_gerada }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="form-wrapper">
+            <h2 class="form-title">Tens alguma dúvida? Pergunta abaixo</h2>
+            <form method="post" action="{% url 'enviar_pergunta' %}">
+                {% csrf_token %}
+                <input type="text" name="pergunta" placeholder="Escreve a tua pergunta..." required />
+                <button type="submit">Perguntar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.faq-item').forEach(item => {
+            item.addEventListener('click', () => {
+                item.classList.toggle('active');
+            });
+        });
+    </script>
+</body>
+
+</html>

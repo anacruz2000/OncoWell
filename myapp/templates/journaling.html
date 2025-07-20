@@ -1,0 +1,1018 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OncoWell - Meu Journalling </title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <link href="{% static 'css/style.css' %}" rel="stylesheet" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Instrument Sans', sans-serif;
+      background-color: #fff;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Conteúdo principal com sidebar e livro */
+    .content-wrapper {
+      display: flex;
+      flex: 1;
+      max-width: 1200px;
+      margin: 300px auto 60px;
+      gap: 20px;
+      padding: 0 10px;
+      width: 100%;
+    }
+
+    /* Sidebar lateral */
+    .sidebar {
+      width: 240px;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      height: fit-content;
+      font-size: 16px;
+    }
+
+    .day-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 280px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+    }
+
+    .day-list li {
+      padding: 8px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-bottom: 5px;
+      background-color: #fff;
+      border: 1px solid transparent;
+      transition: background-color 0.3s, border-color 0.3s;
+      user-select: none;
+    }
+
+    .day-list li:hover {
+      background-color: #630000;
+      color: #fff;
+      border-color: #630000;
+    }
+
+    .day-list li.active {
+      background-color: #630000;
+      color: #fff;
+      border-color: #630000;
+      font-weight: 700;
+    }
+
+    .datepicker-label {
+      font-weight: 600;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    #datepicker {
+      width: 100%;
+      padding: 6px 8px;
+      font-size: 16px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    /* Container do livro */
+    .book-container {
+      position: relative;
+      flex: 1;
+      max-width: 730px;
+      min-width: 300px;
+      height: 600px;
+      /* ou height: 80vh; */
+    }
+
+    /* Controles de paginação */
+    .pagination-controls {
+      position: absolute;
+      top: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 15px;
+      z-index: 15;
+    }
+
+    .pagination-controls button {
+      background: rgba(161, 10, 10);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.2s;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .pagination-controls button:hover {
+      background: rgba(99, 0, 0, 0.9);
+      transform: scale(1.1);
+    }
+
+    .pagination-controls button:disabled {
+      background: rgba(204, 204, 204, 0.6);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .pagination-info {
+      font-size: 13px;
+      color: #333;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 6px 12px;
+      border-radius: 15px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      min-width: 40px;
+      text-align: center;
+    }
+
+    .book-image {
+      width: 100%;
+      height: auto;
+      display: block;
+      user-select: none;
+      pointer-events: none;
+      position: relative;
+      z-index: 1;
+    }
+
+    .page-left,
+    .page-right {
+      position: absolute;
+      top: 8%;
+      height: 76%;
+      padding: 15px;
+      overflow-y: hidden;
+      font-size: 16px;
+      line-height: 1.5;
+      font-family: 'Instrument Sans', sans-serif;
+      background: transparent;
+      white-space: pre-wrap;
+    }
+
+    /* Estilo para perguntas nas respostas */
+    .page-left p strong:first-child {
+      font-size: 14px;
+    }
+
+    .page-left {
+      position: absolute;
+      z-index: 2;
+      left: 10%;
+      width: 38%;
+      top: 8%;
+      height: 60%;
+      overflow-y: auto;
+      /* Permite scroll vertical */
+      padding-right: 5px;
+      color: #333;
+      background: transparent;
+      box-sizing: border-box;
+      scrollbar-width: thin;
+      scrollbar-color: #ccc transparent;
+      word-break: break-word;
+    }
+
+
+    /* Scroll estilizado para navegadores baseados em WebKit (Chrome, Edge, Safari) */
+    .page-left::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .page-left::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+
+    .page-left::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+
+
+    .page-right {
+      left: 52%;
+      width: 35%;
+      resize: none;
+      border: none;
+      outline: none;
+      box-sizing: border-box;
+      color: #111;
+    }
+
+    #submitBtn {
+      position: absolute;
+      bottom: 5%;
+      right: 8%;
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #a10a0a;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      user-select: none;
+    }
+
+    #submitBtn:hover {
+      background-color: #630000;
+    }
+
+    /* Pergunta posicionada sobre o livro */
+    #pergunta {
+      position: absolute;
+      top: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 14px;
+      color: #333;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 6px 30px;
+      border-radius: 8px;
+      pointer-events: none;
+      user-select: none;
+      z-index: 10;
+      max-width: 95%;
+      white-space: nowrap;
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .blur-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(6px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-modal {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 32px rgba(0, 0, 0, 0.12);
+      padding: 36px 32px 28px 32px;
+      text-align: center;
+      max-width: 350px;
+      width: 90vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .login-modal h2 {
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+      color: #630000;
+    }
+
+    .login-modal p {
+      color: #333;
+      font-size: 1rem;
+      margin-bottom: 18px;
+    }
+
+    .login-modal .modal-btn {
+      width: 100%;
+      min-width: 220px;
+      padding: 20px 0;
+      margin-bottom: 22px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.18rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: #a10a0a;
+      color: #fff;
+      transition: background 0.2s;
+      letter-spacing: 0.5px;
+    }
+
+    .login-modal .modal-btn:last-child {
+      background: #a10a0a;
+      color: #fff;
+      border: 1.5px solid #a10a0a;
+    }
+
+    .login-modal .modal-btn:hover {
+      background: #630000;
+      color: #fff;
+    }
+
+    .login-modal .modal-btn:last-child:hover {
+      background: #630000;
+      color: #fff;
+    }
+
+    @media (max-width: 900px) {
+      .content-wrapper {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .sidebar {
+        width: 100%;
+        max-width: 400px;
+        margin-bottom: 20px;
+        height: auto;
+        min-height: 200px;
+        font-size: 17px;
+      }
+
+      .book-container {
+        position: relative;
+        max-width: 730px;
+        min-width: 300px;
+        height: 500px;
+        /* ou ajusta com base na imagem do livro */
+      }
+
+
+      .page-left,
+      .page-right {
+        position: relative;
+        top: auto;
+        left: auto;
+        width: 100%;
+        top: 8%;
+        height: 82%;
+        padding: 20px;
+        font-size: 18px;
+      }
+
+      #submitBtn {
+        position: absolute;
+        bottom: 55%;
+        right: 5%;
+        margin-top: 10%;
+      }
+
+      #pergunta {
+        top: 16px;
+        font-size: 16px;
+        padding: 4px 8px;
+      }
+
+      .pagination-controls {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+        flex-direction: row;
+        gap: 15px;
+        margin: 10px 0;
+      }
+    
+    }
+  </style>
+</head>
+
+<body>
+  {% csrf_token %}
+  {% if user.is_authenticated and user.profissionalsaude %}
+  {% include '_navbar_profissional.html' %}
+  {% else %}
+  <div class="nav">
+    <a href="{% url 'beneficios' %}"
+      class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
+    <a href="{% url 'informacoes' %}"
+      class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
+    <div
+      class="nav-item dropdown {% if current_page == 'journaling' or current_page == 'journaling_delhes' %}active{% endif %}">
+      <span class="dropdown-toggle">Journalling</span>
+      <div class="dropdown-content">
+        <a href="{% url 'journaling' %}" class="{% if current_page == 'journaling' %}active{% endif %}">Meu
+          Journalling</a>
+        <a href="{% url 'journaling_delhes' %}"
+          class="{% if current_page == 'journaling_delhes' %}active{% endif %}">Journalling Público</a>
+      </div>
+    </div>
+    <a href="{% url 'testemunhos' %}"
+      class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
+    <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
+    {% if user.is_authenticated %}
+    {% if user.paciente %}
+    <a href="{% url 'chat_paciente_view' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">
+      Chat
+      <span class="unread-badge" id="chat-unread-badge" style="display: none;">0</span>
+    </a>
+    {% else %}
+    <a href="{% url 'chat' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">
+      Chat
+      <span class="unread-badge" id="chat-unread-badge" style="display: none;">0</span>
+    </a>
+    {% endif %}
+    {% endif %}
+  </div>
+  {% if user.is_authenticated %}
+  <a href="#" class="user-icon" onclick="toggleUserMenu()">
+    <i class="fas fa-user"></i>
+  </a>
+  <div class="user-menu" id="userMenu">
+    <a href="{% url 'meu_perfil' %}">Perfil</a>
+    <a href="{% url 'logout' %}">Terminar Sessão</a>
+  </div>
+  {% else %}
+  <a href="{% url 'login' %}" class="login-button">Login</a>
+  {% endif %}
+  <a href="{% url 'home' %}" class="logo">
+    <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;">
+  </a>
+  {% endif %}
+
+  <!-- Conteúdo: Sidebar + Livro -->
+  <div class="content-wrapper">
+    <aside class="sidebar">
+      <ul class="day-list" id="dayList"></ul>
+
+      <label for="datepicker" class="datepicker-label">Selecionar Data</label>
+      <input type="date" id="datepicker" max="" />
+    </aside>
+
+    <main class="book-container">
+      <div id="pergunta">
+        {% if pergunta %}
+        <h2 data-pergunta-id="{{ pergunta.id }}">{{ pergunta.texto }}</h2>
+        {% else %}
+        <p>🎉 Já respondeste a todas as perguntas disponíveis!</p>
+        {% endif %}
+      </div>
+
+      <!-- Controles de paginação -->
+      <div class="pagination-controls" id="paginationControls" style="display: none;">
+        <button id="prevPageBtn" onclick="changePage(-1)" title="Página anterior">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <span class="pagination-info" id="pageInfo">1/1</span>
+        <button id="nextPageBtn" onclick="changePage(1)" title="Próxima página">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+
+      <img src="{% static 'images/livro_journaling.png' %}" class="book-image" alt="Livro journaling" />
+
+      <div id="submitted-text" class="page-left">
+        {% if respostas_utilizador_lista %}
+        {% for resposta in respostas_utilizador_lista %}
+        <p><strong>P:</strong> {% if resposta.pergunta and resposta.pergunta.texto %}
+          {{ resposta.pergunta.texto }}
+          {% else %}
+          Reflexão livre
+          {% endif %}
+        </p>
+        <p><strong>R:</strong> {{ resposta.resposta_texto }}</p>
+        <p style="color: #888; font-size: 13px;"><strong>Hora:</strong> {{ resposta.data_resposta|date:'H:i' }} |
+          <strong>{% if resposta.privacidade == 'publico' %}Público{% else %}Privado{% endif %}</strong>
+        </p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 8px 0;" />
+        {% endfor %}
+        {% else %}
+        <p style="color: #888;">O que escrever aparecerá nesta página.</p>
+        {% endif %}
+      </div>
+
+      <div id="texto-error"
+        style="position: absolute; top: 18%; right: 8%; color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        ⚠️ Por favor, escreva algo antes de submeter.
+      </div>
+      <textarea id="journaling-textarea" class="page-right" placeholder="Escreva aqui sua reflexão..."></textarea>
+      <input type="hidden" id="pergunta-id" value="{% if pergunta %}{{ pergunta.id }}{% endif %}">
+
+      <div style="position: absolute; bottom: 5%; left: 8%; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <label style="font-size: 15px;">
+            <input type="radio" name="privacidade" value="publico" />
+            Público
+          </label>
+          <label style="font-size: 15px;">
+            <input type="radio" name="privacidade" value="anonimo" />
+            Privado
+          </label>
+        </div>
+        <div id="privacidade-error"
+          style="color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          ⚠️ Por favor, selecione se deseja que o texto seja público ou privado.
+        </div>
+      </div>
+
+      <div id="edit-warning"
+        style="color:#a10a0a; font-size:13px; display:none; margin-top:8px; background:#fff3f3; border:1px solid #a10a0a; border-radius:6px; padding:8px 12px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+        Só pode submeter respostas para o dia de hoje.
+      </div>
+
+      <button id="submitBtn">Submeter</button>
+      <button id="btn-reflexao-livre" type="button"
+        style="position:absolute; bottom:5%; left:50%; transform:translateX(-50%); background:#fff; color:#a10a0a; border:1.5px solid #a10a0a; border-radius:5px; padding:8px 16px; font-size:16px; cursor:pointer;">Adicionar
+        reflexão livre</button>
+      <div id="reflexao-livre-modal"
+        style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(255,255,255,0.8); z-index:10000; align-items:center; justify-content:center;">
+        <div
+          style="background:#fff; border-radius:12px; box-shadow:0 4px 32px rgba(0,0,0,0.12); padding:32px 28px; max-width:400px; width:90vw; display:flex; flex-direction:column; gap:16px; align-items:center;">
+          <h3>Reflexão livre</h3>
+          <textarea id="reflexao-livre-textarea" rows="5"
+            style="width:100%; font-size:16px; border-radius:6px; border:1px solid #ccc; padding:8px;"></textarea>
+          <div style="display:flex; gap:12px; align-items:center;">
+            <label style="font-size:15px;"><input type="radio" name="privacidade-livre" value="publico" />
+              Público</label>
+            <label style="font-size:15px;"><input type="radio" name="privacidade-livre" value="anonimo" />
+              Privado</label>
+          </div>
+          <div id="reflexao-livre-error"
+            style="color:#a10a0a; font-size:13px; display:none; background:#fff3f3; border:1px solid #a10a0a; border-radius:6px; padding:8px 12px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+            Preencha o texto e escolha a privacidade.</div>
+          <div style="display:flex; gap:12px;">
+            <button id="btn-enviar-reflexao-livre"
+              style="background:#a10a0a; color:#fff; border:none; border-radius:6px; padding:8px 18px; font-size:16px; cursor:pointer;">Submeter</button>
+            <button id="btn-cancelar-reflexao-livre"
+              style="background:#fff; color:#a10a0a; border:1.5px solid #a10a0a; border-radius:6px; padding:8px 18px; font-size:16px; cursor:pointer;">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    // Toggle user menu
+    function toggleUserMenu() {
+      const menu = document.getElementById('userMenu');
+      menu.classList.toggle('active');
+    }
+
+    document.addEventListener('click', function (event) {
+      const menu = document.getElementById('userMenu');
+      const userIcon = document.querySelector('.user-icon');
+      if (menu && !menu.contains(event.target) && !userIcon.contains(event.target)) {
+        menu.classList.remove('active');
+      }
+    });
+
+
+    const journalingData = {};
+
+    // Data selecionada atualmente (string 'YYYY-MM-DD')
+    let selectedDate = null;
+
+    // Variáveis de paginação
+    let currentPage = 1;
+    let answersPerPage = 1; // Apenas 1 resposta por página (2 total no livro)
+    let allAnswers = [];
+
+    const dayList = document.getElementById('dayList');
+    const datepicker = document.getElementById('datepicker');
+    const submittedText = document.getElementById('submitted-text');
+    const textarea = document.getElementById('journaling-textarea');
+    const submitBtn = document.getElementById('submitBtn');
+    const privacidadeError = document.getElementById('privacidade-error');
+    const textoError = document.getElementById('texto-error');
+
+    // Verificar se todos os elementos foram encontrados
+    console.log('Elementos encontrados:', {
+      dayList: !!dayList,
+      datepicker: !!datepicker,
+      submittedText: !!submittedText,
+      textarea: !!textarea,
+      submitBtn: !!submitBtn,
+      privacidadeError: !!privacidadeError,
+      textoError: !!textoError
+    });
+
+    // Função para formatar datas para exibir na sidebar
+    function formatDateDisplay(date) {
+      return date.toLocaleDateString('pt-BR', {
+        weekday: 'short',
+        day: '2-digit',
+        month: '2-digit'
+      });
+    }
+
+    // Função para renderizar respostas com paginação
+    function renderAnswers() {
+      const submittedTextDiv = document.getElementById('submitted-text');
+      const paginationControls = document.getElementById('paginationControls');
+      const pageInfo = document.getElementById('pageInfo');
+      const prevBtn = document.getElementById('prevPageBtn');
+      const nextBtn = document.getElementById('nextPageBtn');
+
+      if (allAnswers.length === 0) {
+        submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aparecerá nesta página.</p>";
+        paginationControls.style.display = 'none';
+        return;
+      }
+
+      const totalPages = Math.ceil(allAnswers.length / answersPerPage);
+      const startIndex = (currentPage - 1) * answersPerPage;
+      const endIndex = startIndex + answersPerPage;
+      const currentAnswers = allAnswers.slice(startIndex, endIndex);
+
+      // Renderizar apenas 1 resposta da página atual
+      if (currentAnswers.length > 0) {
+        const r = currentAnswers[0];
+        const texto = r.texto;
+        if (texto.length > 300) {
+          const half = Math.ceil(texto.length / 2);
+          const short = texto.slice(0, half) + '...';
+          submittedTextDiv.innerHTML = `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> <span class='short-text'>${short}</span><span class='full-text' style='display:none;'>${texto}</span><a href='#' style='color: #630000; class='toggle-link' onclick='toggleTextJournaling(this);return false;'>(ver mais)</a></p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
+        } else {
+          submittedTextDiv.innerHTML = `<p><strong>P:</strong> ${r.pergunta_texto}</p><p><strong>R:</strong> ${texto}</p><p style='color: #888; font-size: 13px;'><strong>Hora:</strong> ${r.hora} | <strong>${r.privacidade === 'publico' ? 'Público' : 'Privado'}</strong></p><hr style='border: none; border-top: 1px solid #eee; margin: 8px 0;' />`;
+        }
+      } else {
+        submittedTextDiv.innerHTML = "<p style='color: #888;'>O que escrever aparecerá nesta página.</p>";
+      }
+
+      // Atualizar controles de paginação
+      if (totalPages > 1) {
+        paginationControls.style.display = 'flex';
+        pageInfo.textContent = `${currentPage}/${totalPages}`;
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages;
+      } else {
+        paginationControls.style.display = 'none';
+      }
+    }
+
+    // Função para mudar de página
+    function changePage(direction) {
+      const totalPages = Math.ceil(allAnswers.length / answersPerPage);
+      const newPage = currentPage + direction;
+
+      if (newPage >= 1 && newPage <= totalPages) {
+        currentPage = newPage;
+        renderAnswers();
+      }
+    }
+
+    // Função para criar a lista dos últimos 7 dias na sidebar
+    function populateLast7Days() {
+      console.log('populateLast7Days chamada');
+      if (!dayList) {
+        console.error('dayList não encontrado');
+        return;
+      }
+
+      dayList.innerHTML = '';
+      const today = new Date();
+      for (let i = 6; i >= 0; i--) {
+        const day = new Date(today);
+        day.setDate(today.getDate() - i);
+        const dayStr = day.toISOString().slice(0, 10);
+        const li = document.createElement('li');
+        li.textContent = formatDateDisplay(day);
+        li.dataset.date = dayStr;
+        li.style.cursor = 'pointer';
+        li.addEventListener('click', () => {
+          console.log('Clique na data:', dayStr);
+          selectDate(dayStr);
+        });
+        dayList.appendChild(li);
+      }
+      console.log('Lista de dias criada com', dayList.children.length, 'elementos');
+    }
+
+    // Selecionar uma data — mostra texto e atualiza sidebar e datepicker
+    function selectDate(dateStr) {
+      console.log('selectDate chamada com:', dateStr);
+
+      selectedDate = dateStr;
+
+      // Atualiza destaque da lista
+      [...dayList.children].forEach(li => {
+        li.classList.remove('active');
+        if (li.dataset.date === dateStr) {
+          li.classList.add('active');
+        }
+      });
+
+      // Atualiza datepicker
+      datepicker.value = dateStr;
+
+      // Buscar pergunta e respostas via AJAX
+      fetch(`/journaling_data/?data=${dateStr}`)
+        .then(response => response.json())
+        .then(data => {
+          console.log('Dados recebidos:', data);
+
+          const perguntaDiv = document.getElementById('pergunta');
+          const submittedTextDiv = document.getElementById('submitted-text');
+
+          // Atualizar pergunta
+          if (data.status === 'ok' && data.pergunta) {
+            perguntaDiv.innerHTML = `<h2 data-pergunta-id="${data.pergunta.id}">${data.pergunta.texto}</h2>`;
+            document.getElementById('pergunta-id').value = data.pergunta.id;
+          } else {
+            perguntaDiv.innerHTML = `<p>🎉 Já respondeste a todas as perguntas disponíveis!</p>`;
+            document.getElementById('pergunta-id').value = '';
+          }
+
+          // Atualizar respostas com paginação
+          if (data.respostas && data.respostas.length > 0) {
+            allAnswers = data.respostas;
+            currentPage = 1; // Reset para primeira página
+            renderAnswers();
+          } else {
+            allAnswers = [];
+            currentPage = 1;
+            renderAnswers();
+          }
+        })
+        .catch(error => {
+          console.error('Erro ao carregar dados:', error);
+        });
+
+      // Limpa textarea
+      textarea.value = '';
+      textarea.focus();
+
+      // Desabilitar textarea e botão se não for hoje
+      const hojeStr = new Date().toISOString().slice(0, 10);
+      const editWarning = document.getElementById('edit-warning');
+      if (dateStr !== hojeStr) {
+        textarea.disabled = true;
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = 0.5;
+        submitBtn.title = "Só pode submeter para o dia de hoje";
+        editWarning.style.display = 'block';
+        document.querySelectorAll('input[name="privacidade"]').forEach(radio => {
+          radio.disabled = true;
+        });
+      } else {
+        textarea.disabled = false;
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = 1;
+        submitBtn.title = "";
+        editWarning.style.display = 'none';
+        document.querySelectorAll('input[name="privacidade"]').forEach(radio => {
+          radio.disabled = false;
+        });
+      }
+    }
+
+    // Listener para o textarea
+    textarea.addEventListener('input', () => {
+      if (textarea.value.trim()) {
+        textoError.style.display = 'none';
+      }
+    });
+
+    // Listeners para os radio buttons de privacidade
+    document.querySelectorAll('input[name="privacidade"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        privacidadeError.style.display = 'none';
+      });
+    });
+
+    // Botão Submeter
+    submitBtn.addEventListener('click', () => {
+      const text = textarea.value.trim();
+      if (!text) {
+        textoError.style.display = 'block';
+        return;
+      }
+      if (!selectedDate) {
+        alert('Por favor, selecione uma data.');
+        return;
+      }
+      const privacidadeSelecionada = document.querySelector('input[name="privacidade"]:checked');
+      if (!privacidadeSelecionada) {
+        privacidadeError.style.display = 'block';
+        return;
+      }
+      const perguntaId = document.getElementById('pergunta-id').value;
+      if (!perguntaId) {
+        alert('Pergunta não encontrada!');
+        return;
+      }
+      fetch('/journaling/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+          resposta: text,
+          data: selectedDate,
+          privacidade: privacidadeSelecionada.value,
+          pergunta_id: perguntaId
+        })
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'ok') {
+            // NOVO: Atualiza todas as respostas do lado esquerdo com paginação
+            fetch(`/journaling_data/?data=${selectedDate}`)
+              .then(response => response.json())
+              .then(data2 => {
+                if (data2.respostas && data2.respostas.length > 0) {
+                  allAnswers = data2.respostas;
+                  currentPage = 1; // Reset para primeira página
+                  renderAnswers();
+                } else {
+                  allAnswers = [];
+                  currentPage = 1;
+                  renderAnswers();
+                }
+              });
+            textarea.value = '';
+            // NOVO: Atualiza para próxima pergunta se houver
+            if (data.proxima_pergunta) {
+              document.getElementById('pergunta-id').value = data.proxima_pergunta.id;
+              document.getElementById('pergunta').innerHTML = `<h2 data-pergunta-id="${data.proxima_pergunta.id}">${data.proxima_pergunta.texto}</h2>`;
+              // Limpa radios
+              document.querySelectorAll('input[name="privacidade"]').forEach(radio => { radio.checked = false; });
+              textarea.disabled = false;
+              submitBtn.disabled = false;
+              submitBtn.style.opacity = 1;
+              submitBtn.title = "";
+              document.getElementById('edit-warning').style.display = 'none';
+              document.querySelectorAll('input[name="privacidade"]').forEach(radio => { radio.disabled = false; });
+            } else {
+              document.getElementById('pergunta-id').value = '';
+              document.getElementById('pergunta').innerHTML = `<p>🎉 Já respondeste a todas as perguntas disponíveis!</p>`;
+              // Opcional: desabilita campos
+              textarea.disabled = true;
+              submitBtn.disabled = true;
+              submitBtn.style.opacity = 0.5;
+              submitBtn.title = "Já respondeu a todas as perguntas de hoje";
+              document.getElementById('edit-warning').style.display = 'block';
+              document.querySelectorAll('input[name="privacidade"]').forEach(radio => { radio.disabled = true; radio.checked = false; });
+            }
+          } else {
+            alert('Erro ao guardar resposta: ' + data.message);
+          }
+        })
+        .catch(error => {
+          alert('Erro ao enviar resposta!');
+        });
+    });
+
+    // Ajustar max date no datepicker para hoje
+    function ajustarMaxDate() {
+      const hojeStr = new Date().toISOString().slice(0, 10);
+      datepicker.max = hojeStr;
+    }
+
+    // Listener para o datepicker
+    datepicker.addEventListener('change', function () {
+      if (this.value && this.value !== selectedDate) {
+        selectDate(this.value);
+      }
+    });
+
+    // Inicialização
+    console.log('Iniciando journaling...');
+    ajustarMaxDate();
+    populateLast7Days();
+
+    // Seleciona o último dia da lista por padrão (hoje)
+    const hojeStr = new Date().toISOString().slice(0, 10);
+    console.log('Data de hoje:', hojeStr);
+
+    // Aguardar um pouco antes de selecionar a data
+    setTimeout(() => {
+      selectDate(hojeStr);
+    }, 100);
+
+    // --- Reflexão livre ---
+    document.getElementById('btn-reflexao-livre').addEventListener('click', function () {
+      document.getElementById('reflexao-livre-modal').style.display = 'flex';
+      document.getElementById('reflexao-livre-textarea').value = '';
+      document.querySelectorAll('input[name="privacidade-livre"]').forEach(r => r.checked = false);
+      document.getElementById('reflexao-livre-error').style.display = 'none';
+    });
+    document.getElementById('btn-cancelar-reflexao-livre').addEventListener('click', function () {
+      document.getElementById('reflexao-livre-modal').style.display = 'none';
+    });
+    document.getElementById('btn-enviar-reflexao-livre').addEventListener('click', function () {
+      const texto = document.getElementById('reflexao-livre-textarea').value.trim();
+      const priv = document.querySelector('input[name="privacidade-livre"]:checked');
+      if (!texto || !priv) {
+        document.getElementById('reflexao-livre-error').style.display = 'block';
+        return;
+      }
+      fetch('/journaling/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+          resposta: texto,
+          data: selectedDate,
+          privacidade: priv.value,
+          pergunta_id: null
+        })
+      })
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('reflexao-livre-modal').style.display = 'none';
+          // Atualiza todas as respostas do lado esquerdo com paginação
+          fetch(`/journaling_data/?data=${selectedDate}`)
+            .then(response => response.json())
+            .then(data2 => {
+              if (data2.respostas && data2.respostas.length > 0) {
+                allAnswers = data2.respostas;
+                currentPage = 1; // Reset para primeira página
+                renderAnswers();
+              } else {
+                allAnswers = [];
+                currentPage = 1;
+                renderAnswers();
+              }
+            });
+        });
+    });
+
+    function toggleTextJournaling(link) {
+      const shortText = link.parentElement.querySelector('.short-text');
+      const fullText = link.parentElement.querySelector('.full-text');
+      const isExpanded = fullText.style.display === 'inline' || fullText.style.display === 'block';
+      if (isExpanded) {
+        fullText.style.display = 'none';
+        shortText.style.display = 'inline';
+        link.textContent = '(ver mais)';
+      } else {
+        fullText.style.display = 'inline';
+        shortText.style.display = 'none';
+        link.textContent = '(ver menos)';
+      }
+    }
+
+    // Função para atualizar contador de mensagens não lidas (apenas uma vez ao carregar)
+    function updateUnreadCount() {
+      fetch('/chat/unread-count/')
+        .then(response => response.json())
+        .then(data => {
+          const badge = document.getElementById('chat-unread-badge');
+          if (badge && data.unread_count > 0) {
+            badge.textContent = data.unread_count;
+            badge.style.display = 'block';
+          } else if (badge) {
+            badge.style.display = 'none';
+          }
+        })
+        .catch(error => {
+          console.error('Erro ao atualizar contador:', error);
+        });
+    }
+
+    // Atualizar contador apenas uma vez quando a página carrega
+    document.addEventListener('DOMContentLoaded', function () {
+      updateUnreadCount();
+    });
+  </script>
+
+  {% if not user.is_authenticated %}
+  <div class="blur-overlay">
+    <div class="login-modal">
+      <h2>Para veres esta página tens que efetuar login</h2>
+      <p>Por favor, faz login ou regista-te para aceder ao Meu Journalling.</p>
+      <a href="{% url 'login' %}"><button class="modal-btn">Fazer Login</button></a>
+      <a href="{% url 'register' %}"><button class="modal-btn">Registar</button></a>
+      <button class="modal-btn"
+        style="display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;color:#a10a0a;border:1.5px solid #a10a0a;"
+        onclick="window.history.back()">
+        <i class="fas fa-arrow-left"></i> Voltar
+      </button>
+    </div>
+  </div>
+  {% endif %}
+</body>
+
+</html>

@@ -1,0 +1,379 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link href="{% static 'css/style.css' %}" rel="stylesheet" />
+    <title>Pacientes</title>
+    <style>
+        body {
+            font-family: Roboto, sans-serif;
+            background: #F5F5F5;
+            padding: 20px;
+            margin-top: 120px;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .left-panel {
+            width: 350px;
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card {
+            background: #FDF7FF;
+            border-radius: 20px;
+            width: 600px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+        }
+
+        .search-box input {
+            padding: 6px 12px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            width: 160px;
+            outline: none;
+        }
+
+        #pacientesContainer a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .paciente-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+            background: #FFFFFF;
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            width: 600px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .paciente-info:hover {
+            background-color: #f0e6ff;
+        }
+
+        .paciente-nome {
+            font-family: "Kdam Thmor Pro", sans-serif;
+            font-size: 22px;
+            color: black;
+            line-height: 1.4;
+            text-align: center;
+        }
+
+        .paciente-foto {
+            width: 104px;
+            height: 99px;
+            border-radius: 40px;
+            background: #B5DBFF;
+        }
+
+        .circle-group {
+            display: flex;
+            gap: 12px;
+            margin-left: auto;
+        }
+
+        .circle-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-family: Inter, sans-serif;
+            color: white;
+        }
+
+        .gray-box {
+            width: 600px;
+            height: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Nav bar -->
+    {% include '_navbar_profissional.html' %}
+
+    <!-- Container principal -->
+    <div class="main-container">
+        <!-- Painel esquerdo - Informações do profissional -->
+        <div class="left-panel">
+            <h2 style="margin: 0 0 20px 0; color: #630000; font-size: 24px;">
+                {% if profissional %}{{ profissional.nome }}{% else %}Profissional{% endif %}
+            </h2>
+            <div style="margin-bottom: 20px;">
+                <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">Especialidade</p>
+                <p style="margin: 0; color: #333; font-weight: 600;">
+                    {% if profissional %}{{ profissional.get_tipo_profissional_display }}{% else %}Especialidade{% endif %}
+                </p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">Cédula Profissional</p>
+                <p style="margin: 0; color: #333; font-weight: 600;">
+                    {% if profissional %}{{ profissional.certificado_profissional }}{% else %}-{% endif %}
+                </p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">Zona de Trabalho</p>
+                <p style="margin: 0; color: #333; font-weight: 600;">
+                    {% if profissional and profissional.zona_trabalho %}{{ profissional.zona_trabalho }}{% else %}-{% endif %}
+                </p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">Especialidades</p>
+                <p style="margin: 0; color: #333; font-weight: 600; font-size: 14px;">
+                    {% if profissional and profissional.especialidades %}
+                        {% for especialidade in profissional.especialidades %}
+                            • {{ especialidade }}<br>
+                        {% endfor %}
+                    {% else %}
+                        -
+                    {% endif %}
+                </p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">Pacientes Ativos</p>
+                <p style="margin: 0; color: #333; font-weight: 600; font-size: 18px;">
+                    {{ profissional_n_pacientes }}
+                </p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">Status</p>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div id="status-indicator" style="width: 12px; height: 12px; border-radius: 50%; background: #15B640;"></div>
+                    <select id="status-select" style="border: none; background: transparent; color: #333; font-weight: 600; cursor: pointer; outline: none;">
+                        <option value="ONLINE" {% if profissional and profissional.status == 'ONLINE' %}selected{% endif %}>Online</option>
+                        <option value="OFFLINE" {% if profissional and profissional.status == 'OFFLINE' %}selected{% endif %}>Offline</option>
+                        <option value="AUSENTE" {% if profissional and profissional.status == 'AUSENTE' %}selected{% endif %}>Ausente</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Painel direito - Lista de pacientes -->
+        <div class="right-panel">
+            <!-- Header com campo de busca e ícone de lupa -->
+            <div class="card">
+                <div style="width: 48px; height: 48px;"></div>
+
+                <div class="search-box" style="display: flex; align-items: center; gap: 8px;">
+                    <input type="text" id="searchInput" placeholder="Procurar paciente..." />
+                    <!-- Ícone de lupa -->
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" fill="#49454F">
+                        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 
+                       6.5 6.5 0 109.5 16c1.61 0 3.09-.59 
+                       4.23-1.57l.27.28v.79l5 4.99L20.49 
+                       19l-4.99-5zm-6 0C8.01 14 6 11.99 
+                       6 9.5S8.01 5 10.5 5 15 7.01 
+                       15 9.5 12.99 14 10.5 14z" />
+                    </svg>
+                </div>
+            </div>
+
+    <!-- Lista de pacientes -->
+    <div id="pacientesContainer">
+        {% for paciente in pacientes %}
+            <a href="{% url 'pac_indiv' paciente.id %}">
+                <div class="paciente-info" data-nome="{{ paciente.nome }}">
+                    <img class="paciente-foto" src="https://placehold.co/124x119" alt="Foto do paciente" />
+                    <div class="paciente-nome">{{ paciente.nome }}<br>{% if paciente.tipo_cancro %}{{ paciente.get_tipo_cancro_display }}{% endif %}</div>
+                    <div class="circle-group">
+                        {% if paciente.estado_pac|lower == 'critico' %}
+                            <div class="circle-icon vermelho" style="background: #FF0101;">!</div>
+                        {% elif paciente.estado_pac|lower == 'moderado' %}
+                            <div class="circle-icon amarelo" style="background: #FFA100;">!</div>
+                        {% else %}
+                            <div class="circle-icon verde" style="background: #15B640;">✓</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+            <div class="gray-box"></div>
+        {% empty %}
+            <p>Nenhum paciente atribuído.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Indicador de status dos pacientes -->
+    <div id="indicador-status"
+        style="margin-top: 30px; font-family: Inter, sans-serif; font-size: 18px; display: flex; gap: 24px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 16px; height: 16px; background: #FF0101; border-radius: 50%;"></div>
+            <span id="count-vermelho">0</span> críticos
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 16px; height: 16px; background: #FFA100; border-radius: 50%;"></div>
+            <span id="count-amarelo">0</span> moderados
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 16px; height: 16px; background: #15B640; border-radius: 50%;"></div>
+                    <span id="count-verde">0</span> estáveis
+    </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        const input = document.getElementById("searchInput");
+        const pacientes = document.querySelectorAll(".paciente-info");
+
+        input.addEventListener("input", () => {
+            const termo = input.value.toLowerCase();
+            pacientes.forEach(paciente => {
+                const nome = paciente.getAttribute("data-nome").toLowerCase();
+                if (nome.includes(termo)) {
+                    paciente.parentElement.style.display = "block"; 
+                } else {
+                    paciente.parentElement.style.display = "none";
+                }
+            });
+            atualizarIndicadores();
+        });
+
+        function atualizarIndicadores() {
+            let vermelho = 0, amarelo = 0, verde = 0;
+
+            document.querySelectorAll(".paciente-info").forEach(p => {
+                if (p.parentElement.style.display === "none") return;
+
+                const circle = p.querySelector(".circle-icon");
+                if (!circle) return;
+
+                if (circle.classList.contains("vermelho")) vermelho++;
+                else if (circle.classList.contains("amarelo")) amarelo++;
+                else if (circle.classList.contains("verde")) verde++;
+            });
+
+            document.getElementById("count-vermelho").textContent = vermelho;
+            document.getElementById("count-amarelo").textContent = amarelo;
+            document.getElementById("count-verde").textContent = verde;
+        }
+
+        atualizarIndicadores();
+
+        // Toggle user menu
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenu');
+            menu.classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('userMenu');
+            const userIcon = document.querySelector('.user-icon');
+            if (menu && !menu.contains(event.target) && !userIcon.contains(event.target)) {
+                menu.classList.remove('active');
+            }
+        });
+
+        // Atualizar status do profissional
+        const statusSelect = document.getElementById('status-select');
+        const statusIndicator = document.getElementById('status-indicator');
+        
+        // Definir cor inicial baseada no status atual
+        function atualizarCorStatus(status) {
+            const cores = {
+                'ONLINE': '#15B640',
+                'OFFLINE': '#FF0101', 
+                'AUSENTE': '#FFA100'
+            };
+            statusIndicator.style.background = cores[status] || '#15B640';
+        }
+        
+        // Definir cor inicial
+        atualizarCorStatus(statusSelect.value);
+        
+        // Atualizar status quando selecionado
+        statusSelect.addEventListener('change', function() {
+            const novoStatus = this.value;
+            
+            fetch('/atualizar_status/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ status: novoStatus })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    atualizarCorStatus(novoStatus);
+                } else {
+                    console.error('Erro ao atualizar status:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro na requisição:', error);
+            });
+        });
+
+        // Função para atualizar contador de mensagens não lidas
+        function updateUnreadCount() {
+            fetch('/chat/unread-count/')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const badge = document.getElementById('chat-unread-badge');
+                    if (data.unread_count > 0) {
+                        badge.textContent = data.unread_count;
+                        badge.style.display = 'block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao atualizar contador:', error);
+                    // Não mostrar erro no console para evitar spam
+                });
+        }
+
+        // Atualizar contador de mensagens não lidas quando a página carrega
+        document.addEventListener('DOMContentLoaded', function() {
+            updateUnreadCount();
+            
+            // Atualizar contador a cada 60 segundos
+            setInterval(updateUnreadCount, 60000);
+        });
+    </script>
+
+</body>
+
+</html>

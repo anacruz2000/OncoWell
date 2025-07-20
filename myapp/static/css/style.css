@@ -1,0 +1,537 @@
+/* Estilos gerais */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Instrument Sans', sans-serif;
+    background-color: white;
+    overflow-x: hidden;
+}
+
+/* Navegação */
+.nav {
+    position: absolute;
+    top: 59px;
+    display: flex;
+    gap: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: auto;
+    justify-content: center;
+    padding: 0 20px;
+}
+
+.nav-item {
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 30px;
+    color: black;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+@media (max-width: 1200px) {
+    .nav {
+        left: 400px;
+        transform: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .nav {
+        left: 50%;
+        transform: translateX(-50%);
+        gap: 15px;
+    }
+    
+    .nav-item {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .nav-item {
+        font-size: 14px;
+    }
+}
+
+/* Botão de Login */
+.login-button {
+    position: absolute;
+    top: 38px;
+    right: 33px;
+    background-color: #630000;
+    border-radius: 20px;
+    padding: 10px 16px;
+    color: white;
+    font-family: Inter, sans-serif;
+    font-size: 20px;
+    font-weight: 500;
+    text-align: center;
+    width: 163px;
+    height: 49px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    z-index: 1000;
+}
+
+/* Ícone do Usuário */
+.user-icon {
+    position: absolute;
+    top: 38px;
+    right: 33px;
+    width: 49px;
+    height: 49px;
+    background-color: #630000;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    z-index: 1000;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+/* Menu do Usuário */
+.user-menu {
+    position: absolute;
+    top: 97px;
+    right: 33px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    z-index: 1000;
+    display: none;
+}
+
+.user-menu.active {
+    display: block;
+}
+
+.user-menu a {
+    display: block;
+    padding: 10px 20px;
+    color: #333;
+    text-decoration: none;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.user-menu a:hover {
+    background-color: #f5f5f5;
+    border-radius: 5px;
+}
+
+/* Logo */
+.logo {
+    position: absolute;
+    top: 31px;
+    left: 33px;
+    width: 187px;
+    height: 62px;
+    border: 1px #B53B3B solid;
+    text-decoration: none;
+    z-index: 1000;
+}
+
+/* Conteúdo Principal */
+.main-content {
+    display: flex;
+    justify-content: center; /* centraliza horizontalmente */
+    align-items: center;     /* centraliza verticalmente */
+    width: 1363px;
+    height: 895px;
+    position: relative;
+    background: white;
+    overflow: hidden;
+    margin: 100px auto 0 auto; 
+}
+
+.main-content img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; 
+}
+
+
+/* Estilos específicos do Meu Journaling */
+.meu-journaling-container {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    margin-top: 50px;
+}
+
+.meu-journaling-section {
+    width: 373px;
+    height: 550px;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.meu-journaling-section label {
+    margin-bottom: 20px;
+    font-family: Inter;
+    font-size: 20px;
+    font-weight: 500;
+    color: #333;
+}
+
+.meu-journaling-section textarea {
+    flex: 1;
+    resize: none;
+    font-size: 16px;
+    font-family: Inter;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: white;
+}
+
+.submit-button {
+    width: 224px;
+    height: 65px;
+    background: #5E1612;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 20px;
+    font-family: Inter;
+    font-weight: 500;
+    margin-top: 20px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+    background: #7a1c16;
+}
+
+.dates-sidebar {
+    width: 133px;
+    height: 707px;
+    background: rgba(255, 255, 255, 0.9);
+    outline: 1px black solid;
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+    margin-right: 20px;
+}
+
+.date-item {
+    padding: 14px 16px;
+    font-size: 14px;
+    font-family: Inter;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.date-item:hover {
+    background: #f0f0f0;
+}
+
+.date-item.active {
+    background: #E6E9D8;
+}
+
+/* Registration Form Styles */
+.register-container {
+    max-width: 400px;
+    margin: 120px auto 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    padding: 32px 32px 24px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #333;
+}
+
+.register-form .form-group {
+    width: 100%;
+    margin-bottom: 18px;
+}
+
+.register-form .form-group.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.register-form .form-group.checkbox-group label {
+    margin-bottom: 0;
+    order: 2;
+}
+
+.register-form .form-group.checkbox-group input[type="checkbox"] {
+    width: auto;
+    order: 1;
+}
+
+.register-container h2 {
+    margin-bottom: 24px;
+    color:#333;
+}
+
+.register-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.register-form input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 18px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+.register-form button {
+    width: 100%;
+    background: #630000;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.register-form button:hover {
+    background: #7a1c16;
+}
+
+.register-link {
+    margin-top: 16px;
+    font-size: 15px;
+}
+
+.register-link a {
+    color: #630000;
+    text-decoration: underline;
+}
+
+.error-message {
+    color: #b53b3b;
+    margin-bottom: 12px;
+    font-size: 15px;
+}
+
+/* Estilos do formulário de login */
+.login-container {
+    width: 400px;
+    margin: 150px auto;
+    padding: 40px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.login-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: 'Instrument Sans', sans-serif;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #630000;
+}
+
+.submit-button {
+    width: 100%;
+    padding: 12px;
+    background: #630000;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+    background: #7a1c16;
+}
+
+.forgot-password {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.forgot-password a {
+    color: #630000;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.forgot-password a:hover {
+    text-decoration: underline;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 5px;
+    text-align: center;
+} 
+
+.register-form .radio-group {
+    margin-bottom: 20px;
+}
+
+.register-form .radio-group > label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.register-form .radio-options {
+    display: flex;
+    gap: 20px;
+}
+
+.register-form .radio-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.register-form .radio-option input[type="radio"] {
+    width: auto;
+    margin: 0;
+}
+
+.register-form .radio-option label {
+    margin: 0;
+    font-weight: normal;
+} 
+.nav .nav-item.active {
+    color: #630000; 
+    font-weight: 700;
+}
+
+/* Badge para mensagens não lidas */
+.nav-item {
+    position: relative;
+}
+
+.nav-item .unread-badge {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: bold;
+    min-width: 16px;
+    text-align: center;
+    z-index: 1001;
+}
+
+.unread-badge {
+    background-color: #dc3545;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+/* Dropdown menu */
+.dropdown {
+  position: relative;
+  cursor: pointer;
+}
+
+.dropdown span {
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 30px;
+  color: black;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top: 35px;
+  left: 0;
+  background-color: white;
+  box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  min-width: 200px;
+  z-index: 1000;
+  padding: 10px 0;
+}
+
+.dropdown-content a {
+  display: block;
+  padding: 10px 20px;
+  text-decoration: none;
+  color: black;
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+.dropdown-content a:hover {
+  background-color: #f0f0f0;
+  color: #630000;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown.active span {
+  color: #630000;
+  font-weight: 700;
+}

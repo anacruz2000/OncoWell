@@ -1,0 +1,958 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>OncoWell - Testemunhos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link href="{% static 'css/style.css' %}" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Instrument Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: #fff;
+        }
+
+        .main-content {
+            margin: 0 auto;
+            padding: 30px 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+            width: 100%;
+            margin-top: 90px; /* Adicionado para evitar sobreposição com a navbar */
+        }
+
+        .content-wrapper {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding-top: 50px;
+        }
+
+        .form-container {
+            width: 514px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            padding: 0 24px;
+        }
+
+        .sidebar-compact {
+            background: #f3f3f3;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            min-width: 200px;
+            max-width: 240px;
+        }
+
+        .sidebar-compact form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sidebar-compact label {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-compact input[type="text"],
+        .sidebar-compact input[type="date"] {
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        .sidebar-compact button {
+            background: #630000;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .book-container {
+            background-image: url('{% static "images/livro_journaling.png" %}');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            width: 100%;
+            max-width: 900px;
+            height: 700px;
+            position: relative;
+            padding: 60px 80px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+        }
+
+        .page {
+            width: 45%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 30px;
+            border-radius: 12px;
+            overflow-y: auto;
+            font-size: 16px;
+            line-height: 1.5;
+            color: #330000;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
+            box-sizing: border-box;
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+        }
+
+        .question-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #630000;
+            text-align: left;
+        }
+
+        .question-box {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .short-text,
+        .full-text {
+            display: block;
+        }
+
+        .toggle-link {
+            color: #630000;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            display: block;
+            margin-top: 8px;
+            text-align: right;
+        }
+
+        .testimonial-menu {
+            position: relative;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .testimonial-menu-btn {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 2px 6px;
+        }
+
+        .testimonial-menu-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #f9f9f9;
+            min-width: 120px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            border-radius: 4px;
+        }
+
+        .testimonial-menu-content a {
+            color: black;
+            padding: 8px 12px;
+            text-decoration: none;
+            display: block;
+            font-size: 14px;
+        }
+
+        .testimonial-menu-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .testimonial-menu:hover .testimonial-menu-content {
+            display: block;
+        }
+
+        .edit-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .edit-modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .edit-modal input,
+        .edit-modal textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .edit-modal-buttons {
+            text-align: right;
+            margin-top: 15px;
+        }
+
+        .edit-modal-buttons button {
+            margin-left: 10px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .edit-modal-buttons .cancel {
+            background-color: #ccc;
+        }
+
+        .edit-modal-buttons .save {
+            background-color: #630000;
+            color: white;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin: 0 auto 0 auto;
+            padding: 8px 18px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 22px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+            position: relative;
+            top: -18px;
+            z-index: 10;
+            min-width: 220px;
+        }
+
+        .pagination a,
+        .pagination span {
+            padding: 7px 14px;
+            text-decoration: none;
+            color: #a10a0a;
+            border: none;
+            border-radius: 16px;
+            background: #f3f3f3;
+            font-weight: 500;
+            font-size: 15px;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+
+        .pagination a:hover {
+            background: #a10a0a;
+            color: #fff;
+        }
+
+        .pagination .current {
+            background: #a10a0a;
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(161, 10, 10, 0.10);
+        }
+
+        .pagination .disabled {
+            color: #bbb;
+            background: #f3f3f3;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .qna-title {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            margin-top: 40px;
+            color: #222;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 8px;
+        }
+
+        .resposta-box {
+            max-height: 140px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .resposta-scroll {
+            max-height: none;
+            overflow-y: hidden;
+            padding-right: 6px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+            scrollbar-width: thin;
+            scrollbar-color: #ccc transparent;
+        }
+
+        .resposta-scroll.expandida {
+            max-height: 90px;
+            overflow-y: auto;
+        }
+
+        /* Scroll estilizado para WebKit */
+        .resposta-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .resposta-scroll::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        .resposta-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Nav bar -->
+    {% if user.is_authenticated and user.profissionalsaude %}
+    {% include '_navbar_profissional.html' %}
+    {% else %}
+    <div class="nav">
+        <a href="{% url 'beneficios' %}"
+            class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
+        <a href="{% url 'informacoes' %}"
+            class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
+        <div
+            class="nav-item dropdown {% if current_page == 'journaling' or current_page == 'journaling_delhes' %}active{% endif %}">
+            <span class="dropdown-toggle">Journalling</span>
+            <div class="dropdown-content">
+                <a href="{% url 'journaling' %}" class="{% if current_page == 'journaling' %}active{% endif %}">Meu
+                    Journalling</a>
+                <a href="{% url 'journaling_delhes' %}"
+                    class="{% if current_page == 'journaling_delhes' %}active{% endif %}">Journalling Público</a>
+            </div>
+        </div>
+        <a href="{% url 'testemunhos' %}"
+            class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
+        <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
+        {% if user.is_authenticated %}
+        {% if user.paciente %}
+        <a href="{% url 'chat_paciente_view' %}"
+            class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
+        {% else %}
+        <a href="{% url 'chat' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
+        {% endif %}
+        {% endif %}
+    </div>
+    {% if user.is_authenticated %}
+    <a href="#" class="user-icon" onclick="toggleUserMenu()">
+        <i class="fas fa-user"></i>
+    </a>
+    <div class="user-menu" id="userMenu">
+        <a href="{% url 'meu_perfil' %}">Perfil</a>
+        <a href="{% url 'logout' %}">Terminar Sessão</a>
+    </div>
+    {% else %}
+    <a href="{% url 'login' %}" class="login-button">Login</a>
+    {% endif %}
+    <a href="{% url 'home' %}" class="logo">
+        <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;">
+    </a>
+    {% endif %}
+
+    <!-- Conteúdo principal -->
+    <div class="main-content">
+        <h2 class="qna-title">
+            Testemunhos
+            <span style="font-weight: 400; font-size: 15px; display:block; margin-top: 4px; color:#888;">
+                Relatos de outros utilizadores para te inspirar e ajudar.
+            </span>
+        </h2>
+
+        <div class="content-wrapper">
+            <!-- Filtros ao lado esquerdo -->
+            <div class="sidebar-compact">
+                <form id="filterForm">
+                    <div>
+                        <label for="searchText">Pesquisar:</label>
+                        <input type="text" id="searchText" name="searchText" placeholder="palavras-chave" />
+                    </div>
+                    <div>
+                        <label for="filterDate">Data:</label>
+                        <input type="date" id="filterDate" name="filterDate" />
+                    </div>
+                    <button type="submit">Filtrar</button>
+                </form>
+
+                <!-- Seção para novo testemunho -->
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                    <h4 style="margin: 0 0 12px 0; color: #630000; font-size: 16px;">Escrever Novo Testemunho</h4>
+                    {% if not user.is_authenticated %}
+                    <div
+                        style="color: #a10a0a; font-size: 15px; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 12px;">
+                        Para escrever um testemunho, faça login na sua conta.
+                    </div>
+                    {% elif is_professional %}
+                    <div
+                        style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 12px; color: #856404; font-size: 14px;">
+                        <strong>Nota:</strong> Profissionais de saúde não podem criar testemunhos. Esta funcionalidade
+                        está disponível apenas para pacientes.
+                    </div>
+                    {% else %}
+                    <form id="newTestimonialForm">
+                        <div style="margin-bottom: 12px;">
+                            <label for="testimonialTitle"
+                                style="font-weight: 600; margin-bottom: 4px; display: block;">Título:</label>
+                            <input type="text" id="testimonialTitle" name="testimonialTitle"
+                                placeholder="Digite o título do testemunho"
+                                style="width: 100%; padding: 6px 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; box-sizing: border-box;" />
+                        </div>
+                        <div id="titulo-error"
+                            style="color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 12px;">
+                            ⚠️ Por favor, digite um título para o testemunho.
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label for="testimonialText"
+                                style="font-weight: 600; margin-bottom: 4px; display: block;">Testemunho:</label>
+                            <textarea id="testimonialText" name="testimonialText"
+                                placeholder="Escreva aqui o seu testemunho..."
+                                style="width: 100%; height: 100px; padding: 6px 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; resize: vertical; box-sizing: border-box; font-family: inherit;"></textarea>
+                        </div>
+                        <div id="texto-error"
+                            style="color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 12px;">
+                            ⚠️ Por favor, escreva o conteúdo do testemunho.
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="font-weight: 600; margin-bottom: 4px; display: block;">Visibilidade:</label>
+                            <div style="display: flex; gap: 12px;">
+                                <label style="font-size: 14px; display: flex; align-items: center; gap: 4px;">
+                                    <input type="radio" name="testimonialVisibility" value="publico" />
+                                    Público
+                                </label>
+                                <label style="font-size: 14px; display: flex; align-items: center; gap: 4px;">
+                                    <input type="radio" name="testimonialVisibility" value="anonimo" />
+                                    Anónimo
+                                </label>
+                            </div>
+                        </div>
+                        <div id="visibilidade-error"
+                            style="color: #a10a0a; font-size: 13px; display: none; background: #fff3f3; border: 1px solid #a10a0a; border-radius: 6px; padding: 8px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 12px;">
+                            ⚠️ Por favor, selecione se deseja que o testemunho seja público ou anónimo.
+                        </div>
+                        <button type="submit"
+                            style="background: #a10a0a; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%;">Publicar
+                            Testemunho</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Livro -->
+            <div class="book-container">
+                <!-- Página esquerda -->
+                <div class="page">
+                    {% for t in page_left %}
+                    <div class="question-box" data-date="{{ t.data|date:'d/m/Y' }}" data-id="{{ t.id }}">
+                        <h3 class="question-title">
+                            {{ t.titulo }}
+                            <span style="color: #666; font-size: 0.9em;">{{ t.data|date:'d/m/Y' }}</span>
+                            <span style="color: #666; font-size: 0.9em;">
+                                (por {{ t.autor.username|default:"Anónimo" }})
+                            </span>
+                            {% if user.is_authenticated and t.autor == user %}
+                            <div class="testimonial-menu">
+                                <button class="testimonial-menu-btn">⋮</button>
+                                <div class="testimonial-menu-content">
+                                    <a href="#" class="edit-testimonial" data-id="{{ t.id }}"
+                                        data-titulo="{{ t.titulo|escapejs }}" data-texto="{{ t.texto|escapejs }}"
+                                        data-visibilidade="{{ t.visibilidade }}">Editar</a>
+                                    <a href="#" class="delete-testimonial" data-id="{{ t.id }}">Apagar</a>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </h3>
+                        <div class="resposta-box">
+                            <div class="short-text">
+                                {{ t.texto|truncatechars:80 }}
+                            </div>
+                            <div class="full-text resposta-scroll" style="display: none;">
+                                {{ t.texto }}
+                            </div>
+                        </div>
+
+                        {% if t.texto|length > 50 %}
+                        <a href="#" class="toggle-link" onclick="toggleText(this); return false;">(ver mais)</a>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <p style="color:#888;">Nenhum testemunho ainda.</p>
+                    {% endfor %}
+                </div>
+
+                <!-- Página direita -->
+                <div class="page">
+                    {% for t in page_right %}
+                    <div class="question-box" data-date="{{ t.data|date:'d/m/Y' }}" data-id="{{ t.id }}">
+                        <h3 class="question-title">
+                            {{ t.titulo }}
+                            <span style="color: #666; font-size: 0.9em;">{{ t.data|date:'d/m/Y' }}</span>
+                            <span style="color: #666; font-size: 0.9em;">
+                                (por {{ t.autor.username|default:"Anónimo" }})
+                            </span>
+                            {% if user.is_authenticated and t.autor == user %}
+                            <div class="testimonial-menu">
+                                <button class="testimonial-menu-btn">⋮</button>
+                                <div class="testimonial-menu-content">
+                                    <a href="#" class="edit-testimonial" data-id="{{ t.id }}"
+                                        data-titulo="{{ t.titulo|escapejs }}" data-texto="{{ t.texto|escapejs }}"
+                                        data-visibilidade="{{ t.visibilidade }}">Editar</a>
+                                    <a href="#" class="delete-testimonial" data-id="{{ t.id }}">Apagar</a>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </h3>
+                        <div class="resposta-box">
+                            <div class="short-text">
+                                {{ t.texto|truncatechars:80 }}
+                            </div>
+                            <div class="full-text resposta-scroll" style="display: none;">
+                                {{ t.texto }}
+                            </div>
+                        </div>
+                        {% if t.texto|length > 50 %}
+                        <a href="#" class="toggle-link" onclick="toggleText(this); return false;">(ver mais)</a>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paginação -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page=1">&laquo;</a>
+        <a href="?page={{ page_obj.previous_page_number }}">&lsaquo;</a>
+        {% else %}
+        <span class="disabled">&laquo;</span>
+        <span class="disabled">&lsaquo;</span>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <span class="current">{{ num }}</span>
+        {% elif num > page_obj.number|add:'-2' and num < page_obj.number|add:'2' %} <a href="?page={{ num }}">{{ num
+            }}</a>
+            {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">&rsaquo;</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">&raquo;</a>
+            {% else %}
+            <span class="disabled">&rsaquo;</span>
+            <span class="disabled">&raquo;</span>
+            {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Modal de Edição -->
+    <div id="editModal" class="edit-modal">
+        <div class="edit-modal-content">
+            <h3>Editar Testemunho</h3>
+            <input type="text" id="editTitle" placeholder="Título do testemunho">
+            <textarea id="editText" placeholder="Conteúdo do testemunho" rows="6"></textarea>
+            <div>
+                <label>Visibilidade:</label>
+                <label><input type="radio" name="editVisibility" value="publico"> Público</label>
+                <label><input type="radio" name="editVisibility" value="anonimo"> Anónimo</label>
+            </div>
+            <div class="edit-modal-buttons">
+                <button class="cancel" onclick="fecharModal()">Cancelar</button>
+                <button class="save" onclick="salvarEdicao()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script ver mais/ver menos + filtros -->
+    <script>
+        // Informações do usuário (se autenticado)
+        const currentUserName = "{{ user.username|default:'' }}";
+        function toggleText(link) {
+            const box = link.closest('.question-box');
+            const shortText = box.querySelector('.short-text');
+            const fullText = box.querySelector('.full-text');
+
+            const respostaScroll = fullText;  // div com classe resposta-scroll
+
+            const isExpanded = fullText.style.display === 'block';
+
+            if (isExpanded) {
+                fullText.style.display = 'none';
+                shortText.style.display = 'block';
+                respostaScroll.classList.remove('expandida');
+                link.textContent = '(ver mais)';
+            } else {
+                fullText.style.display = 'block';
+                shortText.style.display = 'none';
+                respostaScroll.classList.add('expandida');
+                link.textContent = '(ver menos)';
+            }
+        }
+
+
+        document.getElementById('filterForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const searchText = document.getElementById('searchText').value.toLowerCase();
+            const filterDate = document.getElementById('filterDate').value;
+
+            const boxes = document.querySelectorAll('.question-box');
+            boxes.forEach(box => {
+                const fullText = box.querySelector('.full-text').textContent.toLowerCase();
+                const shortText = box.querySelector('.short-text').textContent.toLowerCase();
+                const combinedText = fullText + ' ' + shortText;
+                const boxDate = box.getAttribute('data-date');
+
+                const textMatches = !searchText || combinedText.includes(searchText);
+                const dateMatches = !filterDate || boxDate === filterDate;
+
+                box.style.display = (textMatches && dateMatches) ? '' : 'none';
+            });
+        });
+
+        // Listeners para esconder avisos quando o usuário interage
+        document.getElementById('testimonialTitle').addEventListener('input', () => {
+            document.getElementById('titulo-error').style.display = 'none';
+        });
+
+        document.getElementById('testimonialText').addEventListener('input', () => {
+            document.getElementById('texto-error').style.display = 'none';
+        });
+
+        document.querySelectorAll('input[name="testimonialVisibility"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                document.getElementById('visibilidade-error').style.display = 'none';
+            });
+        });
+
+        // Formulário para novo testemunho
+        document.getElementById('newTestimonialForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const title = document.getElementById('testimonialTitle').value.trim();
+            const text = document.getElementById('testimonialText').value.trim();
+            const visibility = document.querySelector('input[name="testimonialVisibility"]:checked');
+
+            // Esconder todos os avisos primeiro
+            document.getElementById('titulo-error').style.display = 'none';
+            document.getElementById('texto-error').style.display = 'none';
+            document.getElementById('visibilidade-error').style.display = 'none';
+
+            let hasError = false;
+
+            if (!title) {
+                document.getElementById('titulo-error').style.display = 'block';
+                hasError = true;
+            }
+
+            if (!text) {
+                document.getElementById('texto-error').style.display = 'block';
+                hasError = true;
+            }
+
+            if (!visibility) {
+                document.getElementById('visibilidade-error').style.display = 'block';
+                hasError = true;
+            }
+
+            if (hasError) {
+                return;
+            }
+
+            // Enviar para o backend
+            console.log('DEBUG: Enviando testemunho para o backend...');
+            const response = await fetch('/salvar_testemunho/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    titulo: title,
+                    texto: text,
+                    visibilidade: visibility.value
+                })
+            });
+            console.log('DEBUG: Resposta recebida:', response.status, response.statusText);
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log('DEBUG: Resultado:', result);
+                // Adicionar na tela com a data retornada
+                addNewTestimonial(title, text, visibility.value, result.data);
+                // Limpar formulário...
+                document.getElementById('testimonialTitle').value = '';
+                document.getElementById('testimonialText').value = '';
+                document.querySelectorAll('input[name="testimonialVisibility"]').forEach(radio => radio.checked = false);
+            } else {
+                const errorData = await response.json();
+                console.error('DEBUG: Erro na resposta:', errorData);
+                alert('Erro ao salvar testemunho: ' + (errorData.message || 'Erro desconhecido'));
+            }
+        });
+
+        // Função para adicionar novo testemunho ao livro
+        function addNewTestimonial(title, text, visibility, dataStr) {
+            // Criar versão curta do texto (primeiros 80 caracteres + "...")
+            const shortText = text.length > 80 ? text.substring(0, 80) + '...' : text;
+            // Determinar o nome do autor
+            let authorName = 'Anónimo';
+            if (visibility === 'publico' && currentUserName && currentUserName.trim() !== '') {
+                authorName = currentUserName;
+            }
+            // Verificar se o texto tem mais de 50 caracteres para mostrar o link "ver mais"
+            const showToggleLink = text.length > 50;
+            // Criar o HTML do novo testemunho
+            const newTestimonialHTML = `
+                <div class="question-box" data-date="${dataStr}">
+                    <h3 class="question-title">${title} <span style=\"color: #666; font-size: 0.9em;\">${dataStr}</span> <span style=\"color: #666; font-size: 0.9em;\">(por ${authorName})</span></h3>
+                    <span class="short-text">
+                        ${shortText}
+                    </span>
+                    <span class="full-text" style="display: none;">
+                        ${text}
+                    </span>
+                    ${showToggleLink ? '<a href="#" class="toggle-link" onclick="toggleText(this); return false;">(ver mais)</a>' : ''}
+                </div>
+            `;
+            // Adicionar na página que tem menos conteúdo para manter o equilíbrio
+            const leftPage = document.querySelector('.book-container .page:first-child');
+            const rightPage = document.querySelector('.book-container .page:last-child');
+
+            if (leftPage.children.length <= rightPage.children.length) {
+                leftPage.insertAdjacentHTML('afterbegin', newTestimonialHTML);  // Adicionar no início da página esquerda
+            } else {
+                rightPage.insertAdjacentHTML('afterbegin', newTestimonialHTML);  // Adicionar no início da página direita
+            }
+        }
+
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenu');
+            menu.classList.toggle('active');
+        }
+        document.addEventListener('click', function (event) {
+            const menu = document.getElementById('userMenu');
+            const userIcon = document.querySelector('.user-icon');
+            if (!menu.contains(event.target) && !userIcon.contains(event.target)) {
+                menu.classList.remove('active');
+            }
+        });
+
+        // Variáveis globais para edição
+        let testemunhoEditando = null;
+
+        // Função para abrir modal de edição
+        function editarTestemunho(id, titulo, texto, visibilidade) {
+            testemunhoEditando = id;
+            document.getElementById('editTitle').value = titulo;
+            document.getElementById('editText').value = texto;
+            document.querySelector(`input[name="editVisibility"][value="${visibilidade}"]`).checked = true;
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        // Função para fechar modal
+        function fecharModal() {
+            document.getElementById('editModal').style.display = 'none';
+            testemunhoEditando = null;
+        }
+
+        // Função para salvar edição
+        async function salvarEdicao() {
+            if (!testemunhoEditando) return;
+
+            const titulo = document.getElementById('editTitle').value.trim();
+            const texto = document.getElementById('editText').value.trim();
+            const visibilidade = document.querySelector('input[name="editVisibility"]:checked').value;
+
+            if (!titulo || !texto) {
+                alert('Por favor, preencha todos os campos.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/editar_testemunho/${testemunhoEditando}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        titulo: titulo,
+                        texto: texto,
+                        visibilidade: visibilidade
+                    })
+                });
+
+                if (response.ok) {
+                    // Atualizar o testemunho na tela
+                    const testemunhoElement = document.querySelector(`[data-id="${testemunhoEditando}"]`);
+                    if (testemunhoElement) {
+                        const tituloElement = testemunhoElement.querySelector('.question-title');
+                        tituloElement.innerHTML = tituloElement.innerHTML.replace(/^[^<]+/, titulo);
+
+                        const shortTextElement = testemunhoElement.querySelector('.short-text');
+                        const fullTextElement = testemunhoElement.querySelector('.full-text');
+                        shortTextElement.textContent = texto.length > 80 ? texto.substring(0, 80) + '...' : texto;
+                        fullTextElement.textContent = texto;
+
+                        // Atualizar link "ver mais"
+                        const toggleLink = testemunhoElement.querySelector('.toggle-link');
+                        if (texto.length > 50) {
+                            if (!toggleLink) {
+                                const newToggleLink = document.createElement('a');
+                                newToggleLink.href = '#';
+                                newToggleLink.className = 'toggle-link';
+                                newToggleLink.textContent = '(ver mais)';
+                                newToggleLink.onclick = function () { toggleText(this); return false; };
+                                testemunhoElement.appendChild(newToggleLink);
+                            }
+                        } else if (toggleLink) {
+                            toggleLink.remove();
+                        }
+                    }
+                    fecharModal();
+                    alert('Testemunho atualizado com sucesso!');
+                } else {
+                    const errorData = await response.json();
+                    alert('Erro ao atualizar: ' + (errorData.message || 'Erro desconhecido'));
+                }
+            } catch (error) {
+                alert('Erro ao atualizar testemunho: ' + error.message);
+            }
+        }
+
+        // Função para apagar testemunho
+        async function apagarTestemunho(id) {
+            if (!confirm('Tem certeza que deseja apagar este testemunho?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/apagar_testemunho/${id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    // Remover o testemunho da tela
+                    const testemunhoElement = document.querySelector(`[data-id="${id}"]`);
+                    if (testemunhoElement) {
+                        testemunhoElement.remove();
+                    }
+                    alert('Testemunho apagado com sucesso!');
+                } else {
+                    const errorData = await response.json();
+                    alert('Erro ao apagar: ' + (errorData.message || 'Erro desconhecido'));
+                }
+            } catch (error) {
+                alert('Erro ao apagar testemunho: ' + error.message);
+            }
+        }
+
+        // Fechar modal ao clicar fora dele
+        window.onclick = function (event) {
+            const modal = document.getElementById('editModal');
+            if (event.target === modal) {
+                fecharModal();
+            }
+        }
+
+        // Event listeners para editar e apagar testemunhos
+        document.addEventListener('click', function (event) {
+            // Editar testemunho
+            if (event.target.classList.contains('edit-testimonial')) {
+                event.preventDefault();
+                const id = event.target.getAttribute('data-id');
+                const titulo = event.target.getAttribute('data-titulo');
+                const texto = event.target.getAttribute('data-texto');
+                const visibilidade = event.target.getAttribute('data-visibilidade');
+                editarTestemunho(id, titulo, texto, visibilidade);
+            }
+
+            // Apagar testemunho
+            if (event.target.classList.contains('delete-testimonial')) {
+                event.preventDefault();
+                const id = event.target.getAttribute('data-id');
+                apagarTestemunho(id);
+            }
+        });
+
+        // Função para atualizar contador de mensagens não lidas
+        function updateUnreadCount() {
+            fetch('/chat/unread-count/')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const badge = document.getElementById('chat-unread-badge');
+                    if (data.unread_count > 0) {
+                        badge.textContent = data.unread_count;
+                        badge.style.display = 'block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao atualizar contador:', error);
+                    // Não mostrar erro no console para evitar spam
+                });
+        }
+
+        // Atualizar contador de mensagens não lidas quando a página carrega
+        document.addEventListener('DOMContentLoaded', function () {
+            updateUnreadCount();
+
+            // Atualizar contador a cada 60 segundos
+            setInterval(updateUnreadCount, 60000);
+        });
+    </script>
+</body>
+
+</html>

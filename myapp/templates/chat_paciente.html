@@ -1,0 +1,536 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>Chat - OncoWell</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+
+  <style>
+    .main-container {
+      display: flex;
+      max-width: 1000px;
+      margin: 160px auto 60px;
+      gap: 24px;
+      padding: 0 20px;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .sidebar h3 {
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .chat-container {
+      flex: 1;
+      height: 80vh;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 0 12px #630000(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      padding: 20px;
+      background-color: #630000;
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .chat-messages {
+      flex-grow: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      background-color: #fafafa;
+    }
+
+    .message {
+      max-width: 60%;
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 15px;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+
+    .sent {
+      background-color: #d2f2ff;
+      align-self: flex-end;
+    }
+
+    .received {
+      background-color: #e4e4e4;
+      align-self: flex-start;
+    }
+
+    .received.unread {
+      background-color: #fff3cd;
+      border: 2px solid #ffc107;
+    }
+
+    .unread-badge {
+      background-color: #dc3545;
+      color: white;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 10px;
+      font-weight: bold;
+      margin-left: 5px;
+    }
+
+    .nav-item {
+      position: relative;
+    }
+
+    .nav-item .unread-badge {
+      position: absolute;
+      top: -5px;
+      right: -10px;
+      background-color: #dc3545;
+      color: white;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 10px;
+      font-weight: bold;
+      min-width: 16px;
+      text-align: center;
+    }
+
+    .chat-form {
+      display: flex;
+      padding: 16px;
+      border-top: 1px solid #ccc;
+      gap: 10px;
+      background-color: #fff;
+    }
+
+    .chat-form input[type="text"] {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    .chat-form button {
+      background-color: #630000;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .chat-form button:hover {
+      background-color: #333;
+    }
+
+    .conversas-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .conversa-item {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border: 1px solid #eee;
+    }
+
+    .conversa-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    .conversa-item.active {
+      background-color: #007BFF;
+      color: white;
+    }
+
+    .conversa-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .conversa-data {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .conversa-item.active .conversa-data {
+      color: #ccc;
+    }
+
+    .conversa-preview {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.3;
+    }
+
+    .conversa-item.active .conversa-preview {
+      color: #ccc;
+    }
+
+    .no-conversas {
+      text-align: center;
+      color: #666;
+      font-style: italic;
+      padding: 20px 0;
+    }
+
+    .profissional-info {
+      padding: 10px;
+      background: #f5f5f5;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+
+    .profissional-info h4 {
+      margin: 0 0 5px 0;
+      color: #333;
+    }
+
+    .profissional-info p {
+      margin: 0;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .status-online {
+      color: #28a745;
+    }
+
+    .status-offline {
+      color: #dc3545;
+    }
+
+    .status-ausente {
+      color: #ffc107;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="nav">
+    <a href="{% url 'beneficios' %}"
+      class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
+    <a href="{% url 'informacoes' %}"
+      class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
+    <div
+      class="nav-item dropdown {% if current_page == 'journaling' or current_page == 'journaling_delhes' %}active{% endif %}">
+      <span class="dropdown-toggle">Journalling</span>
+      <div class="dropdown-content">
+        <a href="{% url 'journaling' %}" class="{% if current_page == 'journaling' %}active{% endif %}">Meu
+          Journalling</a>
+        <a href="{% url 'journaling_delhes' %}"
+          class="{% if current_page == 'journaling_delhes' %}active{% endif %}">Journaling Público</a>
+      </div>
+    </div>
+    <a href="{% url 'testemunhos' %}"
+      class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
+    <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
+    <a href="{% url 'chat_paciente_view' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">
+      Chat
+      <span class="unread-badge" id="chat-unread-badge" style="display: none;">0</span>
+    </a>
+  </div>
+
+  {% if user.is_authenticated %}
+  <a href="#" class="user-icon" onclick="toggleUserMenu()">
+    <i class="fas fa-user"></i>
+  </a>
+  <div class="user-menu" id="userMenu">
+    <a href="{% url 'meu_perfil' %}">Perfil</a>
+    <a href="{% url 'logout' %}" onclick="logoutUser(event)">Terminar Sessão</a>
+  </div>
+  {% else %}
+  <a href="{% url 'login' %}" class="login-button">Login</a>
+  {% endif %}
+
+  <a href="{% url 'home' %}" class="logo">
+    <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;">
+  </a>
+
+  <!-- Área principal -->
+  <div class="main-container">
+
+    <!-- Lista de conversas -->
+    <div class="sidebar">
+      <h3>Chat com Profissionais</h3>
+
+      <!-- Informações do paciente -->
+      <div class="profissional-info">
+        <h4>{{ paciente.nome }}</h4>
+        <p><strong>Tipo de Cancro:</strong> {{ paciente.get_tipo_cancro_display }}</p>
+        {% if paciente.hospital %}
+        <p><strong>Hospital:</strong> {{ paciente.hospital }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Lista de profissionais -->
+      <h4>Profissionais de Saúde</h4>
+      {% if profissionais %}
+      {% for profissional in profissionais %}
+      <div class="profissional-info">
+        <h4>{{ profissional.nome }}</h4>
+        <p><strong>Tipo:</strong> {{ profissional.get_tipo_profissional_display }}</p>
+        <p
+          class="{% if profissional.status == 'ONLINE' %}status-online{% elif profissional.status == 'OFFLINE' %}status-offline{% else %}status-ausente{% endif %}">
+          <strong>Status:</strong> {{ profissional.get_status_display }}
+        </p>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p style="color: #666; font-style: italic;">Nenhum profissional atribuído</p>
+      {% endif %}
+
+      <!-- Lista de conversas -->
+      <h4>Conversas</h4>
+      {% if conversas %}
+      <div class="conversas-list">
+        {% for conversa in conversas %}
+        <div class="conversa-item" data-conversa-id="{{ conversa.id }}">
+          <div class="conversa-header">
+            <strong>{{ conversa.profissional.nome }}</strong>
+            <div style="display: flex; align-items: center;">
+              <span class="conversa-data">{{ conversa.ultima_mensagem|date:"d/m H:i" }}</span>
+              {% if conversa.unread_count > 0 %}
+              <span class="unread-badge">{{ conversa.unread_count }}</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="conversa-preview" onclick="carregarConversa(this.parentElement.dataset.conversaId, event)">
+            {% if conversa.mensagens.last %}
+            {{ conversa.mensagens.last.conteudo|truncatechars:50 }}
+            {% else %}
+            Nova conversa
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="no-conversas">
+        <p>Nenhuma conversa encontrada</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-container">
+      <div class="chat-header" id="chat-title">
+        Selecione uma conversa
+      </div>
+
+      <div class="chat-messages" id="chat-messages">
+        <div style="text-align: center; color: #666; margin-top: 50px;">
+          <i class="fas fa-comments" style="font-size: 48px; margin-bottom: 20px; display: block;"></i>
+          <p>Selecione uma conversa para começar a chat</p>
+        </div>
+      </div>
+
+      <form class="chat-form" onsubmit="sendMessage(event)" style="display: none;" id="chat-form">
+        <input type="text" id="mensagem" placeholder="Escreve a tua mensagem..." required />
+        <button type="submit"><i class="fas fa-paper-plane"></i></button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let conversaAtual = null;
+
+    // Adicionar token CSRF
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+      '{{ csrf_token }}';
+
+    function carregarConversa(conversaId, event = null) {
+      conversaAtual = conversaId;
+
+      // Atualizar classe active nas conversas
+      document.querySelectorAll('.conversa-item').forEach(item => {
+        item.classList.remove('active');
+      });
+
+      // Encontrar o elemento e adicionar classe active
+      const conversaItem = document.querySelector(`[data-conversa-id="${conversaId}"]`);
+      if (conversaItem) {
+        conversaItem.classList.add('active');
+
+        // Remover badge de mensagens não lidas
+        const badge = conversaItem.querySelector('.unread-badge');
+        if (badge) {
+          badge.remove();
+        }
+      }
+
+      // Fazer requisição AJAX para carregar as mensagens da conversa
+      fetch(`/chat/mensagens/${conversaId}/`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            console.error('Erro:', data.error);
+            return;
+          }
+
+          const container = document.getElementById('chat-messages');
+          container.innerHTML = '';
+
+          // Carregar mensagens reais
+          data.mensagens.forEach(m => {
+            const div = document.createElement('div');
+            div.className = `message ${m.tipo}`;
+            if (m.tipo === 'received' && !m.lida) {
+              div.classList.add('unread');
+            }
+            div.textContent = m.conteudo;
+            container.appendChild(div);
+          });
+
+          container.scrollTop = container.scrollHeight;
+
+          // Atualizar título do chat
+          const chatTitle = document.getElementById('chat-title');
+          chatTitle.textContent = `Chat com ${data.paciente_nome}`;
+
+          // Mostrar formulário de envio
+          document.getElementById('chat-form').style.display = 'flex';
+
+          // Atualizar contador de mensagens não lidas
+          updateUnreadCount();
+        })
+        .catch(error => {
+          console.error('Erro ao carregar mensagens:', error);
+        });
+    }
+
+    function sendMessage(event) {
+      event.preventDefault();
+
+      if (!conversaAtual) {
+        alert('Selecione uma conversa primeiro');
+        return;
+      }
+
+      const mensagemInput = document.getElementById('mensagem');
+      const conteudo = mensagemInput.value.trim();
+
+      if (!conteudo) {
+        return;
+      }
+
+      // Enviar mensagem via AJAX
+      fetch(`/chat/enviar/${conversaAtual}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+          conteudo: conteudo
+        })
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Adicionar mensagem ao chat
+            const container = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = 'message sent';
+            div.textContent = data.mensagem.conteudo;
+            container.appendChild(div);
+
+            // Limpar input
+            mensagemInput.value = '';
+
+            // Scroll para baixo
+            container.scrollTop = container.scrollHeight;
+
+            // Atualizar preview da conversa
+            const conversaItem = document.querySelector(`[data-conversa-id="${conversaAtual}"]`);
+            if (conversaItem) {
+              const preview = conversaItem.querySelector('.conversa-preview');
+              preview.textContent = conteudo.length > 50 ? conteudo.substring(0, 50) + '...' : conteudo;
+            }
+          } else {
+            alert('Erro ao enviar mensagem: ' + (data.error || 'Erro desconhecido'));
+          }
+        })
+        .catch(error => {
+          console.error('Erro ao enviar mensagem:', error);
+          alert('Erro ao enviar mensagem');
+        });
+    }
+
+    function toggleUserMenu() {
+      const userMenu = document.getElementById('userMenu');
+      userMenu.style.display = userMenu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // Fechar menu quando clicar fora dele
+    document.addEventListener('click', function (event) {
+      const userMenu = document.getElementById('userMenu');
+      const userIcon = document.querySelector('.user-icon');
+
+      if (userMenu && !userMenu.contains(event.target) && !userIcon.contains(event.target)) {
+        userMenu.style.display = 'none';
+      }
+    });
+
+    function updateUnreadCount() {
+      fetch('/chat/unread-count/')
+        .then(response => response.json())
+        .then(data => {
+          const badge = document.getElementById('chat-unread-badge');
+          if (data.unread_count > 0) {
+            badge.textContent = data.unread_count;
+            badge.style.display = 'block';
+          } else {
+            badge.style.display = 'none';
+          }
+        })
+        .catch(error => {
+          console.error('Erro ao atualizar contador:', error);
+        });
+    }
+
+    function logoutUser(event) {
+      if (!confirm('Tem certeza que deseja terminar a sessão?')) {
+        event.preventDefault();
+      }
+    }
+
+    // Atualizar contador de mensagens não lidas quando a página carrega
+    document.addEventListener('DOMContentLoaded', function () {
+      updateUnreadCount();
+
+      // Atualizar contador a cada 30 segundos
+      setInterval(updateUnreadCount, 30000);
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,143 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>OncoWell - Informações</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+
+<body>
+    {% if user.is_authenticated and user.profissionalsaude %}
+    {% include '_navbar_profissional.html' %}
+    {% else %}
+    <div class="nav">
+        <a href="{% url 'beneficios' %}"
+            class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
+        <a href="{% url 'informacoes' %}"
+            class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
+        <div
+            class="nav-item dropdown {% if current_page == 'journaling' or current_page == 'journaling_delhes' %}active{% endif %}">
+            <span class="dropdown-toggle">Journalling</span>
+            <div class="dropdown-content">
+                <a href="{% url 'journaling' %}" class="{% if current_page == 'journaling' %}active{% endif %}">Meu
+                    Journalling</a>
+                <a href="{% url 'journaling_delhes' %}"
+                    class="{% if current_page == 'journaling_delhes' %}active{% endif %}">Journalling Público</a>
+            </div>
+        </div>
+
+        <a href="{% url 'testemunhos' %}"
+            class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
+        <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
+        {% if user.is_authenticated %}
+        {% if user.paciente %}
+        <a href="{% url 'chat_paciente_view' %}"
+            class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
+        {% else %}
+        <a href="{% url 'chat' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
+        {% endif %}
+        {% endif %}
+    </div>
+
+    {% if user.is_authenticated %}
+    <a href="#" class="user-icon" onclick="toggleUserMenu()">
+        <i class="fas fa-user"></i>
+    </a>
+    <div class="user-menu" id="userMenu">
+        <a href="{% url 'meu_perfil' %}">Perfil</a>
+        <a href="{% url 'logout' %}">Terminar Sessão</a>
+    </div>
+    {% else %}
+    <a href="{% url 'login' %}" class="login-button">Login</a>
+    {% endif %}
+
+    <a href="{% url 'home' %}" class="logo">
+        <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;">
+    </a>
+    {% endif %}
+
+    <div
+        style="max-width: 1200px; margin: 120px auto; padding: 0 20px; display: flex; flex-direction: column; align-items: center; text-align: center;">
+
+        <div style="font-size: 28px; font-weight: 700; margin-bottom: 40px;">
+            Informações de suporte para cada etapa do caminho.
+        </div>
+
+        <div style="font-size: 18px; font-weight: 500; color: rgba(0, 0, 0, 0.5); margin-bottom: 60px;">
+            Porque entendemos o quão difícil é esta jornada.
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 100%;">
+
+            <div
+                style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.05); text-align: left;">
+                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Perucas: onde conseguir</h3>
+                <button
+                    onclick="window.open('https://www.google.com/maps/d/u/0/edit?mid=1IVjr_Xs8tk5RXsLPnG8kKsGTnkONgZ0&usp=sharing')"
+                    style="margin-top: 10px; background: #5E1612; color: white; padding: 12px 24px; border: none; border-radius: 20px; font-size: 20px; font-weight: 500; cursor: pointer;">
+                    Mapa de Locais
+                </button>
+
+
+            </div>
+
+            <div
+                style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.05); text-align: left;">
+                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Ajuda no Transporte: Não Vá Sozinho
+                </h3>
+                <p style="font-size: 18px; font-weight: 500; line-height: 1.6;">
+                    Precisa de ir ao hospital com frequência? Pode pedir transporte não urgente pelo SNS. Muitas câmaras
+                    municipais também ajudam com transporte gratuito – informe-se no centro de saúde ou junta de
+                    freguesia.
+                </p>
+            </div>
+
+            <div
+                style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.05); text-align: left;">
+                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Direitos no Trabalho</h3>
+                <p style="font-size: 18px; font-weight: 500; line-height: 1.6;">
+                    Está em tratamento e não pode trabalhar? Tem direito a baixa médica prolongada com subsídio de
+                    doença. Peça ajuda ao seu médico ou veja mais no site da Segurança Social.
+                </p>
+            </div>
+
+            <div
+                style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.05); text-align: left;">
+                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Apoio Financeiro</h3>
+                <p style="font-size: 18px; font-weight: 500; line-height: 1.6;">
+                    Subsídio de doença: Se está de baixa médica, pode receber apoio da Segurança Social.<br><br>
+                    Isenção de taxas moderadoras: Doentes oncológicos estão isentos de pagar consultas e exames no
+                    SNS.<br><br>
+                    Apoios da Segurança Social ou da Câmara Municipal: Podem existir ajudas específicas para despesas
+                    como medicamentos, transportes ou alimentação. Fale com um assistente social.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+
+    <script>
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenu');
+            menu.classList.toggle('active');
+        }
+
+        // Fechar o menu quando clicar fora dele
+        document.addEventListener('click', function (event) {
+            const menu = document.getElementById('userMenu');
+            const userIcon = document.querySelector('.user-icon');
+            if (!menu.contains(event.target) && !userIcon.contains(event.target)) {
+                menu.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+
+</html>

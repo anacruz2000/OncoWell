@@ -1,0 +1,781 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>Chat - OncoWell</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+
+  <style>
+    .main-container {
+      display: flex;
+      max-width: 1000px;
+      margin: 160px auto 60px;
+      gap: 24px;
+      padding: 0 20px;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .sidebar h3 {
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .contact-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .contact-list li {
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .contact-list li:hover,
+    .contact-list li.active {
+      background-color: #000;
+      color: #fff;
+    }
+
+    .chat-container {
+      flex: 1;
+      height: 80vh;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 0 12px #630000(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      padding: 20px;
+      background-color: #630000;
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .chat-messages {
+      flex-grow: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      background-color: #fafafa;
+    }
+
+    .message {
+      max-width: 60%;
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 15px;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+
+    .sent {
+      background-color: #d2f2ff;
+      align-self: flex-end;
+    }
+
+    .received {
+      background-color: #e4e4e4;
+      align-self: flex-start;
+    }
+
+    .received.unread {
+      background-color: #fff3cd;
+      border: 2px solid #ffc107;
+    }
+
+    .unread-badge {
+      background-color: #dc3545;
+      color: white;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 10px;
+      font-weight: bold;
+      margin-left: 5px;
+    }
+
+    .nav-item {
+      position: relative;
+    }
+
+    .nav-item .unread-badge {
+      position: absolute;
+      top: -5px;
+      right: -10px;
+      background-color: #dc3545;
+      color: white;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 10px;
+      font-weight: bold;
+      min-width: 16px;
+      text-align: center;
+    }
+
+    .chat-form {
+      display: flex;
+      padding: 16px;
+      border-top: 1px solid #ccc;
+      gap: 10px;
+      background-color: #fff;
+    }
+
+    .chat-form input[type="text"] {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    .chat-form button {
+      background-color: #630000;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .chat-form button:hover {
+      background-color: #dd1616;
+    }
+
+    .conversas-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .conversa-item {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border: 1px solid #eee;
+    }
+
+    .conversa-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    .conversa-item.active {
+      background-color: #007BFF;
+      color: white;
+    }
+
+    .conversa-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .conversa-data {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .conversa-item.active .conversa-data {
+      color: #ccc;
+    }
+
+    .conversa-preview {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.3;
+    }
+
+    .conversa-item.active .conversa-preview {
+      color: #ccc;
+    }
+
+    .no-conversas {
+      text-align: center;
+      color: #666;
+      font-style: italic;
+      padding: 20px 0;
+    }
+
+    .conversa-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-apagar {
+      background: none;
+      border: none;
+      color: #ff4444;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: all 0.2s;
+      font-size: 12px;
+    }
+
+    .btn-apagar:hover {
+      background-color: #ff4444;
+      color: white;
+    }
+
+    .conversa-item.active .btn-apagar {
+      color: #ffcccc;
+    }
+
+    .conversa-item.active .btn-apagar:hover {
+      background-color: #ffcccc;
+      color: #cc0000;
+    }
+  </style>
+</head>
+
+<body>
+  {% if user.is_authenticated and user.profissionalsaude %}
+  {% include '_navbar_profissional.html' %}
+  {% else %}
+  <div class="nav">
+    <a href="{% url 'beneficios' %}"
+      class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
+    <a href="{% url 'informacoes' %}"
+      class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
+    <div
+      class="nav-item dropdown {% if current_page == 'journaling' or current_page == 'journaling_delhes' %}active{% endif %}">
+      <span class="dropdown-toggle">Journalling</span>
+      <div class="dropdown-content">
+        <a href="{% url 'journaling' %}" class="{% if current_page == 'journaling' %}active{% endif %}">Meu
+          Journalling</a>
+        <a href="{% url 'journaling_delhes' %}"
+          class="{% if current_page == 'journaling_delhes' %}active{% endif %}">Journalling Público</a>
+      </div>
+    </div>
+
+    <a href="{% url 'testemunhos' %}"
+      class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
+    <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
+    {% if user.is_authenticated and user.paciente %}
+    <a href="{% url 'chat_paciente_view' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
+    {% else %}
+    <a href="{% url 'chat' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">
+      Chat
+      <span class="unread-badge" id="chat-unread-badge" style="display: none;">0</span>
+    </a>
+    {% endif %}
+  </div>
+
+  {% if user.is_authenticated %}
+  <a href="#" class="user-icon" onclick="toggleUserMenu()">
+    <i class="fas fa-user"></i>
+  </a>
+  <div class="user-menu" id="userMenu">
+    <a href="{% url 'meu_perfil' %}">Perfil</a>
+    <a href="{% url 'logout' %}" onclick="logoutUser(event)">Terminar Sessão</a>
+  </div>
+  {% else %}
+  <a href="{% url 'login' %}" class="login-button">Login</a>
+  {% endif %}
+
+  <a href="{% url 'home' %}" class="logo">
+    <img src="{% static 'images/logo_oncowell.png' %}" alt="Logo" style="width: 100%; height: 100%;">
+  </a>
+  {% endif %}
+
+  <!-- Área principal -->
+  <div class="main-container">
+
+    <!-- Lista de conversas -->
+    <div class="sidebar">
+      {% if paciente %}
+      <h3>Chat com {{ paciente.nome }}</h3>
+      <div style="margin-bottom: 20px; padding: 10px; background: #f5f5f5; border-radius: 6px;">
+        <p><strong>Tipo de Cancro:</strong> {{ paciente.get_tipo_cancro_display }}</p>
+        {% if paciente.hospital %}
+        <p><strong>Hospital:</strong> {{ paciente.hospital }}</p>
+        {% endif %}
+      </div>
+      {% else %}
+      <h3>Conversas</h3>
+      <!-- Campo de busca -->
+      <div style="margin-bottom: 15px; position: relative;">
+        <input type="text" id="busca-conversas" placeholder="Procurar por nome..."
+          style="width: 100%; padding: 8px 12px 8px 35px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+        <i class="fas fa-search"
+          style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; font-size: 12px;"></i>
+        <button id="limpar-busca"
+          style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #999; cursor: pointer; display: none; font-size: 12px;"
+          title="Limpar busca">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      {% endif %}
+
+      {% if conversas %}
+      <div class="conversas-list">
+        {% for conversa in conversas %}
+        <div class="conversa-item" data-conversa-id="{{ conversa.id }}">
+          <div class="conversa-header">
+            <strong>{{ conversa.paciente.nome }}</strong>
+            <div class="conversa-actions">
+              <div style="display: flex; align-items: center;">
+                <span class="conversa-data">{{ conversa.ultima_mensagem|date:"d/m H:i" }}</span>
+                {% if conversa.unread_count > 0 %}
+                <span class="unread-badge">{{ conversa.unread_count }}</span>
+                {% endif %}
+              </div>
+              <button class="btn-apagar" data-conversa-id="{{ conversa.id }}"
+                onclick="apagarConversa(this.dataset.conversaId, event)" title="Apagar conversa">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <div class="conversa-preview" onclick="carregarConversa(this.parentElement.dataset.conversaId, event)">
+            {% if conversa.mensagens.last %}
+            {{ conversa.mensagens.last.conteudo|truncatechars:50 }}
+            {% else %}
+            Nova conversa
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="no-conversas">
+        <p>Nenhuma conversa encontrada</p>
+      </div>
+      {% endif %}
+
+
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-container">
+      <div class="chat-header" id="chat-title">
+        {% if paciente %}
+        Chat com {{ paciente.nome }} - Médico
+        {% else %}
+        Chat com Médico
+        {% endif %}
+      </div>
+
+      <div class="chat-messages" id="chat-messages">
+        <div class="message received">Olá, em que posso ajudar?</div>
+        <div class="message sent">Tenho dúvidas sobre os efeitos secundários do tratamento.</div>
+        <div class="message received">Claro, posso explicar. Que tratamento estás a fazer?</div>
+      </div>
+
+      <form class="chat-form" onsubmit="sendMessage(event)">
+        <input type="text" id="mensagem" placeholder="Escreve a tua mensagem..." required />
+        <button type="submit"><i class="fas fa-paper-plane"></i></button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const pacienteNome = "{% if paciente %}{{ paciente.nome }}{% endif %}";
+    let conversaAtual = null;
+
+    // Adicionar token CSRF
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+      '{{ csrf_token }}';
+
+    const mensagensSimuladas = {
+      'Médico': [
+        { tipo: 'received', texto: 'Olá, em que posso ajudar?' },
+        { tipo: 'sent', texto: 'Tenho dúvidas sobre os efeitos secundários do tratamento.' },
+        { tipo: 'received', texto: 'Claro, posso explicar. Que tratamento estás a fazer?' }
+      ],
+      'Enfermeiro': [
+        { tipo: 'received', texto: 'Bom dia! Precisa de ajuda com os cuidados diários?' },
+        { tipo: 'sent', texto: 'Sim, sobre como fazer o curativo.' }
+      ],
+      'Psicólogo': [
+        { tipo: 'received', texto: 'Olá, como está a sentir-se hoje?' },
+        { tipo: 'sent', texto: 'Estou um pouco ansioso com o tratamento.' }
+      ]
+    };
+
+    let chatAtual = 'Médico';
+
+    function trocarChat(profissional) {
+      // Função mantida para compatibilidade, mas não usada pelos profissionais
+      chatAtual = profissional;
+      const chatTitle = document.getElementById('chat-title');
+      chatTitle.textContent = `Chat com ${profissional}`;
+
+      // Atualiza mensagens simuladas
+      const container = document.getElementById('chat-messages');
+      container.innerHTML = '';
+      if (mensagensSimuladas[profissional]) {
+        mensagensSimuladas[profissional].forEach(m => {
+          const div = document.createElement('div');
+          div.className = `message ${m.tipo}`;
+          div.textContent = m.texto;
+          container.appendChild(div);
+        });
+      }
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sendMessage(event) {
+      event.preventDefault();
+      const input = document.getElementById('mensagem');
+      const text = input.value.trim();
+      if (text === '') return;
+
+      // Se não há conversa ativa, não enviar
+      if (!conversaAtual) {
+        alert('Selecione uma conversa primeiro');
+        return;
+      }
+
+      // Adicionar mensagem à interface imediatamente
+      const container = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      div.className = 'message sent';
+      div.textContent = text;
+      container.appendChild(div);
+
+      // Limpar input
+      input.value = '';
+      container.scrollTop = container.scrollHeight;
+
+      // Enviar mensagem para o servidor
+      fetch(`/chat/enviar/${conversaAtual}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({
+          conteudo: text
+        })
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Mensagem enviada com sucesso
+            console.log('Mensagem enviada:', data.mensagem);
+
+            // Atualizar preview da conversa na lista
+            const conversaItem = document.querySelector(`[data-conversa-id="${conversaAtual}"]`);
+            if (conversaItem) {
+              const preview = conversaItem.querySelector('.conversa-preview');
+              if (preview) {
+                preview.textContent = text.length > 50 ? text.substring(0, 50) + '...' : text;
+              }
+
+              // Atualizar data da última mensagem
+              const dataElement = conversaItem.querySelector('.conversa-data');
+              if (dataElement) {
+                const now = new Date();
+                dataElement.textContent = now.getHours().toString().padStart(2, '0') + ':' +
+                  now.getMinutes().toString().padStart(2, '0');
+              }
+            }
+          } else {
+            // Erro ao enviar mensagem
+            console.error('Erro ao enviar mensagem:', data.error);
+            alert('Erro ao enviar mensagem: ' + data.error);
+
+            // Remover mensagem da interface se falhou
+            div.remove();
+          }
+        })
+        .catch(error => {
+          console.error('Erro ao enviar mensagem:', error);
+          alert('Erro ao enviar mensagem. Tente novamente.');
+
+          // Remover mensagem da interface se falhou
+          div.remove();
+        });
+    }
+
+    function carregarConversa(conversaId, event = null) {
+      conversaAtual = conversaId;
+
+      // Atualizar classe active nas conversas
+      document.querySelectorAll('.conversa-item').forEach(item => {
+        item.classList.remove('active');
+      });
+
+      // Encontrar o elemento e adicionar classe active
+      const conversaItem = document.querySelector(`[data-conversa-id="${conversaId}"]`);
+      if (conversaItem) {
+        conversaItem.classList.add('active');
+
+        // Remover badge de mensagens não lidas
+        const badge = conversaItem.querySelector('.unread-badge');
+        if (badge) {
+          badge.remove();
+        }
+      }
+
+      // Fazer requisição AJAX para carregar as mensagens da conversa
+      fetch(`/chat/mensagens/${conversaId}/`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            console.error('Erro:', data.error);
+            return;
+          }
+
+          const container = document.getElementById('chat-messages');
+          container.innerHTML = '';
+
+          // Carregar mensagens reais
+          data.mensagens.forEach(m => {
+            const div = document.createElement('div');
+            div.className = `message ${m.tipo}`;
+            if (m.tipo === 'received' && !m.lida) {
+              div.classList.add('unread');
+            }
+            div.textContent = m.conteudo;
+            container.appendChild(div);
+          });
+
+          container.scrollTop = container.scrollHeight;
+
+          // Atualizar título do chat
+          const chatTitle = document.getElementById('chat-title');
+          chatTitle.textContent = `Chat com ${data.paciente_nome}`;
+        })
+        .catch(error => {
+          console.error('Erro ao carregar mensagens:', error);
+
+          // Fallback para mensagens simuladas
+          const container = document.getElementById('chat-messages');
+          container.innerHTML = '';
+
+          const mensagens = [
+            { tipo: 'received', texto: 'Olá, como está a sentir-se hoje?' },
+            { tipo: 'sent', texto: 'Estou melhor, obrigado por perguntar.' },
+            { tipo: 'received', texto: 'Que bom! Tem alguma dúvida sobre o tratamento?' }
+          ];
+
+          mensagens.forEach(m => {
+            const div = document.createElement('div');
+            div.className = `message ${m.tipo}`;
+            div.textContent = m.texto;
+            container.appendChild(div);
+          });
+
+          container.scrollTop = container.scrollHeight;
+
+          // Atualizar título do chat
+          const chatTitle = document.getElementById('chat-title');
+          const conversaItem = document.querySelector(`[data-conversa-id="${conversaId}"]`);
+          if (conversaItem) {
+            const pacienteNome = conversaItem.querySelector('.conversa-header strong').textContent;
+            chatTitle.textContent = `Chat com ${pacienteNome}`;
+          }
+        });
+    }
+
+    function apagarConversa(conversaId, event) {
+      event.stopPropagation(); // Evita que o clique propague para o item da conversa
+
+      if (!confirm('Tem certeza que deseja apagar esta conversa? Esta ação não pode ser desfeita.')) {
+        return;
+      }
+
+      // Fazer requisição AJAX para apagar a conversa
+      fetch(`/chat/apagar/${conversaId}/`, {
+        method: 'DELETE',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'application/json',
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Remover o elemento da conversa da interface
+            const conversaItem = document.querySelector(`[data-conversa-id="${conversaId}"]`);
+            if (conversaItem) {
+              conversaItem.remove();
+            }
+
+            // Se esta era a conversa ativa, limpar o chat
+            if (conversaAtual == conversaId) {
+              const container = document.getElementById('chat-messages');
+              container.innerHTML = '';
+              const chatTitle = document.getElementById('chat-title');
+              chatTitle.textContent = 'Selecione uma conversa';
+              conversaAtual = null;
+            }
+
+            // Verificar se não há mais conversas
+            const conversasRestantes = document.querySelectorAll('.conversa-item');
+            if (conversasRestantes.length === 0) {
+              const container = document.querySelector('.conversas-list');
+              container.innerHTML = '<div class="no-conversas"><p>Nenhuma conversa encontrada</p></div>';
+            }
+          } else {
+            alert('Erro ao apagar conversa: ' + (data.error || 'Erro desconhecido'));
+          }
+        })
+        .catch(error => {
+          console.error('Erro ao apagar conversa:', error);
+          alert('Erro ao apagar conversa. Tente novamente.');
+        });
+    }
+
+    // Inicialização baseada no contexto
+    const isPacienteEspecifico = pacienteNome && pacienteNome.trim() !== '';
+    const conversaAtualId = "{% if conversa_atual %}{{ conversa_atual.id }}{% endif %}";
+
+    // Funcionalidade de busca
+    const campoBusca = document.getElementById('busca-conversas');
+    const limparBuscaBtn = document.getElementById('limpar-busca');
+
+    if (campoBusca) {
+      campoBusca.addEventListener('input', function () {
+        const termoBusca = this.value.toLowerCase().trim();
+        const conversas = document.querySelectorAll('.conversa-item');
+
+        conversas.forEach(conversa => {
+          const nomePaciente = conversa.querySelector('.conversa-header strong').textContent.toLowerCase();
+
+          if (nomePaciente.includes(termoBusca)) {
+            conversa.style.display = 'block';
+          } else {
+            conversa.style.display = 'none';
+          }
+        });
+
+        // Mostrar mensagem se nenhuma conversa for encontrada
+        const conversasVisiveis = document.querySelectorAll('.conversa-item[style*="display: block"], .conversa-item:not([style*="display: none"])');
+        const mensagemNenhuma = document.querySelector('.no-conversas-busca');
+
+        if (conversasVisiveis.length === 0 && termoBusca !== '') {
+          if (!mensagemNenhuma) {
+            const mensagem = document.createElement('div');
+            mensagem.className = 'no-conversas-busca';
+            mensagem.innerHTML = '<p>Nenhuma conversa encontrada com esse nome</p>';
+            mensagem.style.textAlign = 'center';
+            mensagem.style.color = '#666';
+            mensagem.style.fontStyle = 'italic';
+            mensagem.style.padding = '20px 0';
+
+            const container = document.querySelector('.conversas-list');
+            container.appendChild(mensagem);
+          }
+        } else if (mensagemNenhuma) {
+          mensagemNenhuma.remove();
+        }
+
+        // Mostrar/esconder botão de limpar busca
+        if (limparBuscaBtn) {
+          if (termoBusca === '') {
+            limparBuscaBtn.style.display = 'none';
+          } else {
+            limparBuscaBtn.style.display = 'block';
+          }
+        }
+      });
+    }
+
+    if (limparBuscaBtn) {
+      limparBuscaBtn.addEventListener('click', function () {
+        campoBusca.value = '';
+        campoBusca.dispatchEvent(new Event('input')); // Dispara o evento de input para atualizar a lista
+        limparBuscaBtn.style.display = 'none';
+      });
+    }
+
+    if (!isPacienteEspecifico) {
+      // Para profissionais, não inicializar automaticamente - devem selecionar uma conversa
+      document.getElementById('chat-messages').innerHTML = '';
+      document.getElementById('chat-title').textContent = 'Selecione uma conversa';
+    } else if (conversaAtualId && conversaAtualId.trim() !== '') {
+      // Para chat específico de paciente, carregar conversa automaticamente
+      conversaAtual = parseInt(conversaAtualId);
+      carregarConversa(conversaAtual);
+
+      // Marcar conversa como ativa na lista
+      const conversaItem = document.querySelector(`[data-conversa-id="${conversaAtual}"]`);
+      if (conversaItem) {
+        conversaItem.classList.add('active');
+      }
+    } else {
+      // Para chat específico de paciente, manter inicialização
+      trocarChat(chatAtual);
+    }
+
+    function toggleUserMenu() {
+      const userMenu = document.getElementById('userMenu');
+      userMenu.style.display = userMenu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // Fechar menu quando clicar fora dele
+    document.addEventListener('click', function (event) {
+      const userMenu = document.getElementById('userMenu');
+      const userIcon = document.querySelector('.user-icon');
+
+      if (userMenu && !userMenu.contains(event.target) && !userIcon.contains(event.target)) {
+        userMenu.style.display = 'none';
+      }
+    });
+
+    function updateUnreadCount() {
+      fetch('/chat/unread-count/')
+        .then(response => response.json())
+        .then(data => {
+          const badge = document.getElementById('chat-unread-badge');
+          if (data.unread_count > 0) {
+            badge.textContent = data.unread_count;
+            badge.style.display = 'block';
+          } else {
+            badge.style.display = 'none';
+          }
+        })
+        .catch(error => {
+          console.error('Erro ao atualizar contador:', error);
+        });
+    }
+
+    function logoutUser(event) {
+      event.preventDefault(); // Evita que o formulário seja enviado
+
+      // Redirecionamento direto para logout
+      window.location.href = '{% url "logout" %}';
+    }
+
+    // Atualizar contador de mensagens não lidas quando a página carrega
+    document.addEventListener('DOMContentLoaded', function () {
+      updateUnreadCount();
+
+      // Atualizar contador a cada 30 segundos
+      setInterval(updateUnreadCount, 30000);
+    });
+  </script>
+
+</body>
+
+</html>
