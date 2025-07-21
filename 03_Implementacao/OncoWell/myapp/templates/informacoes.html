@@ -21,27 +21,20 @@
             class="nav-item {% if current_page == 'beneficios' %}active{% endif %}">Benefícios</a>
         <a href="{% url 'informacoes' %}"
             class="nav-item {% if current_page == 'informacoes' %}active{% endif %}">Informações</a>
-        <div
-            class="nav-item dropdown {% if current_page == 'journaling' or current_page == 'journaling_delhes' %}active{% endif %}">
-            <span class="dropdown-toggle">Journalling</span>
+        <div class="nav-item dropdown {% if current_page == 'journaling' or current_page == 'journaling_delhes' %}active{% endif %}">
+            <span class="dropdown-toggle">Journaling</span>
             <div class="dropdown-content">
-                <a href="{% url 'journaling' %}" class="{% if current_page == 'journaling' %}active{% endif %}">Meu
-                    Journalling</a>
-                <a href="{% url 'journaling_delhes' %}"
-                    class="{% if current_page == 'journaling_delhes' %}active{% endif %}">Journalling Público</a>
+                <a href="{% url 'journaling_delhes' %}" class="{% if current_page == 'journaling_delhes' %}active{% endif %}">Journaling Público</a>
+                <a href="{% url 'journaling' %}" class="{% if current_page == 'journaling' %}active{% endif %}">Meu Journaling</a>
             </div>
         </div>
-
         <a href="{% url 'testemunhos' %}"
             class="nav-item {% if current_page == 'testemunhos' %}active{% endif %}">Testemunhos</a>
         <a href="{% url 'q&a' %}" class="nav-item {% if current_page == 'q&a' %}active{% endif %}">Q&A</a>
         {% if user.is_authenticated %}
-        {% if user.paciente %}
-        <a href="{% url 'chat_paciente_view' %}"
-            class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
-        {% else %}
-        <a href="{% url 'chat' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat</a>
-        {% endif %}
+        <a href="{% url 'chat_paciente_view' %}" class="nav-item {% if current_page == 'chat' %}active{% endif %}">Chat
+            <span class="unread-badge" id="chat-unread-badge" style="display: none;">0</span>
+        </a>
         {% endif %}
     </div>
 
@@ -78,46 +71,28 @@
             <div
                 style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.05); text-align: left;">
                 <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Perucas: onde conseguir</h3>
-                <button
-                    onclick="window.open('https://www.google.com/maps/d/u/0/edit?mid=1IVjr_Xs8tk5RXsLPnG8kKsGTnkONgZ0&usp=sharing')"
-                    style="margin-top: 10px; background: #5E1612; color: white; padding: 12px 24px; border: none; border-radius: 20px; font-size: 20px; font-weight: 500; cursor: pointer;">
-                    Mapa de Locais
-                </button>
-
-
+                <ul style="list-style: none; padding: 0;">
+                    {% for local in locais_perucas %}
+                    <li style="margin-bottom: 16px;">
+                        <span style="font-weight: 600;">{{ local.nome }}</span><br>
+                        <span style="font-size: 14px; color: #555;">{{ local.morada }}</span>
+                        <button onclick="window.open('https://www.google.com/maps?q={{ local.latitude }},{{ local.longitude }}')" style="margin-left: 10px; background: #5E1612; color: white; padding: 6px 16px; border: none; border-radius: 20px; font-size: 16px; font-weight: 500; cursor: pointer;">
+                            Ver no mapa
+                        </button>
+                    </li>
+                    {% endfor %}
+                </ul>
             </div>
 
+            {% for info in informacoes %}
             <div
                 style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.05); text-align: left;">
-                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Ajuda no Transporte: Não Vá Sozinho
-                </h3>
+                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">{{ info.titulo }}</h3>
                 <p style="font-size: 18px; font-weight: 500; line-height: 1.6;">
-                    Precisa de ir ao hospital com frequência? Pode pedir transporte não urgente pelo SNS. Muitas câmaras
-                    municipais também ajudam com transporte gratuito – informe-se no centro de saúde ou junta de
-                    freguesia.
+                    {{ info.descricao|linebreaksbr }}
                 </p>
             </div>
-
-            <div
-                style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.05); text-align: left;">
-                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Direitos no Trabalho</h3>
-                <p style="font-size: 18px; font-weight: 500; line-height: 1.6;">
-                    Está em tratamento e não pode trabalhar? Tem direito a baixa médica prolongada com subsídio de
-                    doença. Peça ajuda ao seu médico ou veja mais no site da Segurança Social.
-                </p>
-            </div>
-
-            <div
-                style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.05); text-align: left;">
-                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Apoio Financeiro</h3>
-                <p style="font-size: 18px; font-weight: 500; line-height: 1.6;">
-                    Subsídio de doença: Se está de baixa médica, pode receber apoio da Segurança Social.<br><br>
-                    Isenção de taxas moderadoras: Doentes oncológicos estão isentos de pagar consultas e exames no
-                    SNS.<br><br>
-                    Apoios da Segurança Social ou da Câmara Municipal: Podem existir ajudas específicas para despesas
-                    como medicamentos, transportes ou alimentação. Fale com um assistente social.
-                </p>
-            </div>
+            {% endfor %}
 
         </div>
     </div>
@@ -128,14 +103,28 @@
             const menu = document.getElementById('userMenu');
             menu.classList.toggle('active');
         }
-
-        // Fechar o menu quando clicar fora dele
         document.addEventListener('click', function (event) {
             const menu = document.getElementById('userMenu');
             const userIcon = document.querySelector('.user-icon');
-            if (!menu.contains(event.target) && !userIcon.contains(event.target)) {
+            if (menu && !menu.contains(event.target) && !userIcon.contains(event.target)) {
                 menu.classList.remove('active');
             }
+        });
+        // Dropdown Journaling toggle
+        document.querySelectorAll('.dropdown-toggle').forEach(function(toggle) {
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const parent = this.closest('.dropdown');
+                document.querySelectorAll('.dropdown').forEach(function(drop) {
+                    if (drop !== parent) drop.classList.remove('open');
+                });
+                parent.classList.toggle('open');
+            });
+        });
+        document.addEventListener('click', function() {
+            document.querySelectorAll('.dropdown.open').forEach(function(drop) {
+                drop.classList.remove('open');
+            });
         });
     </script>
 </body>

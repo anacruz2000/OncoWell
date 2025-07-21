@@ -239,3 +239,26 @@ class EstadoPaciente(models.Model):
     def __str__(self):
         return f"{self.paciente.nome} - {self.estado} em {self.data.strftime('%Y-%m-%d %H:%M')}"
 
+class Beneficio(models.Model):
+    titulo = models.CharField(max_length=200)
+    descricao = models.TextField()
+
+    def __str__(self):
+        return self.titulo
+
+class InformacaoExtra(models.Model):
+    titulo = models.CharField(max_length=200)
+    descricao = models.TextField()
+
+    def __str__(self):
+        return self.titulo
+
+class LocalPeruca(models.Model):
+    nome = models.CharField(max_length=200)
+    morada = models.CharField(max_length=300)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+
+    def __str__(self):
+        return self.nome
+

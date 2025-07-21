@@ -188,6 +188,18 @@
                 item.classList.toggle('active');
             });
         });
+        // Script para o menu de utilizador
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenu');
+            menu.classList.toggle('active');
+        }
+        document.addEventListener('click', function (event) {
+            const menu = document.getElementById('userMenu');
+            const userIcon = document.querySelector('.user-icon');
+            if (menu && !menu.contains(event.target) && !userIcon.contains(event.target)) {
+                menu.classList.remove('active');
+            }
+        });
     </script>
 </body>
 

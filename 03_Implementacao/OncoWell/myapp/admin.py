@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (
     Hospital, Utilizador, Paciente, ProfissionalSaude,
     Enfermidade, MsgChatInd, JournalItem, PergIndividual,
-    TopicFAQ, FAQ, TopicInf, Informacao, TpPerg, BancoPerg
+    TopicFAQ, FAQ, TopicInf, Informacao, TpPerg, BancoPerg, LocalPeruca
 )
 
 @admin.register(Hospital)
@@ -62,3 +62,5 @@ class TpPergAdmin(admin.ModelAdmin):
 @admin.register(BancoPerg)
 class BancoPergAdmin(admin.ModelAdmin):
     list_display = ['conteudo', 'tipo']
+
+admin.site.register(LocalPeruca)

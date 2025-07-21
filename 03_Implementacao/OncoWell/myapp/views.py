@@ -19,9 +19,18 @@ from django.views.decorators.http import require_GET, require_POST
 from .models import PerguntaResposta, FAQ, TopicFAQ
 from server import chatbot_response
 from django.core.paginator import Paginator
+from .models import LocalPeruca
+from myapp.models import InformacaoExtra
 
 # Create your views here.
 def home(request):
+    if request.user.is_authenticated:
+        try:
+            from myapp.models import ProfissionalSaude
+            ProfissionalSaude.objects.get(id=request.user.id)
+            return redirect('pacientes')
+        except ProfissionalSaude.DoesNotExist:
+            return redirect('journaling')
     return render(request, 'home.html')
 
 def login_view(request):
@@ -200,7 +209,13 @@ def journaling(request):
     })
 
 def informacoes(request):
-    return render(request, 'informacoes.html', {'current_page': 'informacoes'})
+    locais = LocalPeruca.objects.all()
+    informacoes = InformacaoExtra.objects.all()
+    return render(request, 'informacoes.html', {
+        'locais_perucas': locais,
+        'informacoes': informacoes,
+        'current_page': 'informacoes',
+    })
 
 def testemunhos(request):
     testemunhos = TopTestemunho.objects.order_by('-data')  # Ordenar por data decrescente (mais recentes primeiro)
@@ -247,6 +262,15 @@ def chat(request, paciente_id=None):
     from myapp.models import Conversa, MsgChatInd
     from django.shortcuts import get_object_or_404
     from django.utils import timezone
+    from myapp.models import Paciente, ProfissionalSaude
+    
+    # Restrict access: only authenticated patients or professionals
+    if not request.user.is_authenticated:
+        return redirect('login')
+    is_patient = hasattr(request.user, 'paciente')
+    is_prof = hasattr(request.user, 'profissionalsaude')
+    if not (is_patient or is_prof):
+        return redirect('home')
     
     if paciente_id:
         paciente = get_object_or_404(Paciente, id=paciente_id)
@@ -1504,3 +1528,6 @@ def avaliar_resposta_oncologica(request):
         
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+def mapaperucas(request):
+    return render(request, 'mapaperucas.html')

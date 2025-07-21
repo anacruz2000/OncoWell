@@ -35,4 +35,5 @@ urlpatterns = [
     path('pergunta/', views.pergunta_aleatoria, name='pergunta_aleatoria'),
     path('toggle_favorito/', views.toggle_favorito, name='toggle_favorito'),
     path('atualizar_status/', views.atualizar_status, name='atualizar_status'),
+    path('mapaperucas/', views.mapaperucas, name='mapaperucas'),
 ]
