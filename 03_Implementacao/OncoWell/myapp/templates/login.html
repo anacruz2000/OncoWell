@@ -38,7 +38,16 @@
             </div>
             <div class="form-group">
                 <label for="password">Palavra-passe</label>
-                <input type="password" id="password" name="password" required>
+                <div style="position: relative; display: flex; align-items: center;">
+                    <input type="password" id="password" name="password" required style="padding-right: 36px;">
+                    <span id="togglePassword" style="position: absolute; right: 10px; cursor: pointer;">
+                        <!-- SVG Olho -->
+                        <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24">
+                            <path stroke="#333" stroke-width="2" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"/>
+                            <circle id="eyeCircle" cx="12" cy="12" r="3" stroke="#333" stroke-width="2"/>
+                        </svg>
+                    </span>
+                </div>
             </div>
             {% if error_message %}
             <div class="error-message">
@@ -56,4 +65,21 @@
         </div>
     </div>
 </body>
+<script>
+    const passwordInput = document.getElementById('password');
+    const togglePassword = document.getElementById('togglePassword');
+    const eyeIcon = document.getElementById('eyeIcon');
+    let passwordVisible = false;
+
+    togglePassword.addEventListener('click', function () {
+        passwordVisible = !passwordVisible;
+        if (passwordVisible) {
+            passwordInput.type = 'text';
+            eyeIcon.innerHTML = '<circle id="eyeCircle" cx="12" cy="12" r="3" stroke="#333" stroke-width="2"/><path stroke="#333" stroke-width="2" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"/><line x1="5" y1="19" x2="19" y2="5" stroke="#333" stroke-width="2"/>';
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.innerHTML = '<path stroke="#333" stroke-width="2" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"/><circle id="eyeCircle" cx="12" cy="12" r="3" stroke="#333" stroke-width="2"/>';
+        }
+    });
+</script>
 </html>

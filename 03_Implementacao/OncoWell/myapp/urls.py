@@ -36,4 +36,5 @@ urlpatterns = [
     path('toggle_favorito/', views.toggle_favorito, name='toggle_favorito'),
     path('atualizar_status/', views.atualizar_status, name='atualizar_status'),
     path('mapaperucas/', views.mapaperucas, name='mapaperucas'),
+    path('alterar_password/', views.alterar_password, name='alterar_password'),
 ]

@@ -414,6 +414,33 @@
                 </div>
             {% endif %}
 
+            <!-- Secção para alterar palavra-passe -->
+            <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+                <h3 class="section-title">Alterar Palavra-passe</h3>
+                {% if password_success %}
+                    <div style="color: green; margin-bottom: 10px;">{{ password_success }}</div>
+                {% endif %}
+                {% if password_error %}
+                    <div style="color: red; margin-bottom: 10px;">{{ password_error }}</div>
+                {% endif %}
+                <form method="POST" action="{% url 'alterar_password' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="current_password">Palavra-passe atual</label>
+                        <input type="password" id="current_password" name="current_password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new_password">Nova palavra-passe</label>
+                        <input type="password" id="new_password" name="new_password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password">Confirmar nova palavra-passe</label>
+                        <input type="password" id="confirm_password" name="confirm_password" required>
+                    </div>
+                    <button type="submit" class="save-button">Alterar Palavra-passe</button>
+                </form>
+            </div>
+
             <!-- Seção para apagar conta -->
             <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
                 <h3 class="section-title" style="color: #d32f2f;">Zona de Perigo</h3>

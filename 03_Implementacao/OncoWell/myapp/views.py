@@ -21,6 +21,7 @@ from server import chatbot_response
 from django.core.paginator import Paginator
 from .models import LocalPeruca
 from myapp.models import InformacaoExtra
+from django.contrib.auth.hashers import check_password
 
 # Create your views here.
 def home(request):
@@ -990,6 +991,42 @@ def meu_perfil(request):
         'user_data': user_data,
         'hospitais': hospitais,
     })
+
+@login_required
+def alterar_password(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    if request.method == 'POST':
+        current_password = request.POST.get('current_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if not (current_password and new_password and confirm_password):
+            return render(request, 'meu_perfil.html', {
+                'password_error': 'Todos os campos são obrigatórios.'
+            })
+
+        if new_password != confirm_password:
+            return render(request, 'meu_perfil.html', {
+                'password_error': 'A nova palavra-passe e a confirmação não coincidem.'
+            })
+
+        user = request.user
+        if not user.check_password(current_password):
+            return render(request, 'meu_perfil.html', {
+                'password_error': 'A palavra-passe atual está incorreta.'
+            })
+
+        user.set_password(new_password)
+        user.save()
+        # Reautenticar o utilizador após alteração da password
+        login(request, user)
+        return render(request, 'meu_perfil.html', {
+            'password_success': 'Palavra-passe alterada com sucesso!'
+        })
+
+    return redirect('meu_perfil')
 
 @login_required
 def apagar_conta(request):
